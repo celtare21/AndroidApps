@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30428.66
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckinLS.Android", "CheckinLS.Android\CheckinLS.Android.csproj", "{E99C4364-2EBE-441A-9E31-450C6F329F56}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckinLS", "CheckinLS\CheckinLS.csproj", "{FF8046D7-BCD3-4E31-ACDE-3D614E588846}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E99C4364-2EBE-441A-9E31-450C6F329F56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E99C4364-2EBE-441A-9E31-450C6F329F56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E99C4364-2EBE-441A-9E31-450C6F329F56}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{E99C4364-2EBE-441A-9E31-450C6F329F56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E99C4364-2EBE-441A-9E31-450C6F329F56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E99C4364-2EBE-441A-9E31-450C6F329F56}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{FF8046D7-BCD3-4E31-ACDE-3D614E588846}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF8046D7-BCD3-4E31-ACDE-3D614E588846}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF8046D7-BCD3-4E31-ACDE-3D614E588846}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{FF8046D7-BCD3-4E31-ACDE-3D614E588846}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF8046D7-BCD3-4E31-ACDE-3D614E588846}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF8046D7-BCD3-4E31-ACDE-3D614E588846}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DD1F90C2-19A1-4639-BACD-BDB5CADAABD6}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CheckinLS.Pages.Home"
+             BackgroundColor="Black"
+             Title="Home">
+    
+    <ContentPage.Content>
+        <Grid Padding="10,20,10,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+            </Grid.RowDefinitions>
+
+            <Label Text="ID:" Grid.Row="0" Grid.Column="0"/>
+            <Label x:Name="id" Text="Not found!" Grid.Row="0" Grid.Column="1"/>
+            
+            <Label Text="Data:" Grid.Row="1" Grid.Column="0"/>
+            <Label x:Name="date" Text="Not found!" Grid.Row="1" Grid.Column="1"/>
+
+            <Label Text="Ora Incepere:" Grid.Row="2" Grid.Column="0"/>
+            <Label x:Name="ora_incepere" Text="Not found!" Grid.Row="2" Grid.Column="1"/>
+
+            <Label Text="Ora sfarsit:" Grid.Row="3" Grid.Column="0"/>
+            <Label x:Name="ora_sfarsit" Text="Not found!" Grid.Row="3" Grid.Column="1"/>
+
+            <Label Text="Curs Alocat:" Grid.Row="4" Grid.Column="0"/>
+            <Label x:Name="curs_alocat" Text="Not found!" Grid.Row="4" Grid.Column="1"/>
+
+            <Label Text="Pregatire Alocat:" Grid.Row="5" Grid.Column="0"/>
+            <Label x:Name="pregatire_alocat" Text="Not found!" Grid.Row="5" Grid.Column="1"/>
+
+            <Label Text="Recuperare Alocat:" Grid.Row="6" Grid.Column="0"/>
+            <Label x:Name="recuperare_alocat" Text="Not found!" Grid.Row="6" Grid.Column="1"/>
+
+            <Label Text="Ora Total:" Grid.Row="7" Grid.Column="0"/>
+            <Label x:Name="total" Text="Not found!" Grid.Row="7" Grid.Column="1"/>
+
+            <Button x:Name="left_button" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="8" Grid.Column="0"/>
+            <Button x:Name="right_button" Text="Right" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="8" Grid.Column="1"/>
+
+            <Button x:Name="manual_add_button" Text="Manual Add" HorizontalOptions="StartAndExpand" VerticalOptions="Center" Grid.Row="9" Grid.Column="0"/>
+            <Button x:Name="delete_button" Text="Delete" HorizontalOptions="EndAndExpand" VerticalOptions="Center" Grid.Row="9" Grid.Column="1"/>
+
+            <ActivityIndicator x:Name="indicator" Color="Gray" Margin="0,0,-35,0" IsRunning="true" VerticalOptions="Center" HorizontalOptions="End" Grid.Row="9"/>
+        </Grid>
+
+    </ContentPage.Content>
+</ContentPage>
