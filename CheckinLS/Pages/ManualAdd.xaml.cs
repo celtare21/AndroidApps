@@ -15,12 +15,12 @@ namespace CheckinLS.Pages
 
         private async void Add_button_Clicked(object sender, System.EventArgs e)
         {
-            if (!PregatireToggle.IsToggled && !CursToggle.IsToggled && !RecuperareToggle.IsToggled)
+            if (!CursToggle.IsToggled && !PregatireToggle.IsToggled && !RecuperareToggle.IsToggled)
                 return;
 
             add_button.IsEnabled = false;
 
-            await Home.AddNewEntryWrapper(PregatireToggle.IsToggled, CursToggle.IsToggled, RecuperareToggle.IsToggled);
+            await Home.AddNewEntryWrapper(CursToggle.IsToggled, PregatireToggle.IsToggled, RecuperareToggle.IsToggled);
 
             add_button.IsEnabled = true;
         }

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Plugin.NFC;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using System.Threading;
+using Acr.UserDialogs;
 
 namespace CheckinLS.Pages
 {
@@ -14,8 +16,9 @@ namespace CheckinLS.Pages
     {
         private static MainSQL Sql;
         public static string Name;
-        private bool EmptyDB, FakeListener, Startup = true;
-        private int Index = 0;
+        private bool FakeListener, Busy, Startup = true;
+        private (bool curs, bool pregatire, bool recuperare) Ora = (false, false, false);
+        private static int Index = 0;
 
         public Home(string name, MainSQL sql)
         {
@@ -38,7 +41,22 @@ namespace CheckinLS.Pages
             RefreshPage();
 
             if (Startup)
-                await NfcService();
+                await NfcService().ConfigureAwait(false);
+        }
+
+        protected override bool OnBackButtonPressed()
+        {
+            Device.BeginInvokeOnMainThread(async () =>
+            {
+                var result = await DisplayAlert("Alert!", "Do you really want to exit the application?", "Yes", "No");
+
+                if (result)
+                {
+                    Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                }
+            });
+
+            return true;
         }
 
         private void Left_button_Clicked(object sender, EventArgs e)
@@ -61,7 +79,7 @@ namespace CheckinLS.Pages
 
         private async void Delete_button_Clicked(object sender, EventArgs e)
         {
-            if (EmptyDB)
+            if (Sql.MaxElement() == 0)
                 return;
 
             delete_button.IsEnabled = false;
@@ -75,20 +93,18 @@ namespace CheckinLS.Pages
             delete_button.IsEnabled = true;
         }
 
-        private async void Manual_add_button_Clicked(object sender, EventArgs e)
-        {
-            var page = new ManualAdd();
+        private async void Manual_add_button_Clicked(object sender, EventArgs e) =>
+                await Navigation.PushModalAsync(new ManualAdd());
 
-            await Navigation.PushModalAsync(page);
+        public static async Task AddNewEntryWrapper(bool curs, bool pregatire, bool recuperare)
+        {
+            await Sql.AddNewEntryInDB(curs, pregatire, recuperare);
+            Index = Sql.MaxElement() - 1;
         }
 
-        public static async Task AddNewEntryWrapper(bool pregatire, bool curs, bool recuperare) =>
-                await Sql.AddNewEntryInDB(pregatire, curs, recuperare);
-
-        private async Task AddNewEntry(bool pregatire = false, bool curs = false, bool recuperare = false)
+        public async Task AddNewEntry(bool curs = false, bool pregatire = false, bool recuperare = false)
         {
-            await AddNewEntryWrapper(pregatire, curs, recuperare);
-            Index = Sql.MaxElement() - 1;
+            await AddNewEntryWrapper(curs, pregatire, recuperare);
             RefreshPage();
         }
 
@@ -100,13 +116,7 @@ namespace CheckinLS.Pages
                    curs_alocat.Text = pregatire_alocat.Text = recuperare_alocat.Text =
                    total.Text = "Not found!";
 
-                EmptyDB = true;
-
                 return;
-            }
-            else
-            {
-                EmptyDB = false;
             }
 
             (id.Text, date.Text, ora_incepere.Text, ora_sfarsit.Text, curs_alocat.Text, pregatire_alocat.Text, recuperare_alocat.Text, total.Text) =
@@ -147,21 +157,35 @@ namespace CheckinLS.Pages
             if (!CrossNFC.Current.IsEnabled)
             {
                 await DisplayAlert("Error", "NFC is disabled", "OK");
+                RegisterNfsStatusListener();
                 return;
             }
 
             StartListening();
         }
 
+        private void RegisterNfsStatusListener() =>
+                CrossNFC.Current.OnNfcStatusChanged += Current_OnNfcStatusChanged;
+
+        private async void Current_OnNfcStatusChanged(bool isEnabled)
+        {
+            if (isEnabled)
+            {
+                CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
+
+                await NfcService().ConfigureAwait(false);
+            }
+        }
+
         private void StartListening() =>
                 Device.BeginInvokeOnMainThread(() =>
                 {
-                    indicator.Color = Color.Green;
-
                     SubscribeEventsReal();
 
                     if (Startup)
                     {
+                        indicator.Color = Color.Green;
+
                         CrossNFC.Current.StartListening();
                         Startup = false;
                     }
@@ -170,8 +194,6 @@ namespace CheckinLS.Pages
         private void StopListening() =>
                 Device.BeginInvokeOnMainThread(() =>
                 {
-                    indicator.Color = Color.Red;
-
                     SubscribeFake();
                 });
 
@@ -197,10 +219,8 @@ namespace CheckinLS.Pages
             if (tagInfo == null)
             {
                 await DisplayAlert("Error", "No tag found", "OK");
-                return;
             }
-
-            if (!tagInfo.IsSupported)
+            else if (!tagInfo.IsSupported)
             {
                 await DisplayAlert("Error", "Unsupported tag", "OK");
             }
@@ -210,16 +230,54 @@ namespace CheckinLS.Pages
             }
             else
             {
-                if (GetMessage(tagInfo.Records[0]) == "adauga_ora_standard")
+                _ = FlashColor();
+
+                switch (GetMessage(tagInfo.Records[0]))
                 {
-                    await AddNewEntry(pregatire: true, curs: true);
-                } else if (GetMessage(tagInfo.Records[0]) == "adauga_ora_recuperare")
-                {
-                    await AddNewEntry(recuperare: true);
+                    case "adauga_ora_curs":
+                        Ora.curs = true;
+                        break;
+                    case "adauga_ora_pregatire":
+                        Ora.pregatire = true;
+                        break;
+                    case "adauga_ora_recuperare":
+                        Ora.recuperare = true;
+                        break;
+                    default:
+                        break;
                 }
+
+                if (!Busy)
+                    _ = WaitAndAdd();
             }
 
             StartListening();
+        }
+
+        private async Task WaitAndAdd()
+        {
+            Busy = true;
+
+            await Countdown();
+            await AddNewEntry(Ora.curs, Ora.pregatire, Ora.recuperare);
+            (Ora.curs, Ora.pregatire, Ora.recuperare) = (false, false, false);
+
+            Busy = false;
+        }
+
+        private async Task Countdown()
+        {
+            UserDialogs.Instance.ShowLoading("Waiting...");
+            await Task.Delay(6000);
+            UserDialogs.Instance.HideLoading();
+            await Task.Delay(100);
+        }
+
+        private async Task FlashColor()
+        {
+            indicator.Color = Color.Red;
+            await Task.Delay(500);
+            indicator.Color = Color.Green;
         }
 
         private void Current_OnMessageReceivedFake(ITagInfo tagInfo)
@@ -238,7 +296,7 @@ namespace CheckinLS.Pages
         private static async Task AlertAndKill(string message)
         {
             await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
+            Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
         }
 
         public static void ShowAlert(string message) =>

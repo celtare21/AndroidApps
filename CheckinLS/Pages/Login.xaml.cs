@@ -30,7 +30,7 @@ namespace CheckinLS.Pages
 
             enter.IsEnabled = false;
 
-            var sql = await MainSQL.CreateAsync(entryName);
+            var sql = await MainSQL.CreateAsync(RemoveWhitespace(entryName).ToLowerInvariant());
 
             if (sql == null)
             {
@@ -38,8 +38,10 @@ namespace CheckinLS.Pages
                 System.Diagnostics.Process.GetCurrentProcess().Kill();
             }
 
-            var homePage = new Home(entryName, sql);
-            await Navigation.PushModalAsync(homePage);
+            await Navigation.PushModalAsync(new Home(entryName, sql));
         }
+
+        private string RemoveWhitespace(string str) =>
+                string.Join("", str.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
     }
 }

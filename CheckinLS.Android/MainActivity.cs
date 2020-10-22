@@ -3,6 +3,7 @@ using Android.Content.PM;
 using Android.Runtime;
 using Android.OS;
 using Android.Content;
+using Acr.UserDialogs;
 using Plugin.NFC;
 
 namespace CheckinLS.Droid
@@ -18,6 +19,7 @@ namespace CheckinLS.Droid
             base.OnCreate(savedInstanceState);
 
             CrossNFC.Init(this);
+            UserDialogs.Init(this);
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);

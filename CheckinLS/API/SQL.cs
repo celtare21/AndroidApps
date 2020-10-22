@@ -33,7 +33,7 @@ namespace CheckinLS.API
             bool user = false;
             const string query = "SELECT name FROM sys.Tables";
 
-            await Conn.OpenAsync();
+            await OpenConnection().ConfigureAwait(false);
 
             using (var command = new SqlCommand(query, Conn))
             {
@@ -59,7 +59,7 @@ namespace CheckinLS.API
 
         private async Task InitAsync()
         {
-            await RefreshElements();
+            await RefreshElements().ConfigureAwait(false);
         }
 
         private MainSQL(string user)
@@ -82,16 +82,11 @@ namespace CheckinLS.API
             Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
         }
 
-        ~MainSQL()
-        {
-            Conn.Dispose();
-        }
-
         public async Task AddNewEntryInDB(bool curs, bool pregatire, bool recuperare)
         {
-            await AddToDB(await NewElementsTable(curs, pregatire, recuperare));
+            await AddToDB(await NewElementsTable(curs, pregatire, recuperare).ConfigureAwait(false)).ConfigureAwait(false);
 
-            await RefreshElements();
+            await RefreshElements().ConfigureAwait(false);
 
             Home.ShowToast("New entry added!");
         }
@@ -107,7 +102,7 @@ namespace CheckinLS.API
             }
 
             (TimeSpan oraIncepere, TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat) =
-                (await MaxHourInDB(), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
+                (await MaxHourInDB().ConfigureAwait(false), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
 
             TimeSpan total = cursAlocat + pregatireAlocat + recuperareAlocat;
             TimeSpan oraFinal = oraIncepere + total;
@@ -159,7 +154,7 @@ namespace CheckinLS.API
             string[] columns = { "id", "date", "ora_incepere", "ora_final", "curs_alocat", "pregatire_alocat", "recuperare_alocat", "total" };
             var dic = new Dictionary<string, List<object>>();
 
-            await OpenConnection();
+            await OpenConnection().ConfigureAwait(false);
 
             foreach (var elem in columns)
             {
@@ -189,7 +184,7 @@ namespace CheckinLS.API
             List<TimeSpan?> list = new List<TimeSpan?>();
             string query = $@"SELECT ora_final FROM ""prezenta.{User}"" WHERE date LIKE @SearchTerm";
 
-            await OpenConnection();
+            await OpenConnection().ConfigureAwait(false);
 
             using (var command = new SqlCommand(query, Conn))
             {
@@ -213,20 +208,20 @@ namespace CheckinLS.API
 
         private async Task ExecuteCommandDB(SqlCommand command)
         {
-            await OpenConnection();
+            await OpenConnection().ConfigureAwait(false);
 
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
 
             Conn.Close();
         }
 
-        private async Task OpenConnection()
+        private static async Task OpenConnection()
         {
             CheckInternet();
 
             try
             {
-                await Conn.OpenAsync();
+                await Conn.OpenAsync().ConfigureAwait(false);
             }
             catch
             {
@@ -234,7 +229,7 @@ namespace CheckinLS.API
             }
         }
 
-        private void CheckInternet()
+        private static void CheckInternet()
         {
             if (Connectivity.NetworkAccess != NetworkAccess.Internet)
             {
@@ -254,7 +249,7 @@ namespace CheckinLS.API
                         TimeSpan.FromHours(10);
 
         private TimeSpan CursTime() =>
-                        TimeSpan.FromHours(1);
+                        TimeSpan.FromHours(1.50);
 
         private TimeSpan PregatireTime() =>
                         TimeSpan.FromMinutes(30);
@@ -269,8 +264,7 @@ namespace CheckinLS.API
                         Elements["id"].Count();
     }
 
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    public class TableColumns
+    public readonly struct TableColumns
     {
         public string Date { get; }
         public TimeSpan OraIncepere { get; }
