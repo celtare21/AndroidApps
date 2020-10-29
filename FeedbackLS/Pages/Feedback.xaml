@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FeedbackLS.Pages.Feedback"
+             BackgroundColor="Black"
+             Title="Feedback">
+    
+    <ContentPage.Content>
+        <Grid Padding="10,20,10,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="100"/>
+                <RowDefinition Height="100"/>
+                <RowDefinition Height="100"/>
+                <RowDefinition Height="100"/>
+                <RowDefinition Height="100"/>
+            </Grid.RowDefinitions>
+
+            <Label Text="Entry 1:" Grid.Row="0" Grid.Column="0"/>
+            <Entry x:Name="entry1" Placeholder="Enter entry1:" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="0" Grid.Column="1"/>
+
+            <Label Text="Entry 2:" Grid.Row="1" Grid.Column="0"/>
+            <Entry x:Name="entry2" Placeholder="Enter entry2:" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="1" Grid.Column="1"/>
+
+            <Label Text="Entry 3:" Grid.Row="2" Grid.Column="0"/>
+            <Entry x:Name="entry3" Placeholder="Enter entry3:" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="2" Grid.Column="1"/>
+
+            <Label Text="Entry 4:" Grid.Row="3" Grid.Column="0"/>
+            <Entry x:Name="entry4" Placeholder="Enter entry4:" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="3" Grid.Column="1"/>
+
+            <Button x:Name="send" Text="Send" HorizontalOptions="Center" VerticalOptions="Center" HeightRequest="70" WidthRequest="120" Grid.Row="4" Grid.Column="1"/>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>
