@@ -49,12 +49,12 @@
             <Label x:Name="total" Text="Not found!" Grid.Row="7" Grid.Column="1"/>
 
             <Button x:Name="left_button" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="8" Grid.Column="0"/>
-            <Button x:Name="right_button" Text="Right" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="8" Grid.Column="1"/>
+            <Button x:Name="right_button" Text="Right" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="8" Grid.Column="1"/>
 
             <Button x:Name="manual_add_button" Text="Manual Add" HorizontalOptions="StartAndExpand" VerticalOptions="Center" Grid.Row="9" Grid.Column="0"/>
             <Button x:Name="delete_button" Text="Delete" HorizontalOptions="EndAndExpand" VerticalOptions="Center" Grid.Row="9" Grid.Column="1"/>
 
-            <ActivityIndicator x:Name="indicator" Color="Gray" Margin="0,0,-35,0" IsRunning="true" VerticalOptions="Center" HorizontalOptions="End" Grid.Row="9"/>
+            <BoxView x:Name="indicator" BackgroundColor="Gray" WidthRequest="50" HeightRequest="50" CornerRadius="32" Margin="0,0,-35,0" VerticalOptions="Center" HorizontalOptions="End" Grid.Row="9"/>
         </Grid>
 
     </ContentPage.Content>

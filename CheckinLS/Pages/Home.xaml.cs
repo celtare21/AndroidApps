@@ -3,11 +3,10 @@ using CheckinLS.API;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Plugin.NFC;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using System.Threading;
 using Acr.UserDialogs;
+using Plugin.NFC;
 
 namespace CheckinLS.Pages
 {
@@ -41,7 +40,7 @@ namespace CheckinLS.Pages
             RefreshPage();
 
             if (Startup)
-                await NfcService().ConfigureAwait(false);
+                await NfcService();
         }
 
         protected override bool OnBackButtonPressed()
@@ -173,7 +172,7 @@ namespace CheckinLS.Pages
             {
                 CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
 
-                await NfcService().ConfigureAwait(false);
+                await NfcService();
             }
         }
 

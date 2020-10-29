@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms.Xaml;
+using static CheckinLS.API.SqlUtils;
 
 namespace CheckinLS.API
 {
@@ -192,12 +193,19 @@ namespace CheckinLS.API
 
                 command.Parameters.AddWithValue("@SearchTerm", term);
 
-                using (var reader = command.ExecuteReader())
+                try
                 {
-                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    using (var reader = command.ExecuteReader())
                     {
-                        list.Add(reader.GetTimeSpan(0));
+                        while (await reader.ReadAsync().ConfigureAwait(false))
+                        {
+                            list.Add(reader.GetTimeSpan(0));
+                        }
                     }
+                }
+                catch
+                {
+                    Home.ShowAlert("An error has occured!");
                 }
             }
 
@@ -242,66 +250,7 @@ namespace CheckinLS.API
             CheckInternet();
         }
 
-        private string GetCurrentDate() =>
-                        DateTime.Now.ToString("yyyy-MM-dd");
-
-        private TimeSpan StartTime() =>
-                        TimeSpan.FromHours(10);
-
-        private TimeSpan CursTime() =>
-                        TimeSpan.FromHours(1.50);
-
-        private TimeSpan PregatireTime() =>
-                        TimeSpan.FromMinutes(30);
-
-        private TimeSpan RecuperareTime() =>
-                        TimeSpan.FromMinutes(30);
-
-        private TimeSpan ZeroTime() =>
-                        TimeSpan.Zero;
-
         public int MaxElement() =>
                         Elements["id"].Count();
-    }
-
-    public readonly struct TableColumns
-    {
-        public string Date { get; }
-        public TimeSpan OraIncepere { get; }
-        public TimeSpan OraFinal { get; }
-        public TimeSpan CursAlocat { get; }
-        public TimeSpan PregatireAlocat { get; }
-        public TimeSpan RecuperareAlocat { get; }
-        public TimeSpan Total { get; }
-
-        public TableColumns(string date, TimeSpan oraIncepere, TimeSpan oraFinal, TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat, TimeSpan total) =>
-                (Date, OraIncepere, OraFinal, CursAlocat, PregatireAlocat, RecuperareAlocat, Total) = (date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat, recuperareAlocat, total);
-    }
-
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    public class ExecuteFailure : Exception
-    {
-        public ExecuteFailure(string message)
-        {
-            Console.WriteLine(message);
-        }
-    }
-
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    public class HoursOutOfBounds : Exception
-    {
-        public HoursOutOfBounds()
-        {
-            Console.WriteLine("Hours out of bounds!");
-        }
-    }
-
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    public class AllParametersFalse : Exception
-    {
-        public AllParametersFalse()
-        {
-            Console.WriteLine("All parameters are false!");
-        }
     }
 }
