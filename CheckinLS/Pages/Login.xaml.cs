@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using CheckinLS.API;
 using System;
-using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 #if DEBUG
@@ -12,25 +11,25 @@ using Xamarin.Forms.Xaml;
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class Login : ContentPage
+    public partial class Login
     {
         public Login()
         {
             InitializeComponent();
 
-            enter.Clicked += Enter_Clicked;
+            Enter.Clicked += Enter_Clicked;
         }
 
         private async void Enter_Clicked(object sender, EventArgs e)
         {
-            string entryName = name.Text;
+            string entryName = Name.Text;
 
             if (string.IsNullOrEmpty(entryName))
                 return;
 
-            enter.IsEnabled = false;
+            Enter.IsEnabled = false;
 
-            var sql = await MainSQL.CreateAsync(RemoveWhitespace(entryName).ToLowerInvariant());
+            var sql = await MainSql.CreateAsync(RemoveWhitespace(entryName).ToLowerInvariant());
 
             if (sql == null)
             {

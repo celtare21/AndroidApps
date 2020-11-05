@@ -16,8 +16,8 @@
                     <RowDefinition Height="65"/>
                 </Grid.RowDefinitions>
 
-                <Entry x:Name="name" Placeholder="Enter your name:" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="0" Grid.Column="0"/>
-                <Button x:Name="enter" Text="Login" HorizontalOptions="Center" VerticalOptions="Center" HeightRequest="70" WidthRequest="120" Grid.Row="0" Grid.Column="1"/>
+                <Entry x:Name="Name" TextTransform="Uppercase" Placeholder="Enter your name:" HorizontalTextAlignment="Center" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="0" Grid.Column="0"/>
+                <Button x:Name="Enter" Text="Login" HeightRequest="55" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0" Grid.Column="1"/>
             </Grid>
         </StackLayout>
     </ContentPage.Content>

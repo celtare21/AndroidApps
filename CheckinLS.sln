@@ -5,7 +5,12 @@ VisualStudioVersion = 16.0.30428.66
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckinLS.Android", "CheckinLS.Android\CheckinLS.Android.csproj", "{E99C4364-2EBE-441A-9E31-450C6F329F56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckinLS", "CheckinLS\CheckinLS.csproj", "{FF8046D7-BCD3-4E31-ACDE-3D614E588846}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckinLS", "CheckinLS\CheckinLS.csproj", "{FF8046D7-BCD3-4E31-ACDE-3D614E588846}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{31D14FA9-9450-45B4-9020-5115D7FDFA48}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

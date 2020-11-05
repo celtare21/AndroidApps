@@ -4,20 +4,11 @@ using Xamarin.Forms.Xaml;
 namespace CheckinLS.API
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public class ExecuteFailure : Exception
-    {
-        public ExecuteFailure(string message)
-        {
-            Console.WriteLine(message);
-        }
-    }
-
-    [XamlCompilation(XamlCompilationOptions.Compile)]
     public class HoursOutOfBounds : Exception
     {
         public HoursOutOfBounds()
         {
-            Console.WriteLine("Hours out of bounds!");
+            Console.WriteLine(@"Hours out of bounds!");
         }
     }
 
@@ -26,7 +17,7 @@ namespace CheckinLS.API
     {
         public AllParametersFalse()
         {
-            Console.WriteLine("All parameters are false!");
+            Console.WriteLine(@"All parameters are false!");
         }
     }
 }

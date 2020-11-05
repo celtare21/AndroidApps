@@ -1,45 +1,48 @@
-﻿using Android.Widget;
+﻿using Acr.UserDialogs;
+using Android.Widget;
 using CheckinLS.API;
+using Plugin.NFC;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using Acr.UserDialogs;
-using Plugin.NFC;
 
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class Home : ContentPage
+    public partial class Home
     {
-        private static MainSQL Sql;
         public static string Name;
-        private bool FakeListener, Busy, Startup = true;
-        private (bool curs, bool pregatire, bool recuperare) Ora = (false, false, false);
-        private static int Index = 0;
+        private static MainSql _sql;
+        private bool _fakeListener, _busy, _startup = true;
+        private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
+        private static int _index;
 
-        public Home(string name, MainSQL sql)
+        public Home(string name, MainSql sql)
         {
             InitializeComponent();
 
             Name = name;
-            Sql = sql;
+            _sql = sql;
 
-            left_button.Clicked += Left_button_Clicked;
-            right_button.Clicked += Right_button_Clicked;
+            LeftButton.Clicked += LeftButton_Clicked;
+            RightButton.Clicked += RightButton_Clicked;
 
-            delete_button.Clicked += Delete_button_Clicked;
-            manual_add_button.Clicked += Manual_add_button_Clicked;
+            DeleteButton.Clicked += DeleteButton_Clicked;
+            ManualAddButton.Clicked += ManualAddButton_Clicked;
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
 
+            ObsEntry.Text = "";
+
             RefreshPage();
 
-            if (Startup)
+            if (_startup)
                 await NfcService();
         }
 
@@ -50,93 +53,88 @@ namespace CheckinLS.Pages
                 var result = await DisplayAlert("Alert!", "Do you really want to exit the application?", "Yes", "No");
 
                 if (result)
-                {
                     Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
-                }
             });
 
             return true;
         }
 
-        private void Left_button_Clicked(object sender, EventArgs e)
+        private void LeftButton_Clicked(object sender, EventArgs e)
         {
-            if (Index > 0)
+            if (_index > 0)
             {
-                --Index;
+                --_index;
                 RefreshPage();
             }
         }
 
-        private void Right_button_Clicked(object sender, EventArgs e)
+        private void RightButton_Clicked(object sender, EventArgs e)
         {
-            if (Index < Sql.MaxElement() - 1)
+            if (_index < _sql.MaxElement() - 1)
             {
-                ++Index;
+                ++_index;
                 RefreshPage();
             }
         }
 
-        private async void Delete_button_Clicked(object sender, EventArgs e)
+        private async void DeleteButton_Clicked(object sender, EventArgs e)
         {
-            if (Sql.MaxElement() == 0)
+            if (_sql.MaxElement() == 0 || !IdLabel.Text.All(char.IsDigit))
                 return;
 
-            delete_button.IsEnabled = false;
+            DeleteButton.IsEnabled = false;
 
-            await Sql.DeleteFromDB(Convert.ToInt32(id.Text));
+            await _sql.DeleteFromDb(Convert.ToInt32(IdLabel.Text));
 
-            if (Index > 0 && Index > Sql.MaxElement() - 1)
-                --Index;
+            if (_index > 0 && _index > _sql.MaxElement() - 1)
+                --_index;
             RefreshPage();
 
-            delete_button.IsEnabled = true;
+            DeleteButton.IsEnabled = true;
         }
 
-        private async void Manual_add_button_Clicked(object sender, EventArgs e) =>
+        private async void ManualAddButton_Clicked(object sender, EventArgs e) =>
                 await Navigation.PushModalAsync(new ManualAdd());
 
-        public static async Task AddNewEntryWrapper(bool curs, bool pregatire, bool recuperare)
+        public static async Task AddNewEntryExternal(string observatii, bool curs, bool pregatire, bool recuperare)
         {
-            await Sql.AddNewEntryInDB(curs, pregatire, recuperare);
-            Index = Sql.MaxElement() - 1;
+            await _sql.AddNewEntryInDb(observatii == string.Empty ? "None" : observatii?.ToUpperInvariant(), curs, pregatire, recuperare);
+            _index = _sql.MaxElement() - 1;
         }
 
-        public async Task AddNewEntry(bool curs = false, bool pregatire = false, bool recuperare = false)
+        private async Task AddNewEntry(string observatii = "", bool curs = false, bool pregatire = false, bool recuperare = false)
         {
-            await AddNewEntryWrapper(curs, pregatire, recuperare);
+            await AddNewEntryExternal(observatii, curs, pregatire, recuperare);
+            ObsEntry.Text = "";
             RefreshPage();
         }
 
         private void RefreshPage()
         {
-            if (Sql.MaxElement() == 0)
+            if (_sql.MaxElement() == 0)
             {
-                id.Text = date.Text = ora_incepere.Text = ora_sfarsit.Text =
-                   curs_alocat.Text = pregatire_alocat.Text = recuperare_alocat.Text =
-                   total.Text = "Not found!";
+                IdLabel.Text = Observatii.Text = Date.Text = OraIncepere.Text = OraSfarsit.Text =
+                   CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
+                   Total.Text = "Not found!";
+
+                PretTotal.Text = "0";
 
                 return;
             }
 
-            (id.Text, date.Text, ora_incepere.Text, ora_sfarsit.Text, curs_alocat.Text, pregatire_alocat.Text, recuperare_alocat.Text, total.Text) =
-                (ConversionWrapper((int)Sql.Elements["id"][Index]), ConversionWrapper((DateTime)Sql.Elements["date"][Index]), ConversionWrapper((TimeSpan)Sql.Elements["ora_incepere"][Index]),
-                    ConversionWrapper((TimeSpan)Sql.Elements["ora_final"][Index]), ConversionWrapper((TimeSpan)Sql.Elements["curs_alocat"][Index]), ConversionWrapper((TimeSpan)Sql.Elements["pregatire_alocat"][Index]),
-                    ConversionWrapper((TimeSpan)Sql.Elements["recuperare_alocat"][Index]), ConversionWrapper((TimeSpan)Sql.Elements["total"][Index]));
-        }
+            (IdLabel.Text, Observatii.Text, Date.Text, OraIncepere.Text, OraSfarsit.Text, CursAlocat.Text, PregatireAlocat.Text,
+                    RecuperareAlocat.Text, Total.Text) =
+                (ConversionWrapper((int) _sql.Elements["id"][_index]),
+                    ConversionWrapper((string)_sql.Elements["observatii"][_index]),
+                    ConversionWrapper((DateTime) _sql.Elements["date"][_index]),
+                    ConversionWrapper((TimeSpan) _sql.Elements["ora_incepere"][_index]),
+                    ConversionWrapper((TimeSpan) _sql.Elements["ora_final"][_index]),
+                    ConversionWrapper((TimeSpan) _sql.Elements["curs_alocat"][_index]),
+                    ConversionWrapper((TimeSpan) _sql.Elements["pregatire_alocat"][_index]),
+                    ConversionWrapper((TimeSpan) _sql.Elements["recuperare_alocat"][_index]),
+                    ConversionWrapper((TimeSpan) _sql.Elements["total"][_index]));
 
-        private string ConversionWrapper(object elem)
-        {
-            switch (elem)
-            {
-                case int:
-                    return elem.ToString();
-                case DateTime:
-                    return ((DateTime)elem).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
-                case TimeSpan:
-                    return ((TimeSpan)elem).ToString(@"hh\:mm");
-                default:
-                    throw new ArgumentException();
-            }
+            SetPrice();
         }
 
         private async Task NfcService()
@@ -181,34 +179,31 @@ namespace CheckinLS.Pages
                 {
                     SubscribeEventsReal();
 
-                    if (Startup)
+                    if (_startup)
                     {
-                        indicator.Color = Color.Green;
+                        Indicator.Color = Color.Green;
 
                         CrossNFC.Current.StartListening();
-                        Startup = false;
+                        _startup = false;
                     }
                 });
 
         private void StopListening() =>
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    SubscribeFake();
-                });
+                Device.BeginInvokeOnMainThread(SubscribeFake);
 
         private void SubscribeEventsReal()
         {
-            if (FakeListener)
+            if (_fakeListener)
                 CrossNFC.Current.OnMessageReceived -= Current_OnMessageReceivedFake;
             CrossNFC.Current.OnMessageReceived += Current_OnMessageReceived;
-            FakeListener = false;
+            _fakeListener = false;
         }
 
         private void SubscribeFake()
         {
             CrossNFC.Current.OnMessageReceived -= Current_OnMessageReceived;
             CrossNFC.Current.OnMessageReceived += Current_OnMessageReceivedFake;
-            FakeListener = true;
+            _fakeListener = true;
         }
 
         private async void Current_OnMessageReceived(ITagInfo tagInfo)
@@ -218,50 +213,72 @@ namespace CheckinLS.Pages
             if (tagInfo == null)
             {
                 await DisplayAlert("Error", "No tag found", "OK");
+                return;
             }
-            else if (!tagInfo.IsSupported)
-            {
-                await DisplayAlert("Error", "Unsupported tag", "OK");
-            }
-            else if (tagInfo.IsEmpty)
-            {
-                await DisplayAlert("Error", "Empty tag", "OK");
-            }
-            else
-            {
-                _ = FlashColor();
 
-                switch (GetMessage(tagInfo.Records[0]))
-                {
-                    case "adauga_ora_curs":
-                        Ora.curs = true;
-                        break;
-                    case "adauga_ora_pregatire":
-                        Ora.pregatire = true;
-                        break;
-                    case "adauga_ora_recuperare":
-                        Ora.recuperare = true;
-                        break;
-                    default:
-                        break;
-                }
-
-                if (!Busy)
-                    _ = WaitAndAdd();
+            if (!tagInfo.IsSupported || tagInfo.IsEmpty)
+            {
+                await DisplayAlert("Error", "Unsupported/Empty tag", "OK");
+                return;
             }
+
+            _ = FlashColor();
+
+            switch (GetMessage(tagInfo.Records[0]))
+            {
+                case "adauga_ora_curs":
+                    _ora.curs = true;
+                    break;
+                case "adauga_ora_pregatire":
+                    _ora.pregatire = true;
+                    break;
+                case "adauga_ora_recuperare":
+                    _ora.recuperare = true;
+                    break;
+            }
+
+            if (!_busy)
+                _ = WaitAndAdd();
 
             StartListening();
         }
 
+        private void SetPrice()
+        {
+            var zero = TimeSpan.FromHours(0);
+            var total = (curs: zero, pregatire: zero, recuperare: zero);
+
+            foreach (var time in _sql.Elements["curs_alocat"])
+            {
+                total.curs += (TimeSpan)time;
+            }
+
+            foreach (var time in _sql.Elements["pregatire_alocat"])
+            {
+                total.pregatire += (TimeSpan)time;
+            }
+
+            foreach (var time in _sql.Elements["recuperare_alocat"])
+            {
+                total.recuperare += (TimeSpan)time;
+            }
+
+            var valoare = GetIndice(total.curs) * Constants.PretCurs + GetIndice(total.pregatire) * Constants.PretPregatire + GetIndice(total.recuperare) * Constants.PretRecuperare;
+
+            PretTotal.Text = valoare.ToString(CultureInfo.InvariantCulture);
+        }
+
         private async Task WaitAndAdd()
         {
-            Busy = true;
+            _busy = true;
 
             await Countdown();
-            await AddNewEntry(Ora.curs, Ora.pregatire, Ora.recuperare);
-            (Ora.curs, Ora.pregatire, Ora.recuperare) = (false, false, false);
+            await AddNewEntry(ObsEntry.Text, _ora.curs, _ora.pregatire,
+                _ora.recuperare);
 
-            Busy = false;
+            (_ora.curs, _ora.pregatire, _ora.recuperare) = (false, false, false);
+
+            _busy = false;
         }
 
         private async Task Countdown()
@@ -274,9 +291,9 @@ namespace CheckinLS.Pages
 
         private async Task FlashColor()
         {
-            indicator.Color = Color.Red;
+            Indicator.Color = Color.Red;
             await Task.Delay(500);
-            indicator.Color = Color.Green;
+            Indicator.Color = Color.Green;
         }
 
         private void Current_OnMessageReceivedFake(ITagInfo tagInfo)
@@ -286,7 +303,8 @@ namespace CheckinLS.Pages
 
         private string GetMessage(NFCNdefRecord record)
         {
-            if (record.TypeFormat != NFCNdefTypeFormat.WellKnown || (string.IsNullOrWhiteSpace(record.MimeType) && record.MimeType != "text/plain"))
+            if (record.TypeFormat != NFCNdefTypeFormat.WellKnown ||
+                string.IsNullOrWhiteSpace(record.MimeType) && record.MimeType != "text/plain")
                 return null;
 
             return record.Message;
@@ -298,12 +316,25 @@ namespace CheckinLS.Pages
             Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
         }
 
-        public static void ShowAlert(string message) =>
+        private string ConversionWrapper(object elem) =>
+            elem switch
+            {
+                int => elem.ToString(),
+                string str => str,
+                DateTime time => time.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
+                TimeSpan span => span.ToString(@"hh\:mm"),
+                _ => throw new ArgumentException()
+            };
+
+        private static double GetIndice(TimeSpan time) =>
+                (DateTime.Parse(time.ToString(@"hh\:mm")) - DateTime.Parse("00:00")).TotalHours;
+
+        public static void ShowAlertKill(string message) =>
             Device.BeginInvokeOnMainThread(async () =>
                 await AlertAndKill(message));
 
         public static void ShowToast(string message) =>
             Device.BeginInvokeOnMainThread(() =>
-                Toast.MakeText(Android.App.Application.Context, message, ToastLength.Short).Show());
+                Toast.MakeText(Android.App.Application.Context, message, ToastLength.Short)?.Show());
     }
 }

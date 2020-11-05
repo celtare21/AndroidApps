@@ -10,9 +10,9 @@ using Xamarin.Forms.Xaml;
 namespace CheckinLS
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class CheckinLS : Shell
+    public partial class CheckinLs : Shell
     {
-        public CheckinLS()
+        public CheckinLs()
         {
             InitializeComponent();
         }

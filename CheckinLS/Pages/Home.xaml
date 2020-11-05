@@ -12,49 +12,60 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
-                <RowDefinition Height="65"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
             </Grid.RowDefinitions>
 
             <Label Text="ID:" Grid.Row="0" Grid.Column="0"/>
-            <Label x:Name="id" Text="Not found!" Grid.Row="0" Grid.Column="1"/>
-            
-            <Label Text="Data:" Grid.Row="1" Grid.Column="0"/>
-            <Label x:Name="date" Text="Not found!" Grid.Row="1" Grid.Column="1"/>
+            <Label x:Name="IdLabel" Text="Not found!" Grid.Row="0" Grid.Column="1"/>
 
-            <Label Text="Ora Incepere:" Grid.Row="2" Grid.Column="0"/>
-            <Label x:Name="ora_incepere" Text="Not found!" Grid.Row="2" Grid.Column="1"/>
+            <Label Text="Observatii:" Grid.Row="1" Grid.Column="0"/>
+            <Label x:Name="Observatii" Text="Not found!" Grid.Row="1" Grid.Column="1"/>
 
-            <Label Text="Ora sfarsit:" Grid.Row="3" Grid.Column="0"/>
-            <Label x:Name="ora_sfarsit" Text="Not found!" Grid.Row="3" Grid.Column="1"/>
+            <Label Text="Data:" Grid.Row="2" Grid.Column="0"/>
+            <Label x:Name="Date" Text="Not found!" Grid.Row="2" Grid.Column="1"/>
 
-            <Label Text="Curs Alocat:" Grid.Row="4" Grid.Column="0"/>
-            <Label x:Name="curs_alocat" Text="Not found!" Grid.Row="4" Grid.Column="1"/>
+            <Label Text="Ora Incepere:" Grid.Row="3" Grid.Column="0"/>
+            <Label x:Name="OraIncepere" Text="Not found!" Grid.Row="3" Grid.Column="1"/>
 
-            <Label Text="Pregatire Alocat:" Grid.Row="5" Grid.Column="0"/>
-            <Label x:Name="pregatire_alocat" Text="Not found!" Grid.Row="5" Grid.Column="1"/>
+            <Label Text="Ora sfarsit:" Grid.Row="4" Grid.Column="0"/>
+            <Label x:Name="OraSfarsit" Text="Not found!" Grid.Row="4" Grid.Column="1"/>
 
-            <Label Text="Recuperare Alocat:" Grid.Row="6" Grid.Column="0"/>
-            <Label x:Name="recuperare_alocat" Text="Not found!" Grid.Row="6" Grid.Column="1"/>
+            <Label Text="Curs Alocat:" Grid.Row="5" Grid.Column="0"/>
+            <Label x:Name="CursAlocat" Text="Not found!" Grid.Row="5" Grid.Column="1"/>
 
-            <Label Text="Ora Total:" Grid.Row="7" Grid.Column="0"/>
-            <Label x:Name="total" Text="Not found!" Grid.Row="7" Grid.Column="1"/>
+            <Label Text="Pregatire Alocat:" Grid.Row="6" Grid.Column="0"/>
+            <Label x:Name="PregatireAlocat" Text="Not found!" Grid.Row="6" Grid.Column="1"/>
 
-            <Button x:Name="left_button" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="8" Grid.Column="0"/>
-            <Button x:Name="right_button" Text="Right" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="8" Grid.Column="1"/>
+            <Label Text="Recuperare Alocat:" Grid.Row="7" Grid.Column="0"/>
+            <Label x:Name="RecuperareAlocat" Text="Not found!" Grid.Row="7" Grid.Column="1"/>
 
-            <Button x:Name="manual_add_button" Text="Manual Add" HorizontalOptions="StartAndExpand" VerticalOptions="Center" Grid.Row="9" Grid.Column="0"/>
-            <Button x:Name="delete_button" Text="Delete" HorizontalOptions="EndAndExpand" VerticalOptions="Center" Grid.Row="9" Grid.Column="1"/>
+            <Label Text="Ora Total:" Grid.Row="8" Grid.Column="0"/>
+            <Label x:Name="Total" Text="Not found!" Grid.Row="8" Grid.Column="1"/>
 
-            <BoxView x:Name="indicator" BackgroundColor="Gray" WidthRequest="50" HeightRequest="50" CornerRadius="32" Margin="0,0,-35,0" VerticalOptions="Center" HorizontalOptions="End" Grid.Row="9"/>
+            <Button x:Name="LeftButton" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="10" Grid.Column="0"/>
+            <Button x:Name="RightButton" Text="Right" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="10" Grid.Column="1"/>
+
+            <Button x:Name="ManualAddButton" Text="Manual Add" FontAttributes="Bold" FontSize="11" HorizontalOptions="StartAndExpand" VerticalOptions="Center" Grid.Row="11" Grid.Column="0"/>
+            <Button x:Name="DeleteButton" Text="Delete" HorizontalOptions="EndAndExpand" VerticalOptions="Center" Grid.Row="11" Grid.Column="1"/>
+            <BoxView x:Name="Indicator" BackgroundColor="Gray" WidthRequest="45" HeightRequest="45" CornerRadius="32" Margin="0,0,-30,0" VerticalOptions="Center" HorizontalOptions="End" Grid.Row="11" Grid.Column="0" />
+
+            <Label Text="Pret Total:" Padding="0,0,-40,0" Grid.Row="12" Grid.Column="0"/>
+            <Label x:Name="PretTotal" Text="0" Padding="0,0,40,0" Grid.Row="12" Grid.Column="1"/>
+
+            <Entry x:Name="ObsEntry" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-200,0" Grid.Row="13" Grid.Column="0"/>
         </Grid>
 
     </ContentPage.Content>

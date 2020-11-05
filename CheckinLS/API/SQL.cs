@@ -1,6 +1,7 @@
 ﻿using CheckinLS.Pages;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,17 +12,17 @@ using static CheckinLS.API.SqlUtils;
 namespace CheckinLS.API
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public class MainSQL
+    public class MainSql
     {
-        private static SqlConnection Conn;
+        private static SqlConnection _conn;
+        private static string _user;
         public Dictionary<string, List<object>> Elements;
-        private static string User;
 
-        public static async Task<MainSQL> CreateAsync(string user)
+        public static async Task<MainSql> CreateAsync(string user)
         {
-            var thisClass = new MainSQL(user);
+            var thisClass = new MainSql(user);
 
-            if (await IsUser().ConfigureAwait(false) == false)
+            if (!await IsUser().ConfigureAwait(false))
                 return null;
 
             await thisClass.InitAsync().ConfigureAwait(false);
@@ -31,29 +32,22 @@ namespace CheckinLS.API
 
         private static async Task<bool> IsUser()
         {
-            bool user = false;
-            const string query = "SELECT name FROM sys.Tables";
+            string query = $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{_user}'";
+            bool user;
 
             await OpenConnection().ConfigureAwait(false);
 
-            using (var command = new SqlCommand(query, Conn))
+            await using (var command = new SqlCommand(query, _conn))
             {
-                using (var reader = command.ExecuteReader())
+                await using (var reader = await command.ExecuteReaderAsync())
                 {
-                    while (await reader.ReadAsync().ConfigureAwait(false))
-                    {
-                        string value = reader.GetValue(0).ToString();
+                    await reader.ReadAsync().ConfigureAwait(false);
 
-                        if (value.Contains($"prezenta.{User}"))
-                        {
-                            user = true;
-                            break;
-                        }
-                    }
+                    user = reader.HasRows;
                 }
             }
 
-            Conn.Close();
+            _conn.Close();
 
             return user;
         }
@@ -63,29 +57,31 @@ namespace CheckinLS.API
             await RefreshElements().ConfigureAwait(false);
         }
 
-        private MainSQL(string user)
+        private MainSql(string user)
         {
-            const string connStr = "//";
+            const string connStr =
+                "//";
 
             CheckInternet();
 
             try
             {
-                Conn = new SqlConnection(connStr);
+                _conn = new SqlConnection(connStr);
             }
             catch
             {
-                Home.ShowAlert("Could not make connection.");
+                Home.ShowAlertKill("Could not make connection.");
             }
 
-            User = user;
+            _user = user;
 
             Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
         }
 
-        public async Task AddNewEntryInDB(bool curs, bool pregatire, bool recuperare)
+        public async Task AddNewEntryInDb(string observatii, bool curs, bool pregatire, bool recuperare)
         {
-            await AddToDB(await NewElementsTable(curs, pregatire, recuperare).ConfigureAwait(false)).ConfigureAwait(false);
+            await AddToDb(await NewElementsTable(observatii ?? "None", curs, pregatire, recuperare).ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             await RefreshElements().ConfigureAwait(false);
 
@@ -95,7 +91,7 @@ namespace CheckinLS.API
         public async Task RefreshElements() =>
                     Elements = await GetAllElements().ConfigureAwait(false);
 
-        private async Task<TableColumns> NewElementsTable(bool curs, bool pregatire, bool recuperare)
+        private async Task<TableColumns> NewElementsTable(string observatii, bool curs, bool pregatire, bool recuperare)
         {
             if (!curs && !pregatire && !recuperare)
             {
@@ -103,7 +99,7 @@ namespace CheckinLS.API
             }
 
             (TimeSpan oraIncepere, TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat) =
-                (await MaxHourInDB().ConfigureAwait(false), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
+                (await MaxHourInDb().ConfigureAwait(false), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
 
             TimeSpan total = cursAlocat + pregatireAlocat + recuperareAlocat;
             TimeSpan oraFinal = oraIncepere + total;
@@ -113,15 +109,17 @@ namespace CheckinLS.API
                 throw new HoursOutOfBounds();
             }
 
-            return new TableColumns(GetCurrentDate(), oraIncepere, oraFinal, cursAlocat, pregatireAlocat, recuperareAlocat, total);
+            return new TableColumns(GetCurrentDate(), oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
+                recuperareAlocat, total, observatii);
         }
 
-        private async Task AddToDB(TableColumns table)
+        private async Task AddToDb(TableColumns table)
         {
-            string query = $@"INSERT INTO ""prezenta.{User}"" (date,ora_incepere,ora_final,curs_alocat,pregatire_alocat,recuperare_alocat,total)" +
-                                            "VALUES (@date,@ora_incepere,@ora_final,@curs_alocat,@pregatire_alocat,@recuperare_alocat,@total)";
+            string query =
+                $@"INSERT INTO ""prezenta.{_user}"" (date,ora_incepere,ora_final,curs_alocat,pregatire_alocat,recuperare_alocat,total,observatii)" +
+                                            "VALUES (@date,@ora_incepere,@ora_final,@curs_alocat,@pregatire_alocat,@recuperare_alocat,@total,@observatii)";
 
-            using (var command = new SqlCommand(query, Conn))
+            await using (var command = new SqlCommand(query, _conn))
             {
                 command.Parameters.AddWithValue("@date", table.Date);
                 command.Parameters.AddWithValue("@ora_incepere", table.OraIncepere);
@@ -130,18 +128,19 @@ namespace CheckinLS.API
                 command.Parameters.AddWithValue("@pregatire_alocat", table.PregatireAlocat);
                 command.Parameters.AddWithValue("@recuperare_alocat", table.RecuperareAlocat);
                 command.Parameters.AddWithValue("@total", table.Total);
+                command.Parameters.AddWithValue("@observatii", table.Observatii);
 
-                await ExecuteCommandDB(command).ConfigureAwait(false);
+                await ExecuteCommandDb(command).ConfigureAwait(false);
             }
         }
 
-        public async Task DeleteFromDB(int id)
+        public async Task DeleteFromDb(int id)
         {
-            string query = $@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}";
+            string query = $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id}";
 
-            using (var command = new SqlCommand(query, Conn))
+            await using (var command = new SqlCommand(query, _conn))
             {
-                await ExecuteCommandDB(command).ConfigureAwait(false);
+                await ExecuteCommandDb(command).ConfigureAwait(false);
             }
 
             await RefreshElements().ConfigureAwait(false);
@@ -151,21 +150,31 @@ namespace CheckinLS.API
 
         private async Task<Dictionary<string, List<object>>> GetAllElements()
         {
-            string query;
-            string[] columns = { "id", "date", "ora_incepere", "ora_final", "curs_alocat", "pregatire_alocat", "recuperare_alocat", "total" };
+            string[] columns =
+            {
+                "id",
+                "observatii",
+                "date",
+                "ora_incepere",
+                "ora_final",
+                "curs_alocat",
+                "pregatire_alocat",
+                "recuperare_alocat",
+                "total"
+            };
             var dic = new Dictionary<string, List<object>>();
 
             await OpenConnection().ConfigureAwait(false);
 
             foreach (var elem in columns)
             {
+                var query = $@"SELECT {elem} FROM ""prezenta.{_user}""";
+
                 dic.Add(elem, new List<object>());
 
-                query = $@"SELECT {elem} FROM ""prezenta.{User}""";
-
-                using (var command = new SqlCommand(query, Conn))
+                await using (var command = new SqlCommand(query, _conn))
                 {
-                    using (var reader = command.ExecuteReader())
+                    await using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync().ConfigureAwait(false))
                         {
@@ -175,19 +184,19 @@ namespace CheckinLS.API
                 }
             }
 
-            Conn.Close();
+            _conn.Close();
 
             return dic;
         }
 
-        private async Task<TimeSpan> MaxHourInDB()
+        private async Task<TimeSpan> MaxHourInDb()
         {
-            List<TimeSpan?> list = new List<TimeSpan?>();
-            string query = $@"SELECT ora_final FROM ""prezenta.{User}"" WHERE date LIKE @SearchTerm";
+            string query = $@"SELECT ora_final FROM ""prezenta.{_user}"" WHERE date LIKE @SearchTerm";
+            var list = new List<TimeSpan?>();
 
             await OpenConnection().ConfigureAwait(false);
 
-            using (var command = new SqlCommand(query, Conn))
+            await using (var command = new SqlCommand(query, _conn))
             {
                 string term = $"%{GetCurrentDate()}%";
 
@@ -195,7 +204,7 @@ namespace CheckinLS.API
 
                 try
                 {
-                    using (var reader = command.ExecuteReader())
+                    await using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync().ConfigureAwait(false))
                         {
@@ -205,22 +214,22 @@ namespace CheckinLS.API
                 }
                 catch
                 {
-                    Home.ShowAlert("An error has occured!");
+                    Home.ShowAlertKill("An error has occured!");
                 }
             }
 
-            Conn.Close();
+            _conn.Close();
 
-            return list?.Max() ?? StartTime();
+            return list.Max() ?? StartTime();
         }
 
-        private async Task ExecuteCommandDB(SqlCommand command)
+        private async Task ExecuteCommandDb(DbCommand command)
         {
             await OpenConnection().ConfigureAwait(false);
 
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
 
-            Conn.Close();
+            _conn.Close();
         }
 
         private static async Task OpenConnection()
@@ -229,20 +238,18 @@ namespace CheckinLS.API
 
             try
             {
-                await Conn.OpenAsync().ConfigureAwait(false);
+                await _conn.OpenAsync().ConfigureAwait(false);
             }
             catch
             {
-                Home.ShowAlert("Could not open connection");
+                Home.ShowAlertKill("Could not open connection");
             }
         }
 
         private static void CheckInternet()
         {
             if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-            {
-                Home.ShowAlert("No internet connection!");
-            }
+                Home.ShowAlertKill("No internet connection!");
         }
 
         private void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
@@ -251,6 +258,6 @@ namespace CheckinLS.API
         }
 
         public int MaxElement() =>
-                        Elements["id"].Count();
+                        Elements["id"].Count;
     }
 }
