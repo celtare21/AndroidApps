@@ -65,7 +65,7 @@
             <Label Text="Pret Total:" Padding="0,0,-40,0" Grid.Row="12" Grid.Column="0"/>
             <Label x:Name="PretTotal" Text="0" Padding="0,0,40,0" Grid.Row="12" Grid.Column="1"/>
 
-            <Entry x:Name="ObsEntry" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-200,0" Grid.Row="13" Grid.Column="0"/>
+            <Entry x:Name="ObsEntry" PlaceholderColor="Gray" TextColor="AntiqueWhite" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-200,0" Grid.Row="13" Grid.Column="0"/>
         </Grid>
 
     </ContentPage.Content>

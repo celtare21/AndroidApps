@@ -43,7 +43,7 @@ namespace CheckinLS.Pages
             RefreshPage();
 
             if (_startup)
-                await NfcService();
+                await NfcServiceAsync();
         }
 
         protected override bool OnBackButtonPressed()
@@ -84,7 +84,7 @@ namespace CheckinLS.Pages
 
             DeleteButton.IsEnabled = false;
 
-            await _sql.DeleteFromDb(Convert.ToInt32(IdLabel.Text));
+            await _sql.DeleteFromDbAsync(Convert.ToInt32(IdLabel.Text));
 
             if (_index > 0 && _index > _sql.MaxElement() - 1)
                 --_index;
@@ -93,18 +93,18 @@ namespace CheckinLS.Pages
             DeleteButton.IsEnabled = true;
         }
 
-        private async void ManualAddButton_Clicked(object sender, EventArgs e) =>
-                await Navigation.PushModalAsync(new ManualAdd());
+        private void ManualAddButton_Clicked(object sender, EventArgs e) =>
+                Navigation.PushModalAsync(new ManualAdd());
 
-        public static async Task AddNewEntryExternal(string observatii, bool curs, bool pregatire, bool recuperare)
+        public static async Task AddNewEntryExternalAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
-            await _sql.AddNewEntryInDb(observatii == string.Empty ? "None" : observatii?.ToUpperInvariant(), curs, pregatire, recuperare);
+            await _sql.AddNewEntryInDbAsync(observatii == string.Empty ? "None" : observatii?.ToUpperInvariant(), curs, pregatire, recuperare);
             _index = _sql.MaxElement() - 1;
         }
 
-        private async Task AddNewEntry(string observatii = "", bool curs = false, bool pregatire = false, bool recuperare = false)
+        private async Task AddNewEntryAsync(string observatii = "", bool curs = false, bool pregatire = false, bool recuperare = false)
         {
-            await AddNewEntryExternal(observatii, curs, pregatire, recuperare);
+            await AddNewEntryExternalAsync(observatii, curs, pregatire, recuperare);
             ObsEntry.Text = "";
             RefreshPage();
         }
@@ -137,7 +137,7 @@ namespace CheckinLS.Pages
             SetPrice();
         }
 
-        private async Task NfcService()
+        private async Task NfcServiceAsync()
         {
             if (!CrossNFC.IsSupported)
             {
@@ -170,7 +170,7 @@ namespace CheckinLS.Pages
             {
                 CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
 
-                await NfcService();
+                await NfcServiceAsync();
             }
         }
 
@@ -222,7 +222,7 @@ namespace CheckinLS.Pages
                 return;
             }
 
-            _ = FlashColor();
+            _ = FlashColorAsync();
 
             switch (GetMessage(tagInfo.Records[0]))
             {
@@ -238,7 +238,7 @@ namespace CheckinLS.Pages
             }
 
             if (!_busy)
-                _ = WaitAndAdd();
+                _ = WaitAndAddAsync();
 
             StartListening();
         }
@@ -268,12 +268,12 @@ namespace CheckinLS.Pages
             PretTotal.Text = valoare.ToString(CultureInfo.InvariantCulture);
         }
 
-        private async Task WaitAndAdd()
+        private async Task WaitAndAddAsync()
         {
             _busy = true;
 
-            await Countdown();
-            await AddNewEntry(ObsEntry.Text, _ora.curs, _ora.pregatire,
+            await CountdownAsync();
+            await AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire,
                 _ora.recuperare);
 
             (_ora.curs, _ora.pregatire, _ora.recuperare) = (false, false, false);
@@ -281,15 +281,15 @@ namespace CheckinLS.Pages
             _busy = false;
         }
 
-        private async Task Countdown()
+        private async Task CountdownAsync()
         {
             UserDialogs.Instance.ShowLoading("Waiting...");
-            await Task.Delay(6000);
+            await Task.Delay(6000).ConfigureAwait(false);
             UserDialogs.Instance.HideLoading();
-            await Task.Delay(100);
+            await Task.Delay(100).ConfigureAwait(false);
         }
 
-        private async Task FlashColor()
+        private async Task FlashColorAsync()
         {
             Indicator.Color = Color.Red;
             await Task.Delay(500);
@@ -310,7 +310,7 @@ namespace CheckinLS.Pages
             return record.Message;
         }
 
-        private static async Task AlertAndKill(string message)
+        private static async Task AlertAndKillAsync(string message)
         {
             await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
             Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
@@ -331,7 +331,7 @@ namespace CheckinLS.Pages
 
         public static void ShowAlertKill(string message) =>
             Device.BeginInvokeOnMainThread(async () =>
-                await AlertAndKill(message));
+                await AlertAndKillAsync(message).ConfigureAwait(false));
 
         public static void ShowToast(string message) =>
             Device.BeginInvokeOnMainThread(() =>

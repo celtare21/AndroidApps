@@ -19,7 +19,7 @@ namespace CheckinLS.Pages
 
             AddButton.IsEnabled = false;
 
-            await Home.AddNewEntryExternal(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled, RecuperareToggle.IsToggled);
+            await Home.AddNewEntryExternalAsync(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled, RecuperareToggle.IsToggled);
 
             ObsManualEntry.Text = "";
 

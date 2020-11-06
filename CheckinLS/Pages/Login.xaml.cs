@@ -29,7 +29,7 @@ namespace CheckinLS.Pages
 
             Enter.IsEnabled = false;
 
-            var sql = await MainSql.CreateAsync(RemoveWhitespace(entryName).ToLowerInvariant());
+            var sql = await MainSql.CreateAsync(RemoveWhitespace(entryName).ToLowerInvariant(), false);
 
             if (sql == null)
             {

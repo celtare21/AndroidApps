@@ -6,8 +6,11 @@ namespace CheckinLS.API
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public static class SqlUtils
     {
+        public static string FakeDate() =>
+                        DateTime.Parse("2020-01-01").ToString("yyyy-MM-dd");
+
         public static string GetCurrentDate() =>
-                DateTime.Now.ToString("yyyy-MM-dd");
+                        DateTime.Now.ToString("yyyy-MM-dd");
 
         public static TimeSpan StartTime() =>
                         TimeSpan.FromHours(10);

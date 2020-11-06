@@ -16,30 +16,31 @@ namespace CheckinLS.API
     {
         private static SqlConnection _conn;
         private static string _user;
+        private readonly bool _isTest;
         public Dictionary<string, List<object>> Elements;
 
-        public static async Task<MainSql> CreateAsync(string user)
+        public static async Task<MainSql> CreateAsync(string user, bool isTest)
         {
-            var thisClass = new MainSql(user);
+            var thisClass = new MainSql(user, isTest);
 
-            if (!await IsUser().ConfigureAwait(false))
+            if (!await thisClass.IsUserAsync().ConfigureAwait(false))
                 return null;
 
-            await thisClass.InitAsync().ConfigureAwait(false);
+            await thisClass.RefreshElementsAsync().ConfigureAwait(false);
 
             return thisClass;
         }
 
-        private static async Task<bool> IsUser()
+        private async Task<bool> IsUserAsync()
         {
             string query = $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{_user}'";
             bool user;
 
-            await OpenConnection().ConfigureAwait(false);
+            await OpenConnectionAsync().ConfigureAwait(false);
 
             await using (var command = new SqlCommand(query, _conn))
             {
-                await using (var reader = await command.ExecuteReaderAsync())
+                await using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     await reader.ReadAsync().ConfigureAwait(false);
 
@@ -52,15 +53,12 @@ namespace CheckinLS.API
             return user;
         }
 
-        private async Task InitAsync()
-        {
-            await RefreshElements().ConfigureAwait(false);
-        }
-
-        private MainSql(string user)
+        private MainSql(string user, bool isTest)
         {
             const string connStr =
                 "//";
+
+            _isTest = isTest;
 
             CheckInternet();
 
@@ -68,30 +66,32 @@ namespace CheckinLS.API
             {
                 _conn = new SqlConnection(connStr);
             }
-            catch
+            catch (SqlException)
             {
                 Home.ShowAlertKill("Could not make connection.");
             }
 
             _user = user;
 
-            Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+            if (!_isTest)
+                Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
         }
 
-        public async Task AddNewEntryInDb(string observatii, bool curs, bool pregatire, bool recuperare)
+        public async Task AddNewEntryInDbAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
-            await AddToDb(await NewElementsTable(observatii ?? "None", curs, pregatire, recuperare).ConfigureAwait(false))
+            await AddToDbAsync(await NewElementsTableAsync(observatii ?? "None", curs, pregatire, recuperare).ConfigureAwait(false))
                 .ConfigureAwait(false);
 
-            await RefreshElements().ConfigureAwait(false);
+            await RefreshElementsAsync().ConfigureAwait(false);
 
-            Home.ShowToast("New entry added!");
+            if (!_isTest)
+                Home.ShowToast("New entry added!");
         }
 
-        public async Task RefreshElements() =>
-                    Elements = await GetAllElements().ConfigureAwait(false);
+        public async Task RefreshElementsAsync() =>
+                    Elements = await GetAllElementsAsync().ConfigureAwait(false);
 
-        private async Task<TableColumns> NewElementsTable(string observatii, bool curs, bool pregatire, bool recuperare)
+        private async Task<TableColumns> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
             if (!curs && !pregatire && !recuperare)
             {
@@ -99,7 +99,7 @@ namespace CheckinLS.API
             }
 
             (TimeSpan oraIncepere, TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat) =
-                (await MaxHourInDb().ConfigureAwait(false), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
+                (await MaxHourInDbAsync().ConfigureAwait(false), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
 
             TimeSpan total = cursAlocat + pregatireAlocat + recuperareAlocat;
             TimeSpan oraFinal = oraIncepere + total;
@@ -109,11 +109,13 @@ namespace CheckinLS.API
                 throw new HoursOutOfBounds();
             }
 
-            return new TableColumns(GetCurrentDate(), oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
+            var date = _isTest? FakeDate() : GetCurrentDate();
+
+            return new TableColumns(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
                 recuperareAlocat, total, observatii);
         }
 
-        private async Task AddToDb(TableColumns table)
+        private async Task AddToDbAsync(TableColumns table)
         {
             string query =
                 $@"INSERT INTO ""prezenta.{_user}"" (date,ora_incepere,ora_final,curs_alocat,pregatire_alocat,recuperare_alocat,total,observatii)" +
@@ -130,25 +132,29 @@ namespace CheckinLS.API
                 command.Parameters.AddWithValue("@total", table.Total);
                 command.Parameters.AddWithValue("@observatii", table.Observatii);
 
-                await ExecuteCommandDb(command).ConfigureAwait(false);
+                await ExecuteCommandDbAsync(command).ConfigureAwait(false);
             }
         }
 
-        public async Task DeleteFromDb(int id)
+        public async Task DeleteFromDbAsync(int? id = null, string date = null)
         {
-            string query = $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id}";
+            if (!id.HasValue && string.IsNullOrEmpty(date))
+                throw new AllParametersFalse();
+
+            string query = id.HasValue ? $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id}" : $@"DELETE FROM ""prezenta.{_user}"" WHERE date = '{date}'";
 
             await using (var command = new SqlCommand(query, _conn))
             {
-                await ExecuteCommandDb(command).ConfigureAwait(false);
+                await ExecuteCommandDbAsync(command).ConfigureAwait(false);
             }
 
-            await RefreshElements().ConfigureAwait(false);
+            await RefreshElementsAsync().ConfigureAwait(false);
 
-            Home.ShowToast("Entry deleted!");
+            if (!_isTest)
+                Home.ShowToast("Entry deleted!");
         }
 
-        private async Task<Dictionary<string, List<object>>> GetAllElements()
+        private async Task<Dictionary<string, List<object>>> GetAllElementsAsync()
         {
             string[] columns =
             {
@@ -164,7 +170,7 @@ namespace CheckinLS.API
             };
             var dic = new Dictionary<string, List<object>>();
 
-            await OpenConnection().ConfigureAwait(false);
+            await OpenConnectionAsync().ConfigureAwait(false);
 
             foreach (var elem in columns)
             {
@@ -174,7 +180,7 @@ namespace CheckinLS.API
 
                 await using (var command = new SqlCommand(query, _conn))
                 {
-                    await using (var reader = await command.ExecuteReaderAsync())
+                    await using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         while (await reader.ReadAsync().ConfigureAwait(false))
                         {
@@ -189,22 +195,23 @@ namespace CheckinLS.API
             return dic;
         }
 
-        private async Task<TimeSpan> MaxHourInDb()
+        private async Task<TimeSpan> MaxHourInDbAsync()
         {
             string query = $@"SELECT ora_final FROM ""prezenta.{_user}"" WHERE date LIKE @SearchTerm";
             var list = new List<TimeSpan?>();
 
-            await OpenConnection().ConfigureAwait(false);
+            await OpenConnectionAsync().ConfigureAwait(false);
 
             await using (var command = new SqlCommand(query, _conn))
             {
-                string term = $"%{GetCurrentDate()}%";
+                var date = _isTest ? FakeDate() : GetCurrentDate();
+                string term = $"%{date}%";
 
                 command.Parameters.AddWithValue("@SearchTerm", term);
 
                 try
                 {
-                    await using (var reader = await command.ExecuteReaderAsync())
+                    await using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                     {
                         while (await reader.ReadAsync().ConfigureAwait(false))
                         {
@@ -223,32 +230,32 @@ namespace CheckinLS.API
             return list.Max() ?? StartTime();
         }
 
-        private async Task ExecuteCommandDb(DbCommand command)
+        internal async Task ExecuteCommandDbAsync(DbCommand command)
         {
-            await OpenConnection().ConfigureAwait(false);
+            await OpenConnectionAsync().ConfigureAwait(false);
 
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
 
             _conn.Close();
         }
 
-        private static async Task OpenConnection()
-        {
+        private async Task OpenConnectionAsync()
+        { 
             CheckInternet();
 
             try
             {
                 await _conn.OpenAsync().ConfigureAwait(false);
             }
-            catch
+            catch (SqlException)
             {
                 Home.ShowAlertKill("Could not open connection");
             }
         }
 
-        private static void CheckInternet()
+        private void CheckInternet()
         {
-            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+            if (!_isTest && Connectivity.NetworkAccess != NetworkAccess.Internet)
                 Home.ShowAlertKill("No internet connection!");
         }
 
@@ -258,6 +265,6 @@ namespace CheckinLS.API
         }
 
         public int MaxElement() =>
-                        Elements["id"].Count;
+                    Elements?["id"].Count ?? 0;
     }
 }
