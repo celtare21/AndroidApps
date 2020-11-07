@@ -4,7 +4,7 @@
              x:Class="CheckinLS.Pages.ManualAdd"
              BackgroundColor="Black"
              Title="Manual Add">
-    
+
     <ContentPage.Content>
         <Grid Padding="10,20,10,20">
             <Grid.ColumnDefinitions>
@@ -22,7 +22,7 @@
             <Label Text="Pregatire:" Grid.Row="0" Grid.Column="0"/>
             <Switch x:Name="PregatireToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="0" Grid.Column="1">
             </Switch>
-            
+
             <Label Text="Curs:" Grid.Row="1" Grid.Column="0"/>
             <Switch x:Name="CursToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="1" Grid.Column="1">
             </Switch>
@@ -31,10 +31,18 @@
             <Switch x:Name="RecuperareToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="2" Grid.Column="1">
             </Switch>
 
-            <Entry x:Name="ObsManualEntry" PlaceholderColor="Gray" TextColor="AntiqueWhite" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-200,0" Grid.Row="3" Grid.Column="0"/>
+            <Entry x:Name="ObsManualEntry" IsSpellCheckEnabled="False" PlaceholderColor="Gray" TextColor="AntiqueWhite" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-200,0" Grid.Row="3" Grid.Column="0">
+                <Entry.Keyboard>
+                    <Keyboard x:FactoryMethod="Create">
+                        <x:Arguments>
+                            <KeyboardFlags>CapitalizeCharacter</KeyboardFlags>
+                        </x:Arguments>
+                    </Keyboard>
+                </Entry.Keyboard>
+            </Entry>
 
             <Button x:Name="AddButton" Text="Add" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="4" Grid.Column="1"/>
         </Grid>
-        
+
     </ContentPage.Content>
 </ContentPage>

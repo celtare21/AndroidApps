@@ -1,13 +1,9 @@
-﻿using Android.App;
-using CheckinLS.API;
+﻿using CheckinLS.API;
 using System;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+// ReSharper disable RedundantCapturedContext
 
-#if DEBUG
-[assembly: Application(Debuggable = true)]
-#else
-[assembly: Application(Debuggable = false)]
-#endif
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
@@ -20,27 +16,38 @@ namespace CheckinLS.Pages
             Enter.Clicked += Enter_Clicked;
         }
 
+        protected override bool OnBackButtonPressed()
+        {
+            Device.BeginInvokeOnMainThread(async () =>
+            {
+                var result = await DisplayAlert("Alert!", "Do you really want to exit the application?", "Yes", "No");
+
+                if (result)
+                    App.Close();
+            });
+
+            return true;
+        }
+
         private async void Enter_Clicked(object sender, EventArgs e)
         {
-            string entryName = Name.Text;
+            string entryPin = Pin.Text;
 
-            if (string.IsNullOrEmpty(entryName))
+            if (string.IsNullOrEmpty(entryPin))
                 return;
 
             Enter.IsEnabled = false;
 
-            var sql = await MainSql.CreateAsync(RemoveWhitespace(entryName).ToLowerInvariant(), false);
+            var sql = await MainSql.CreateAsync(entryPin, false);
 
             if (sql == null)
             {
-                await DisplayAlert("Error", "No user found!", "OK");
-                System.Diagnostics.Process.GetCurrentProcess().Kill();
+                await DisplayAlert("Error", "No user found! Please create one.", "OK");
+                await Navigation.PushModalAsync(new AddUser(entryPin));
+                return;
             }
 
-            await Navigation.PushModalAsync(new Home(entryName, sql));
+            await Navigation.PushModalAsync(new Home(sql));
         }
-
-        private string RemoveWhitespace(string str) =>
-                string.Join("", str.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
     }
 }

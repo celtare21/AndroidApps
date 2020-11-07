@@ -8,27 +8,20 @@ namespace CheckingLSTests
     [TestFixture]
     public class SqlTests
     {
-        [TestCase("VLAD")]
-        [TestCase("vlad")]
-        [TestCase("Vlad")]
-        [TestCase("vLAD")]
-        [TestCase("vlaD")]
-        public async Task CreateAsync_CorrectUser_ReturnsClassAsync(string user)
+        [TestCase("1111")]
+        public async Task CreateAsync_CorrectUser_ReturnsClassAsync(string pin)
         {
-            var result = await MainSql.CreateAsync(user, true);
+            var result = await MainSql.CreateAsync(pin, true);
 
             Assert.IsNotNull(result);
         }
 
         [TestCase("Alex")]
-        [TestCase("ALEX")]
-        [TestCase("alex")]
-        [TestCase("Alex1")]
         [TestCase("123")]
         [TestCase("!@#")]
-        public async Task CreateAsync_IncorrectUser_ReturnsNullAsync(string user)
+        public async Task CreateAsync_IncorrectUser_ReturnsNullAsync(string pin)
         {
-            var result = await MainSql.CreateAsync(user, true);
+            var result = await MainSql.CreateAsync(pin, true);
 
             Assert.IsNull(result);
         }
@@ -36,7 +29,7 @@ namespace CheckingLSTests
         [Test]
         public async Task AddNewEntryInDbAsync_AllFalse_ReturnsException()
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             Assert.CatchAsync(() => main.AddNewEntryInDbAsync(null, false, false, false), "All parameters are false!");
         }
@@ -47,7 +40,7 @@ namespace CheckingLSTests
         [TestCase("this is an even longer test")]
         public async Task AddNewEntryInDbAsync_CursMultipleObservations_ReturnsCursAndObservation(string obs)
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(obs, true, false, false);
 
@@ -79,7 +72,7 @@ namespace CheckingLSTests
         [TestCase("this is an even longer test")]
         public async Task AddNewEntryInDbAsync_PregatireMultipleObservations_ReturnsPregatireAndObservation(string obs)
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(obs, false, true, false);
 
@@ -111,7 +104,7 @@ namespace CheckingLSTests
         [TestCase("this is an even longer test")]
         public async Task AddNewEntryInDbAsync_RecuperareMultipleObservations_ReturnsRecuperareAndObservation(string obs)
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(obs, false, false, true);
 
@@ -145,7 +138,7 @@ namespace CheckingLSTests
         [TestCase("this is an even longer test")]
         public async Task AddNewEntryInDbAsync_CursPregatireMultipleObservations_ReturnsCursPregatireandObservation(string obs)
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(obs, true, true, false);
 
@@ -177,7 +170,7 @@ namespace CheckingLSTests
         [TestCase("this is an even longer test")]
         public async Task AddNewEntryInDbAsync_CursRecuperareMultipleObservations_ReturnsCursRecuperareandObservation(string obs)
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(obs, true, false, true);
 
@@ -209,7 +202,7 @@ namespace CheckingLSTests
         [TestCase("this is an even longer test")]
         public async Task AddNewEntryInDbAsync_PregatireRecuperareMultipleObservations_ReturnsPregatireRecuperareandObservation(string obs)
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(obs, false, true, true);
 
@@ -241,7 +234,7 @@ namespace CheckingLSTests
         [TestCase("this is an even longer test")]
         public async Task AddNewEntryInDbAsync_CursRecuperarePregatireMultipleObservations_ReturnsCursPregatireRecuperareandObservation(string obs)
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(obs, true, true, true);
 
@@ -270,7 +263,7 @@ namespace CheckingLSTests
         [Test]
         public async Task AddNewEntryInDbAsync_AllTillOverflow_ReturnsException()
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(null, true, true, true);
             await main.AddNewEntryInDbAsync(null, true, true, true);
@@ -284,7 +277,7 @@ namespace CheckingLSTests
         [Test]
         public async Task DeleteFromDbAsync_NoArguments_ReturnsException()
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             Assert.CatchAsync(() => main.DeleteFromDbAsync(), "All parameters are false!");
         }
@@ -292,7 +285,7 @@ namespace CheckingLSTests
         [Test]
         public async Task DeleteFromDbAsync_ById_ReturnSmallerMax()
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.AddNewEntryInDbAsync(null, false, false, true);
 
@@ -306,7 +299,7 @@ namespace CheckingLSTests
         [TearDown]
         public async Task CleanupAsync()
         {
-            var main = await MainSql.CreateAsync("Vlad", true);
+            var main = await MainSql.CreateAsync("1111", true);
 
             await main.DeleteFromDbAsync(date: "2020-01-01").ConfigureAwait(false);
         }

@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.Xaml;
+﻿using Microsoft.AppCenter.Analytics;
+using Xamarin.Forms.Xaml;
 
 namespace CheckinLS.Pages
 {
@@ -18,6 +19,8 @@ namespace CheckinLS.Pages
                 return;
 
             AddButton.IsEnabled = false;
+
+            Analytics.TrackEvent("Manual entry added");
 
             await Home.AddNewEntryExternalAsync(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled, RecuperareToggle.IsToggled);
 

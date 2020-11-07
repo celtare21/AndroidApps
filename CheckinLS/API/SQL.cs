@@ -1,4 +1,5 @@
 ﻿using CheckinLS.Pages;
+using CheckinLS.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -12,66 +13,54 @@ using static CheckinLS.API.SqlUtils;
 namespace CheckinLS.API
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public class MainSql
+    public partial class MainSql
     {
         private static SqlConnection _conn;
-        private static string _user;
-        private readonly bool _isTest;
+        private static string _pin;
+        private static bool _isTest;
+        public static string User;
         public Dictionary<string, List<object>> Elements;
 
-        public static async Task<MainSql> CreateAsync(string user, bool isTest)
+        public static async Task<MainSql> CreateAsync(string pin, bool isTest)
         {
-            var thisClass = new MainSql(user, isTest);
+            var thisClass = new MainSql(pin, isTest);
+            var result = await thisClass.HasUserAsync().ConfigureAwait(false);
 
-            if (!await thisClass.IsUserAsync().ConfigureAwait(false))
+            if (result == null)
                 return null;
+
+            User = result;
 
             await thisClass.RefreshElementsAsync().ConfigureAwait(false);
 
             return thisClass;
         }
 
-        private async Task<bool> IsUserAsync()
+        private static bool MakeConnection()
         {
-            string query = $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{_user}'";
-            bool user;
-
-            await OpenConnectionAsync().ConfigureAwait(false);
-
-            await using (var command = new SqlCommand(query, _conn))
-            {
-                await using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
-                {
-                    await reader.ReadAsync().ConfigureAwait(false);
-
-                    user = reader.HasRows;
-                }
-            }
-
-            _conn.Close();
-
-            return user;
-        }
-
-        private MainSql(string user, bool isTest)
-        {
-            const string connStr =
-                "//";
-
-            _isTest = isTest;
-
-            CheckInternet();
-
             try
             {
-                _conn = new SqlConnection(connStr);
+                _conn = new SqlConnection(Secrets.ConnStr);
             }
             catch (SqlException)
             {
-                Home.ShowAlertKill("Could not make connection.");
+                return false;
             }
 
-            _user = user;
+            return true;
+        }
+
+        private MainSql(string pin, bool isTest)
+        {
+            if (!MakeConnection())
+            {
+                Home.ShowAlertKill("Couldn't connect to the database!");
+                return;
+            }
+
+            _isTest = isTest;
+
+            _pin = pin;
 
             if (!_isTest)
                 Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
@@ -109,7 +98,7 @@ namespace CheckinLS.API
                 throw new HoursOutOfBounds();
             }
 
-            var date = _isTest? FakeDate() : GetCurrentDate();
+            var date = _isTest ? FakeDate() : GetCurrentDate();
 
             return new TableColumns(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
                 recuperareAlocat, total, observatii);
@@ -118,7 +107,7 @@ namespace CheckinLS.API
         private async Task AddToDbAsync(TableColumns table)
         {
             string query =
-                $@"INSERT INTO ""prezenta.{_user}"" (date,ora_incepere,ora_final,curs_alocat,pregatire_alocat,recuperare_alocat,total,observatii)" +
+                $@"INSERT INTO ""prezenta.{User}"" (date,ora_incepere,ora_final,curs_alocat,pregatire_alocat,recuperare_alocat,total,observatii)" +
                                             "VALUES (@date,@ora_incepere,@ora_final,@curs_alocat,@pregatire_alocat,@recuperare_alocat,@total,@observatii)";
 
             await using (var command = new SqlCommand(query, _conn))
@@ -141,7 +130,7 @@ namespace CheckinLS.API
             if (!id.HasValue && string.IsNullOrEmpty(date))
                 throw new AllParametersFalse();
 
-            string query = id.HasValue ? $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id}" : $@"DELETE FROM ""prezenta.{_user}"" WHERE date = '{date}'";
+            string query = id.HasValue ? $@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}" : $@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'";
 
             await using (var command = new SqlCommand(query, _conn))
             {
@@ -174,7 +163,7 @@ namespace CheckinLS.API
 
             foreach (var elem in columns)
             {
-                var query = $@"SELECT {elem} FROM ""prezenta.{_user}""";
+                var query = $@"SELECT {elem} FROM ""prezenta.{User}""";
 
                 dic.Add(elem, new List<object>());
 
@@ -197,7 +186,7 @@ namespace CheckinLS.API
 
         private async Task<TimeSpan> MaxHourInDbAsync()
         {
-            string query = $@"SELECT ora_final FROM ""prezenta.{_user}"" WHERE date LIKE @SearchTerm";
+            string query = $@"SELECT ora_final FROM ""prezenta.{User}"" WHERE date LIKE @SearchTerm";
             var list = new List<TimeSpan?>();
 
             await OpenConnectionAsync().ConfigureAwait(false);
@@ -230,7 +219,7 @@ namespace CheckinLS.API
             return list.Max() ?? StartTime();
         }
 
-        internal async Task ExecuteCommandDbAsync(DbCommand command)
+        internal static async Task ExecuteCommandDbAsync(DbCommand command)
         {
             await OpenConnectionAsync().ConfigureAwait(false);
 
@@ -239,8 +228,8 @@ namespace CheckinLS.API
             _conn.Close();
         }
 
-        private async Task OpenConnectionAsync()
-        { 
+        private static async Task OpenConnectionAsync()
+        {
             CheckInternet();
 
             try
@@ -253,7 +242,7 @@ namespace CheckinLS.API
             }
         }
 
-        private void CheckInternet()
+        private static void CheckInternet()
         {
             if (!_isTest && Connectivity.NetworkAccess != NetworkAccess.Internet)
                 Home.ShowAlertKill("No internet connection!");

@@ -1,11 +1,11 @@
 ﻿using Acr.UserDialogs;
-using Android.Widget;
 using CheckinLS.API;
 using Plugin.NFC;
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AppCenter.Analytics;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -14,17 +14,15 @@ namespace CheckinLS.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class Home
     {
-        public static string Name;
         private static MainSql _sql;
-        private bool _fakeListener, _busy, _startup = true;
+        private bool _fakeListener, _busy, _disableNfcError, _startup = true;
         private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
         private static int _index;
 
-        public Home(string name, MainSql sql)
+        public Home(MainSql sql)
         {
             InitializeComponent();
 
-            Name = name;
             _sql = sql;
 
             LeftButton.Clicked += LeftButton_Clicked;
@@ -53,7 +51,7 @@ namespace CheckinLS.Pages
                 var result = await DisplayAlert("Alert!", "Do you really want to exit the application?", "Yes", "No");
 
                 if (result)
-                    Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                    App.Close();
             });
 
             return true;
@@ -81,6 +79,16 @@ namespace CheckinLS.Pages
         {
             if (_sql.MaxElement() == 0 || !IdLabel.Text.All(char.IsDigit))
                 return;
+
+            var result = await DisplayAlert("Alert!", "Are you sure you want to delete the entry?", "Yes", "No");
+
+            if (!result)
+            {
+                Analytics.TrackEvent("Delete entry cancelled");
+                return;
+            }
+
+            Analytics.TrackEvent("Entry deleted");
 
             DeleteButton.IsEnabled = false;
 
@@ -124,15 +132,15 @@ namespace CheckinLS.Pages
 
             (IdLabel.Text, Observatii.Text, Date.Text, OraIncepere.Text, OraSfarsit.Text, CursAlocat.Text, PregatireAlocat.Text,
                     RecuperareAlocat.Text, Total.Text) =
-                (ConversionWrapper((int) _sql.Elements["id"][_index]),
+                (ConversionWrapper((int)_sql.Elements["id"][_index]),
                     ConversionWrapper((string)_sql.Elements["observatii"][_index]),
-                    ConversionWrapper((DateTime) _sql.Elements["date"][_index]),
-                    ConversionWrapper((TimeSpan) _sql.Elements["ora_incepere"][_index]),
-                    ConversionWrapper((TimeSpan) _sql.Elements["ora_final"][_index]),
-                    ConversionWrapper((TimeSpan) _sql.Elements["curs_alocat"][_index]),
-                    ConversionWrapper((TimeSpan) _sql.Elements["pregatire_alocat"][_index]),
-                    ConversionWrapper((TimeSpan) _sql.Elements["recuperare_alocat"][_index]),
-                    ConversionWrapper((TimeSpan) _sql.Elements["total"][_index]));
+                    ConversionWrapper((DateTime)_sql.Elements["date"][_index]),
+                    ConversionWrapper((TimeSpan)_sql.Elements["ora_incepere"][_index]),
+                    ConversionWrapper((TimeSpan)_sql.Elements["ora_final"][_index]),
+                    ConversionWrapper((TimeSpan)_sql.Elements["curs_alocat"][_index]),
+                    ConversionWrapper((TimeSpan)_sql.Elements["pregatire_alocat"][_index]),
+                    ConversionWrapper((TimeSpan)_sql.Elements["recuperare_alocat"][_index]),
+                    ConversionWrapper((TimeSpan)_sql.Elements["total"][_index]));
 
             SetPrice();
         }
@@ -141,19 +149,32 @@ namespace CheckinLS.Pages
         {
             if (!CrossNFC.IsSupported)
             {
-                await DisplayAlert("Error", "NFC is not supported! Please manually add new lessons.", "OK");
+                if (!_disableNfcError)
+                {
+                    await DisplayAlert("Error", "NFC is not supported! Please manually add new lessons.", "OK");
+                    _disableNfcError = true;
+                }
                 return;
             }
 
             if (!CrossNFC.Current.IsAvailable)
             {
-                await DisplayAlert("Error", "NFC is not available", "OK");
+                if (!_disableNfcError)
+                {
+                    await DisplayAlert("Error", "NFC is not available", "OK");
+                    _disableNfcError = true;
+                }
                 return;
             }
 
             if (!CrossNFC.Current.IsEnabled)
             {
-                await DisplayAlert("Error", "NFC is disabled", "OK");
+                if (!_disableNfcError)
+                {
+                    await DisplayAlert("Error", "NFC is disabled", "OK");
+                    _disableNfcError = true;
+                }
+
                 RegisterNfsStatusListener();
                 return;
             }
@@ -185,6 +206,7 @@ namespace CheckinLS.Pages
 
                         CrossNFC.Current.StartListening();
                         _startup = false;
+                        _disableNfcError = false;
                     }
                 });
 
@@ -236,6 +258,8 @@ namespace CheckinLS.Pages
                     _ora.recuperare = true;
                     break;
             }
+
+            Analytics.TrackEvent("NFC tag read");
 
             if (!_busy)
                 _ = WaitAndAddAsync();
@@ -310,31 +334,29 @@ namespace CheckinLS.Pages
             return record.Message;
         }
 
-        private static async Task AlertAndKillAsync(string message)
-        {
-            await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
-            Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
-        }
-
-        private string ConversionWrapper(object elem) =>
+        private string ConversionWrapper<T>(T elem) =>
             elem switch
             {
-                int => elem.ToString(),
+                int i => i.ToString(),
                 string str => str,
                 DateTime time => time.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
                 TimeSpan span => span.ToString(@"hh\:mm"),
                 _ => throw new ArgumentException()
             };
 
+        public static void ShowAlertKill(string message) =>
+            Device.BeginInvokeOnMainThread(async () =>
+            {
+                await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
+                Analytics.TrackEvent("App crashed");
+                App.Close();
+            });
+
         private static double GetIndice(TimeSpan time) =>
                 (DateTime.Parse(time.ToString(@"hh\:mm")) - DateTime.Parse("00:00")).TotalHours;
 
-        public static void ShowAlertKill(string message) =>
-            Device.BeginInvokeOnMainThread(async () =>
-                await AlertAndKillAsync(message).ConfigureAwait(false));
-
         public static void ShowToast(string message) =>
             Device.BeginInvokeOnMainThread(() =>
-                Toast.MakeText(Android.App.Application.Context, message, ToastLength.Short)?.Show());
+                UserDialogs.Instance.Toast(message));
     }
 }

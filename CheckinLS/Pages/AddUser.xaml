@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CheckinLS.Pages.Login"
+             x:Class="CheckinLS.Pages.AddUser"
              BackgroundColor="Black"
-             Title="Login">
+             Title="AddUser">
 
     <ContentPage.Content>
         <StackLayout>
@@ -16,7 +16,15 @@
                     <RowDefinition Height="65"/>
                 </Grid.RowDefinitions>
 
-                <Entry x:Name="Pin" Keyboard="Numeric" IsPassword="True" Placeholder="Enter your pin" HorizontalTextAlignment="Center" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="0" Grid.Column="0"/>
+                <Entry x:Name="Username" IsSpellCheckEnabled="False" Placeholder="Enter your name" HorizontalTextAlignment="Center" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="0" Grid.Column="0">
+                    <Entry.Keyboard>
+                        <Keyboard x:FactoryMethod="Create">
+                            <x:Arguments>
+                                <KeyboardFlags>CapitalizeCharacter</KeyboardFlags>
+                            </x:Arguments>
+                        </Keyboard>
+                    </Entry.Keyboard>
+                </Entry>
                 <Button x:Name="Enter" Text="Login" HeightRequest="55" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0" Grid.Column="1"/>
             </Grid>
         </StackLayout>
