@@ -272,17 +272,16 @@ namespace CheckinLS.Pages
 
         private void SetPrice()
         {
-            var zero = TimeSpan.FromHours(0);
-            var total = (curs: zero, pregatire: zero, recuperare: zero);
+            var total = (curs: 0.0, pregatire: 0.0, recuperare: 0.0);
 
             foreach (var elem in _sql.Elements)
             {
-                total.curs += elem.CursAlocat;
-                total.pregatire += elem.PregatireAlocat;
-                total.recuperare += elem.RecuperareAlocat;
+                total.curs += elem.CursAlocat.TotalHours;
+                total.pregatire += elem.PregatireAlocat.TotalHours;
+                total.recuperare += elem.RecuperareAlocat.TotalHours;
             }
 
-            var valoare = GetIndice(total.curs) * Constants.PretCurs + GetIndice(total.pregatire) * Constants.PretPregatire + GetIndice(total.recuperare) * Constants.PretRecuperare;
+            var valoare = total.curs * Constants.PretCurs + total.pregatire * Constants.PretPregatire + total.recuperare * Constants.PretRecuperare;
 
             PretTotal.Text = valoare.ToString(CultureInfo.InvariantCulture);
         }
@@ -346,9 +345,6 @@ namespace CheckinLS.Pages
                 Analytics.TrackEvent("App crashed");
                 App.Close();
             });
-
-        private static double GetIndice(TimeSpan time) =>
-                (DateTime.Parse(time.ToString(@"hh\:mm")) - DateTime.Parse("00:00")).TotalHours;
 
         private static void ShowToast(string message) =>
                 Device.BeginInvokeOnMainThread(() =>

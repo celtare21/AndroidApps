@@ -52,9 +52,6 @@ namespace CheckinLS.Pages
                 case -2:
                     await DisplayAlert("Error", "User already registered", "OK");
                     return;
-                case -3:
-                    await DisplayAlert("Error", "Couldn't connect to the database!", "OK");
-                    return;
             }
 
             await DisplayAlert("New user", "User created! Please re-enter pin", "OK");

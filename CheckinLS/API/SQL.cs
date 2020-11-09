@@ -1,13 +1,11 @@
 ﻿using CheckinLS.Helpers;
 using CheckinLS.InterfacesAndClasses;
-using CheckinLS.Pages;
 using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AppCenter.Analytics;
 using Xamarin.Forms.Xaml;
 using static CheckinLS.API.SqlUtils;
 
@@ -16,7 +14,6 @@ namespace CheckinLS.API
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MainSql
     {
-        private static SqlConnection _conn;
         private readonly IGetDate _dateInterface;
         private static string _pin;
         public static string User;
@@ -24,8 +21,17 @@ namespace CheckinLS.API
 
         public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IGetDate dateInterface)
         {
-            if (!MakeConnection())
-                return new Tuple<MainSql, int>(null, -1);
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                try
+                {
+                    await conn.OpenAsync();
+                }
+                catch
+                {
+                    return new Tuple<MainSql, int>(null, -1);
+                }
+            }
 
             var thisClass = new MainSql(pin, dateInterface);
             var result = await thisClass.HasUserAsync().ConfigureAwait(false);
@@ -38,20 +44,6 @@ namespace CheckinLS.API
             await thisClass.RefreshElementsAsync().ConfigureAwait(false);
 
             return new Tuple<MainSql, int>(thisClass, 0);
-        }
-
-        private static bool MakeConnection()
-        {
-            try
-            {
-                _conn = new SqlConnection(Secrets.ConnStr);
-            }
-            catch
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private MainSql(string pin, IGetDate dateInterface)
@@ -95,23 +87,26 @@ namespace CheckinLS.API
                 recuperareAlocat, total, observatii);
         }
 
-        private Task AddToDbAsync(TableColumns table)
+        private async Task AddToDbAsync(TableColumns table)
         {
             string query =
                 $@"INSERT INTO ""prezenta.{User}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
 
-            return _conn.ExecuteAsync(query,
-                new
-                {
-                    date = table.Date,
-                    oraIncepere = table.OraIncepere,
-                    oraFinal = table.OraFinal,
-                    cursAlocat = table.CursAlocat,
-                    pregatireAlocat = table.PregatireAlocat,
-                    recuperareAlocat = table.RecuperareAlocat,
-                    total = table.Total,
-                    observatii = table.Observatii
-                });
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                await conn.ExecuteAsync(query,
+                    new
+                    {
+                        date = table.Date,
+                        oraIncepere = table.OraIncepere,
+                        oraFinal = table.OraFinal,
+                        cursAlocat = table.CursAlocat,
+                        pregatireAlocat = table.PregatireAlocat,
+                        recuperareAlocat = table.RecuperareAlocat,
+                        total = table.Total,
+                        observatii = table.Observatii
+                    });
+            }
         }
 
         public async Task DeleteFromDbAsync(int? id = null, string date = null)
@@ -119,52 +114,44 @@ namespace CheckinLS.API
             if (!id.HasValue && string.IsNullOrEmpty(date))
                 throw new AllParametersFalse();
 
-            if (id.HasValue)
-                await _conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}");
-            else
-                await _conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'");
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                if (id.HasValue)
+                    await conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}");
+                else
+                    await conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'");
+            }
 
             await RefreshElementsAsync().ConfigureAwait(false);
         }
 
         private async Task<List<TableColumns>> GetAllElementsAsync()
         {
-            await OpenConnectionAsync().ConfigureAwait(false);
+            IEnumerable<TableColumns> result;
 
-            var result = await _conn.QueryAsync<TableColumns>($@"SELECT * FROM ""prezenta.{User}""");
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                result = await conn.QueryAsync<TableColumns>($@"SELECT * FROM ""prezenta.{User}""");
+            }
 
             var elements = result.ToList();
-
-            _conn.Close();
 
             return elements;
         }
 
         private async Task<TimeSpan> MaxHourInDbAsync()
         {
-            await OpenConnectionAsync().ConfigureAwait(false);
+            IEnumerable<TimeSpan?> result;
 
-            var result = await _conn.QueryAsync<TimeSpan?>(
-                $@"SELECT oraFinal FROM ""prezenta.{User}"" WHERE date LIKE '%{_dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                result = await conn.QueryAsync<TimeSpan?>(
+                    $@"SELECT oraFinal FROM ""prezenta.{User}"" WHERE date LIKE '%{_dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
+            }
 
             var max = result.ToList().Max();
 
-            _conn.Close();
-
             return max ?? StartTime();
-        }
-
-        private static async Task OpenConnectionAsync()
-        {
-            try
-            {
-                await _conn.OpenAsync().ConfigureAwait(false);
-            }
-            catch (SqlException)
-            {
-                Analytics.TrackEvent("OpenConnectionAsync exception");
-                Home.ShowAlertKill("Could not open connection");
-            }
         }
 
         public int MaxElement() =>

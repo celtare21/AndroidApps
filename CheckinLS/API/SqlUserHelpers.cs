@@ -1,6 +1,9 @@
-﻿using Dapper;
+﻿using System.Collections.Generic;
+using System.Data.SqlClient;
+using Dapper;
 using System.Linq;
 using System.Threading.Tasks;
+using CheckinLS.Helpers;
 
 namespace CheckinLS.API
 {
@@ -8,48 +11,47 @@ namespace CheckinLS.API
     {
         private async Task<string> HasUserAsync()
         {
-            if (!MakeConnection())
-                return null;
+            string result;
 
-            await OpenConnectionAsync().ConfigureAwait(false);
-
-            var result =
-                await _conn.QueryFirstOrDefaultAsync<string>($@"SELECT username FROM users WHERE password = '{_pin}'");
-
-            _conn.Close();
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                result =
+                    await conn.QueryFirstOrDefaultAsync<string>(
+                        $@"SELECT username FROM users WHERE password = '{_pin}'");
+            }
 
             return result;
         }
 
         private static async Task<bool> IsUserAlreadyCreatedAsync(string username)
         {
-            await OpenConnectionAsync().ConfigureAwait(false);
+            IEnumerable<string> result;
 
-            var result = await _conn.QueryAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
-
-            _conn.Close();
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                result =
+                    await conn.QueryAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
+            }
 
             return result.Any();
         }
 
         private static async Task<bool> IsUserAsync(string username)
         {
-            await OpenConnectionAsync().ConfigureAwait(false);
+            IEnumerable<string> result;
 
-            var result =
-                await _conn.QueryAsync<string>(
-                    $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
-
-            _conn.Close();
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                result =
+                    await conn.QueryAsync<string>(
+                        $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
+            }
 
             return result.Any();
         }
 
         public static async Task<int> MakeUserAccountAsync(string username, string password)
         {
-            if (!MakeConnection())
-                return -3;
-
             if (!await IsUserAsync(username))
                 return -1;
 
@@ -59,7 +61,10 @@ namespace CheckinLS.API
             const string query = @"INSERT INTO users (username,password)" +
                                  "VALUES (@Username,@Password)";
 
-            await _conn.ExecuteAsync(query, new { Username = username, Password = password });
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                await conn.ExecuteAsync(query, new {Username = username, Password = password});
+            }
 
             return 0;
         }
