@@ -2,9 +2,10 @@
 
 namespace CheckinLS.API
 {
-    public readonly struct TableColumns
+    public class TableColumns
     {
-        public string Date { get; }
+        public int Id { get; }
+        public DateTime Date { get; }
         public TimeSpan OraIncepere { get; }
         public TimeSpan OraFinal { get; }
         public TimeSpan CursAlocat { get; }
@@ -13,9 +14,14 @@ namespace CheckinLS.API
         public TimeSpan Total { get; }
         public string Observatii { get; }
 
-        public TableColumns(string date, TimeSpan oraIncepere, TimeSpan oraFinal, TimeSpan cursAlocat,
+        public TableColumns(DateTime date, TimeSpan oraIncepere, TimeSpan oraFinal, TimeSpan cursAlocat,
                                                     TimeSpan pregatireAlocat, TimeSpan recuperareAlocat, TimeSpan total, string observatii) =>
-                    (Date, OraIncepere, OraFinal, CursAlocat, PregatireAlocat, RecuperareAlocat, Total, Observatii) =
-                            (date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat, recuperareAlocat, total, observatii);
+                    (Id, Date, OraIncepere, OraFinal, CursAlocat, PregatireAlocat, RecuperareAlocat, Total, Observatii) =
+                            (0, date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat, recuperareAlocat, total, observatii);
+
+        public TableColumns()
+        {
+
+        }
     }
 }

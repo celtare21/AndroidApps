@@ -1,7 +1,9 @@
-﻿namespace CheckinLS.InterfacesAndClasses
+﻿using System;
+
+namespace CheckinLS.InterfacesAndClasses
 {
     public interface IGetDate
     {
-        string GetCurrentDate();
+        DateTime GetCurrentDate();
     }
 }

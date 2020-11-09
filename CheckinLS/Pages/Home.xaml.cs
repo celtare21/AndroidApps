@@ -135,15 +135,15 @@ namespace CheckinLS.Pages
 
             (IdLabel.Text, Observatii.Text, Date.Text, OraIncepere.Text, OraSfarsit.Text, CursAlocat.Text, PregatireAlocat.Text,
                     RecuperareAlocat.Text, Total.Text) =
-                (ConversionWrapper((int)_sql.Elements["id"][_index]),
-                    ConversionWrapper((string)_sql.Elements["observatii"][_index]),
-                    ConversionWrapper((DateTime)_sql.Elements["date"][_index]),
-                    ConversionWrapper((TimeSpan)_sql.Elements["ora_incepere"][_index]),
-                    ConversionWrapper((TimeSpan)_sql.Elements["ora_final"][_index]),
-                    ConversionWrapper((TimeSpan)_sql.Elements["curs_alocat"][_index]),
-                    ConversionWrapper((TimeSpan)_sql.Elements["pregatire_alocat"][_index]),
-                    ConversionWrapper((TimeSpan)_sql.Elements["recuperare_alocat"][_index]),
-                    ConversionWrapper((TimeSpan)_sql.Elements["total"][_index]));
+                (ConversionWrapper(_sql.Elements[_index].Id),
+                    ConversionWrapper(_sql.Elements[_index].Observatii),
+                    ConversionWrapper(_sql.Elements[_index].Date),
+                    ConversionWrapper(_sql.Elements[_index].OraIncepere),
+                    ConversionWrapper(_sql.Elements[_index].OraFinal),
+                    ConversionWrapper(_sql.Elements[_index].CursAlocat),
+                    ConversionWrapper(_sql.Elements[_index].PregatireAlocat),
+                    ConversionWrapper(_sql.Elements[_index].RecuperareAlocat),
+                    ConversionWrapper(_sql.Elements[_index].Total));
 
             SetPrice();
         }
@@ -275,19 +275,11 @@ namespace CheckinLS.Pages
             var zero = TimeSpan.FromHours(0);
             var total = (curs: zero, pregatire: zero, recuperare: zero);
 
-            foreach (var time in _sql.Elements["curs_alocat"])
+            foreach (var elem in _sql.Elements)
             {
-                total.curs += (TimeSpan)time;
-            }
-
-            foreach (var time in _sql.Elements["pregatire_alocat"])
-            {
-                total.pregatire += (TimeSpan)time;
-            }
-
-            foreach (var time in _sql.Elements["recuperare_alocat"])
-            {
-                total.recuperare += (TimeSpan)time;
+                total.curs += elem.CursAlocat;
+                total.pregatire += elem.PregatireAlocat;
+                total.recuperare += elem.RecuperareAlocat;
             }
 
             var valoare = GetIndice(total.curs) * Constants.PretCurs + GetIndice(total.pregatire) * Constants.PretPregatire + GetIndice(total.recuperare) * Constants.PretRecuperare;

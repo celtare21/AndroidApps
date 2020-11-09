@@ -1,9 +1,9 @@
 ﻿using CheckinLS.Helpers;
 using CheckinLS.InterfacesAndClasses;
 using CheckinLS.Pages;
+using Dapper;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +20,7 @@ namespace CheckinLS.API
         private readonly IGetDate _dateInterface;
         private static string _pin;
         public static string User;
-        public Dictionary<string, List<object>> Elements;
+        public List<TableColumns> Elements;
 
         public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IGetDate dateInterface)
         {
@@ -95,25 +95,23 @@ namespace CheckinLS.API
                 recuperareAlocat, total, observatii);
         }
 
-        private async Task AddToDbAsync(TableColumns table)
+        private Task AddToDbAsync(TableColumns table)
         {
             string query =
-                $@"INSERT INTO ""prezenta.{User}"" (date,ora_incepere,ora_final,curs_alocat,pregatire_alocat,recuperare_alocat,total,observatii)" +
-                                            "VALUES (@date,@ora_incepere,@ora_final,@curs_alocat,@pregatire_alocat,@recuperare_alocat,@total,@observatii)";
+                $@"INSERT INTO ""prezenta.{User}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
 
-            await using (var command = new SqlCommand(query, _conn))
-            {
-                command.Parameters.AddWithValue("@date", table.Date);
-                command.Parameters.AddWithValue("@ora_incepere", table.OraIncepere);
-                command.Parameters.AddWithValue("@ora_final", table.OraFinal);
-                command.Parameters.AddWithValue("@curs_alocat", table.CursAlocat);
-                command.Parameters.AddWithValue("@pregatire_alocat", table.PregatireAlocat);
-                command.Parameters.AddWithValue("@recuperare_alocat", table.RecuperareAlocat);
-                command.Parameters.AddWithValue("@total", table.Total);
-                command.Parameters.AddWithValue("@observatii", table.Observatii);
-
-                await ExecuteCommandDbAsync(command).ConfigureAwait(false);
-            }
+            return _conn.ExecuteAsync(query,
+                new
+                {
+                    date = table.Date,
+                    oraIncepere = table.OraIncepere,
+                    oraFinal = table.OraFinal,
+                    cursAlocat = table.CursAlocat,
+                    pregatireAlocat = table.PregatireAlocat,
+                    recuperareAlocat = table.RecuperareAlocat,
+                    total = table.Total,
+                    observatii = table.Observatii
+                });
         }
 
         public async Task DeleteFromDbAsync(int? id = null, string date = null)
@@ -121,100 +119,39 @@ namespace CheckinLS.API
             if (!id.HasValue && string.IsNullOrEmpty(date))
                 throw new AllParametersFalse();
 
-            string query = id.HasValue ? $@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}" : $@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'";
-
-            await using (var command = new SqlCommand(query, _conn))
-            {
-                await ExecuteCommandDbAsync(command).ConfigureAwait(false);
-            }
+            if (id.HasValue)
+                await _conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}");
+            else
+                await _conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'");
 
             await RefreshElementsAsync().ConfigureAwait(false);
         }
 
-        private async Task<Dictionary<string, List<object>>> GetAllElementsAsync()
+        private async Task<List<TableColumns>> GetAllElementsAsync()
         {
-            string[] columns =
-            {
-                "id",
-                "observatii",
-                "date",
-                "ora_incepere",
-                "ora_final",
-                "curs_alocat",
-                "pregatire_alocat",
-                "recuperare_alocat",
-                "total"
-            };
-            var dic = new Dictionary<string, List<object>>();
-
             await OpenConnectionAsync().ConfigureAwait(false);
 
-            foreach (var elem in columns)
-            {
-                var query = $@"SELECT {elem} FROM ""prezenta.{User}""";
+            var result = await _conn.QueryAsync<TableColumns>($@"SELECT * FROM ""prezenta.{User}""");
 
-                dic.Add(elem, new List<object>());
-
-                await using (var command = new SqlCommand(query, _conn))
-                {
-                    await using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
-                    {
-                        while (await reader.ReadAsync().ConfigureAwait(false))
-                        {
-                            dic[elem].Add(reader.GetValue(0));
-                        }
-                    }
-                }
-            }
+            var elements = result.ToList();
 
             _conn.Close();
 
-            return dic;
+            return elements;
         }
 
         private async Task<TimeSpan> MaxHourInDbAsync()
         {
-            string query = $@"SELECT ora_final FROM ""prezenta.{User}"" WHERE date LIKE @SearchTerm";
-            var list = new List<TimeSpan?>();
-
             await OpenConnectionAsync().ConfigureAwait(false);
 
-            await using (var command = new SqlCommand(query, _conn))
-            {
-                var date = _dateInterface.GetCurrentDate();
-                string term = $"%{date}%";
+            var result = await _conn.QueryAsync<TimeSpan?>(
+                $@"SELECT oraFinal FROM ""prezenta.{User}"" WHERE date LIKE '%{_dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
 
-                command.Parameters.AddWithValue("@SearchTerm", term);
-
-                try
-                {
-                    await using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
-                    {
-                        while (await reader.ReadAsync().ConfigureAwait(false))
-                        {
-                            list.Add(reader.GetTimeSpan(0));
-                        }
-                    }
-                }
-                catch
-                {
-                    Analytics.TrackEvent("MaxHourInDbAsync exception");
-                    Home.ShowAlertKill("An error has occured!");
-                }
-            }
+            var max = result.ToList().Max();
 
             _conn.Close();
 
-            return list.Max() ?? StartTime();
-        }
-
-        internal static async Task ExecuteCommandDbAsync(DbCommand command)
-        {
-            await OpenConnectionAsync().ConfigureAwait(false);
-
-            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-
-            _conn.Close();
+            return max ?? StartTime();
         }
 
         private static async Task OpenConnectionAsync()
@@ -231,6 +168,6 @@ namespace CheckinLS.API
         }
 
         public int MaxElement() =>
-                    Elements?["id"].Count ?? 0;
+                    Elements?.Count ?? 0;
     }
 }

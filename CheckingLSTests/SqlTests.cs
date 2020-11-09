@@ -1,8 +1,8 @@
-﻿using System;
-using CheckinLS.API;
-using NUnit.Framework;
-using System.Threading.Tasks;
+﻿using CheckinLS.API;
 using CheckinLS.InterfacesAndClasses;
+using System;
+using System.Threading.Tasks;
+using NUnit.Framework;
 using NSubstitute;
 
 namespace CheckingLSTests
@@ -16,7 +16,7 @@ namespace CheckingLSTests
         public void SetInterfaces()
         {
             _dateInterface = Substitute.For<IGetDate>();
-            _dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01").ToString("yyyy-MM-dd"));
+            _dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
         }
 
         [TestCase("1111")]
@@ -62,21 +62,21 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], "None");
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], obs);
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements["date"][index], DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements["ora_incepere"][index], TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements["ora_final"][index], TimeSpan.Parse("11:30"));
-            Assert.AreEqual(sqlClass.Elements["curs_alocat"][index], TimeSpan.Parse("01:30"));
-            Assert.AreEqual(sqlClass.Elements["pregatire_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["recuperare_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["total"][index], TimeSpan.Parse("01:30"));
+            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("11:30"));
+            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("01:30"));
         }
 
         [TestCase(null)]
@@ -94,21 +94,21 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], "None");
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], obs);
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements["date"][index], DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements["ora_incepere"][index], TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements["ora_final"][index], TimeSpan.Parse("10:30"));
-            Assert.AreEqual(sqlClass.Elements["curs_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["pregatire_alocat"][index], TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements["recuperare_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["total"][index], TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("10:30"));
+            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("00:30"));
         }
 
         [TestCase(null)]
@@ -123,26 +123,24 @@ namespace CheckingLSTests
 
             var index = sqlClass.MaxElement() - 1;
 
-            Console.WriteLine(sqlClass.Elements["ora_final"][index].ToString());
-
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], "None");
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], obs);
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements["date"][index], DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements["ora_incepere"][index], TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements["ora_final"][index], TimeSpan.Parse("10:30"));
-            Assert.AreEqual(sqlClass.Elements["curs_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["pregatire_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["recuperare_alocat"][index], TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements["total"][index], TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("10:30"));
+            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("00:30"));
         }
 
         [TestCase(null)]
@@ -160,21 +158,21 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], "None");
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], obs);
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements["date"][index], DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements["ora_incepere"][index], TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements["ora_final"][index], TimeSpan.Parse("12:00"));
-            Assert.AreEqual(sqlClass.Elements["curs_alocat"][index], TimeSpan.Parse("01:30"));
-            Assert.AreEqual(sqlClass.Elements["pregatire_alocat"][index], TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements["recuperare_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["total"][index], TimeSpan.Parse("02:00"));
+            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("12:00"));
+            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("02:00"));
         }
 
         [TestCase(null)]
@@ -192,21 +190,21 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], "None");
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], obs);
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements["date"][index], DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements["ora_incepere"][index], TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements["ora_final"][index], TimeSpan.Parse("12:00"));
-            Assert.AreEqual(sqlClass.Elements["curs_alocat"][index], TimeSpan.Parse("01:30"));
-            Assert.AreEqual(sqlClass.Elements["pregatire_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["recuperare_alocat"][index], TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements["total"][index], TimeSpan.Parse("02:00"));
+            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("12:00"));
+            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("02:00"));
         }
 
         [TestCase(null)]
@@ -224,21 +222,21 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], "None");
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], obs);
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements["date"][index], DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements["ora_incepere"][index], TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements["ora_final"][index], TimeSpan.Parse("11:00"));
-            Assert.AreEqual(sqlClass.Elements["curs_alocat"][index], TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements["pregatire_alocat"][index], TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements["recuperare_alocat"][index], TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements["total"][index], TimeSpan.Parse("01:00"));
+            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("11:00"));
+            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("01:00"));
         }
 
         [TestCase(null)]
@@ -256,21 +254,21 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], "None");
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements["observatii"][index], obs);
+                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements["date"][index], DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements["ora_incepere"][index], TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements["ora_final"][index], TimeSpan.Parse("12:30"));
-            Assert.AreEqual(sqlClass.Elements["curs_alocat"][index], TimeSpan.Parse("01:30"));
-            Assert.AreEqual(sqlClass.Elements["pregatire_alocat"][index], TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements["recuperare_alocat"][index], TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements["total"][index], TimeSpan.Parse("02:30"));
+            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("12:30"));
+            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("02:30"));
         }
 
         [Test]
@@ -304,7 +302,7 @@ namespace CheckingLSTests
 
             var max = sqlClass.MaxElement();
 
-            await sqlClass.DeleteFromDbAsync((int)sqlClass.Elements["id"][sqlClass.MaxElement() - 1]);
+            await sqlClass.DeleteFromDbAsync(sqlClass.Elements[sqlClass.MaxElement() - 1].Id);
 
             Assert.AreNotEqual(sqlClass.MaxElement(), max);
         }

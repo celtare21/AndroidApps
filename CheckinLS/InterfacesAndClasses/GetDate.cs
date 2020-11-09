@@ -4,7 +4,7 @@ namespace CheckinLS.InterfacesAndClasses
 {
     internal class GetDate : IGetDate
     {
-        public string GetCurrentDate() =>
-                DateTime.Now.ToString("yyyy-MM-dd");
+        public DateTime GetCurrentDate() =>
+                DateTime.Now;
     }
 }
