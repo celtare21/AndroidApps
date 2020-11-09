@@ -98,6 +98,8 @@ namespace CheckinLS.Pages
                 --_index;
             RefreshPage();
 
+            ShowToast("Entry deleted!");
+
             DeleteButton.IsEnabled = true;
         }
 
@@ -108,6 +110,7 @@ namespace CheckinLS.Pages
         {
             await _sql.AddNewEntryInDbAsync(observatii == string.Empty ? "None" : observatii?.ToUpperInvariant(), curs, pregatire, recuperare);
             _index = _sql.MaxElement() - 1;
+            ShowToast("New entry added!");
         }
 
         private async Task AddNewEntryAsync(string observatii = "", bool curs = false, bool pregatire = false, bool recuperare = false)
@@ -355,8 +358,8 @@ namespace CheckinLS.Pages
         private static double GetIndice(TimeSpan time) =>
                 (DateTime.Parse(time.ToString(@"hh\:mm")) - DateTime.Parse("00:00")).TotalHours;
 
-        public static void ShowToast(string message) =>
-            Device.BeginInvokeOnMainThread(() =>
-                UserDialogs.Instance.Toast(message));
+        private static void ShowToast(string message) =>
+                Device.BeginInvokeOnMainThread(() =>
+                    UserDialogs.Instance.Toast(message));
     }
 }

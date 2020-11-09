@@ -1,4 +1,5 @@
 ﻿using CheckinLS.API;
+using CheckinLS.InterfacesAndClasses;
 using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -38,16 +39,22 @@ namespace CheckinLS.Pages
 
             Enter.IsEnabled = false;
 
-            var sql = await MainSql.CreateAsync(entryPin, false);
+            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(entryPin, new GetDate());
 
-            if (sql == null)
+            switch (returnCode)
             {
-                await DisplayAlert("Error", "No user found! Please create one.", "OK");
-                await Navigation.PushModalAsync(new AddUser(entryPin));
-                return;
+                case -1:
+                    await DisplayAlert("Error", "Couldn't connect to the database!", "OK");
+                    App.Close();
+                    return;
+                case -2:
+                    await DisplayAlert("Error", "No user found! Please create one.", "OK");
+                    await Navigation.PushModalAsync(new AddUser(entryPin));
+                    return;
+                default:
+                    await Navigation.PushModalAsync(new Home(sqlClass));
+                    break;
             }
-
-            await Navigation.PushModalAsync(new Home(sql));
         }
     }
 }

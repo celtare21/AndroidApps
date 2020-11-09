@@ -1,12 +1,13 @@
-﻿using CheckinLS.Pages;
-using CheckinLS.Helpers;
+﻿using CheckinLS.Helpers;
+using CheckinLS.InterfacesAndClasses;
+using CheckinLS.Pages;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
+using Microsoft.AppCenter.Analytics;
 using Xamarin.Forms.Xaml;
 using static CheckinLS.API.SqlUtils;
 
@@ -16,24 +17,27 @@ namespace CheckinLS.API
     public partial class MainSql
     {
         private static SqlConnection _conn;
+        private readonly IGetDate _dateInterface;
         private static string _pin;
-        private static bool _isTest;
         public static string User;
         public Dictionary<string, List<object>> Elements;
 
-        public static async Task<MainSql> CreateAsync(string pin, bool isTest)
+        public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IGetDate dateInterface)
         {
-            var thisClass = new MainSql(pin, isTest);
+            if (!MakeConnection())
+                return new Tuple<MainSql, int>(null, -1);
+
+            var thisClass = new MainSql(pin, dateInterface);
             var result = await thisClass.HasUserAsync().ConfigureAwait(false);
 
             if (result == null)
-                return null;
+                return new Tuple<MainSql, int>(null, -2);
 
             User = result;
 
             await thisClass.RefreshElementsAsync().ConfigureAwait(false);
 
-            return thisClass;
+            return new Tuple<MainSql, int>(thisClass, 0);
         }
 
         private static bool MakeConnection()
@@ -42,7 +46,7 @@ namespace CheckinLS.API
             {
                 _conn = new SqlConnection(Secrets.ConnStr);
             }
-            catch (SqlException)
+            catch
             {
                 return false;
             }
@@ -50,20 +54,10 @@ namespace CheckinLS.API
             return true;
         }
 
-        private MainSql(string pin, bool isTest)
+        private MainSql(string pin, IGetDate dateInterface)
         {
-            if (!MakeConnection())
-            {
-                Home.ShowAlertKill("Couldn't connect to the database!");
-                return;
-            }
-
-            _isTest = isTest;
-
+            _dateInterface = dateInterface;
             _pin = pin;
-
-            if (!_isTest)
-                Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
         }
 
         public async Task AddNewEntryInDbAsync(string observatii, bool curs, bool pregatire, bool recuperare)
@@ -72,9 +66,6 @@ namespace CheckinLS.API
                 .ConfigureAwait(false);
 
             await RefreshElementsAsync().ConfigureAwait(false);
-
-            if (!_isTest)
-                Home.ShowToast("New entry added!");
         }
 
         public async Task RefreshElementsAsync() =>
@@ -98,7 +89,7 @@ namespace CheckinLS.API
                 throw new HoursOutOfBounds();
             }
 
-            var date = _isTest ? FakeDate() : GetCurrentDate();
+            var date = _dateInterface.GetCurrentDate();
 
             return new TableColumns(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
                 recuperareAlocat, total, observatii);
@@ -138,9 +129,6 @@ namespace CheckinLS.API
             }
 
             await RefreshElementsAsync().ConfigureAwait(false);
-
-            if (!_isTest)
-                Home.ShowToast("Entry deleted!");
         }
 
         private async Task<Dictionary<string, List<object>>> GetAllElementsAsync()
@@ -193,7 +181,7 @@ namespace CheckinLS.API
 
             await using (var command = new SqlCommand(query, _conn))
             {
-                var date = _isTest ? FakeDate() : GetCurrentDate();
+                var date = _dateInterface.GetCurrentDate();
                 string term = $"%{date}%";
 
                 command.Parameters.AddWithValue("@SearchTerm", term);
@@ -210,6 +198,7 @@ namespace CheckinLS.API
                 }
                 catch
                 {
+                    Analytics.TrackEvent("MaxHourInDbAsync exception");
                     Home.ShowAlertKill("An error has occured!");
                 }
             }
@@ -230,27 +219,15 @@ namespace CheckinLS.API
 
         private static async Task OpenConnectionAsync()
         {
-            CheckInternet();
-
             try
             {
                 await _conn.OpenAsync().ConfigureAwait(false);
             }
             catch (SqlException)
             {
+                Analytics.TrackEvent("OpenConnectionAsync exception");
                 Home.ShowAlertKill("Could not open connection");
             }
-        }
-
-        private static void CheckInternet()
-        {
-            if (!_isTest && Connectivity.NetworkAccess != NetworkAccess.Internet)
-                Home.ShowAlertKill("No internet connection!");
-        }
-
-        private void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
-        {
-            CheckInternet();
         }
 
         public int MaxElement() =>

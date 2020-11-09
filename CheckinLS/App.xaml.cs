@@ -5,6 +5,7 @@ using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using Microsoft.AppCenter.Distribute;
+using Xamarin.Essentials;
 
 namespace CheckinLS
 {
@@ -17,6 +18,9 @@ namespace CheckinLS
             Distribute.UpdateTrack = UpdateTrack.Private;
             AppCenter.Start(Secrets.analytics,
                 typeof(Analytics), typeof(Crashes), typeof(Distribute));
+
+            CheckInternet();
+            Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
 
             MainPage = new Login();
         }
@@ -36,6 +40,17 @@ namespace CheckinLS
         public static void Close()
         {
             Environment.Exit(0);
+        }
+
+        private void CheckInternet()
+        {
+            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+                Home.ShowAlertKill("No internet connection!");
+        }
+
+        private void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
+        {
+            CheckInternet();
         }
     }
 }
