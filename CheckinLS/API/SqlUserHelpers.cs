@@ -9,7 +9,7 @@ namespace CheckinLS.API
 {
     public partial class MainSql
     {
-        private static async Task<bool> IsUserAlreadyCreatedAsync(string username)
+        private async Task<bool> IsUserAlreadyCreatedAsync(string username)
         {
             IEnumerable<string> result;
 
@@ -22,7 +22,7 @@ namespace CheckinLS.API
             return result.Any();
         }
 
-        private static async Task<bool> IsPasswordAlreadyUsedAsync(string password)
+        private async Task<bool> IsPasswordAlreadyUsedAsync(string password)
         {
             IEnumerable<string> result;
 
@@ -35,7 +35,7 @@ namespace CheckinLS.API
             return result.Any();
         }
 
-        private static async Task<bool> IsUserAsync(string username)
+        private async Task<bool> IsUserAsync(string username)
         {
             IEnumerable<string> result;
 
@@ -49,7 +49,7 @@ namespace CheckinLS.API
             return result.Any();
         }
 
-        public static async Task<int> MakeUserAccountAsync(string username, string password)
+        public async Task<int> MakeUserAccountAsync(string username, string password)
         {
             if (!await IsUserAsync(username))
                 return -1;

@@ -48,25 +48,25 @@ namespace CheckinLS.Pages
 
         private void LeftButton_Clicked(object sender, EventArgs e)
         {
-            if (_elements.Index > 0)
-            {
-                --_elements.Index;
-                RefreshPage();
-            }
+            if (_elements == null || _elements.Index <= 0)
+                return;
+
+            --_elements.Index;
+            RefreshPage();
         }
 
         private void RightButton_Clicked(object sender, EventArgs e)
         {
-            if (_elements.Index < _elements.MaxElement() - 1)
-            {
-                ++_elements.Index;
-                RefreshPage();
-            }
+            if (_elements == null || _elements.Index >= _elements.MaxElement() - 1)
+                return;
+
+            ++_elements.Index;
+            RefreshPage();
         }
 
         private async void DeleteButton_Clicked(object sender, EventArgs e)
         {
-            if (_elements.MaxElement() == 0 || !IdLabel.Text.All(char.IsDigit))
+            if (_elements == null || _elements.MaxElement() == 0 || !IdLabel.Text.All(char.IsDigit))
                 return;
 
             var result = await DisplayAlert("Alert!", "Are you sure you want to delete the entry?", "Yes", "No");
@@ -97,7 +97,7 @@ namespace CheckinLS.Pages
 
         public void RefreshPage()
         {
-            if (_elements.MaxElement() == 0)
+            if (_elements == null || _elements.MaxElement() == 0)
             {
                 IdLabel.Text = Observatii.Text = Date.Text = OraIncepere.Text = OraSfarsit.Text =
                    CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
@@ -208,6 +208,9 @@ namespace CheckinLS.Pages
 
         private async void Current_OnMessageReceived(ITagInfo tagInfo)
         {
+            if (_elements == null)
+                return;
+
             StopListening();
 
             if (tagInfo == null)

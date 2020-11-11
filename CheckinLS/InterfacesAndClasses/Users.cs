@@ -13,7 +13,7 @@ namespace CheckinLS.InterfacesAndClasses
     {
         private static readonly string AppFolder = Xamarin.Essentials.FileSystem.AppDataDirectory;
         private static readonly string UsersFolder = Path.Combine(AppFolder, "users");
-        private static readonly string JsonPath = Path.Combine(UsersFolder, "testfile.json");
+        private static readonly string JsonPath = Path.Combine(UsersFolder, "accounts.json");
 
         public async Task CreateUsersCacheAsync()
         {

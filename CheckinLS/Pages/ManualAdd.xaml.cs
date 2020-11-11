@@ -22,19 +22,18 @@ namespace CheckinLS.Pages
 
         private async void Add_button_Clicked(object sender, System.EventArgs e)
         {
+            if (_elements == null)
+                return;
+
             if (!CursToggle.IsToggled && !PregatireToggle.IsToggled && !RecuperareToggle.IsToggled)
                 return;
 
             AddButton.IsEnabled = false;
 
             Analytics.TrackEvent("Manual entry added");
-
             await _elements.AddNewEntryAsync(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled, RecuperareToggle.IsToggled);
-
             _home.ShowToast("New entry added!");
-
             _home.RefreshPage();
-
             ObsManualEntry.Text = "";
 
             AddButton.IsEnabled = true;

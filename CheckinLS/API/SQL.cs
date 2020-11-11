@@ -19,18 +19,6 @@ namespace CheckinLS.API
 
         public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IUsers usersInterface)
         {
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                try
-                {
-                    await conn.OpenAsync();
-                }
-                catch
-                {
-                    return new Tuple<MainSql, int>(null, -1);
-                }
-            }
-
             var thisClass = new MainSql(pin, usersInterface);
 
             await thisClass._usersInterface.CreateUsersCacheAsync();
@@ -40,12 +28,12 @@ namespace CheckinLS.API
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (var user in thisClass._usersInterface.DeserializeCache())
             {
-                if (user.Password == pin)
+                if (user.Password == thisClass._pin)
                     result = user.Username;
             }
 
             if (result == null)
-                return new Tuple<MainSql, int>(null, -2);
+                return new Tuple<MainSql, int>(null, -1);
 
             User = result;
 

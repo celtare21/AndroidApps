@@ -1,6 +1,6 @@
 ﻿using CheckinLS.API;
-using System;
 using CheckinLS.InterfacesAndClasses;
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 // ReSharper disable RedundantCapturedContext
@@ -44,12 +44,8 @@ namespace CheckinLS.Pages
             switch (returnCode)
             {
                 case -1:
-                    await DisplayAlert("Error", "Couldn't connect to the database!", "OK");
-                    App.Close();
-                    return;
-                case -2:
                     await DisplayAlert("Error", "No user found! Please create one.", "OK");
-                    await Navigation.PushModalAsync(new AddUser(entryPin));
+                    await Navigation.PushModalAsync(new AddUser(entryPin, sqlClass));
                     return;
                 default:
                     var homeClass = new Home();
