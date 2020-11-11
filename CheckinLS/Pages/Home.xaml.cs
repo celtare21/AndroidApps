@@ -1,11 +1,12 @@
 ﻿using Acr.UserDialogs;
 using CheckinLS.API;
+using CheckinLS.InterfacesAndClasses;
+using Microsoft.AppCenter.Analytics;
 using Plugin.NFC;
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AppCenter.Analytics;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -14,35 +15,23 @@ namespace CheckinLS.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class Home
     {
-        private static MainSql _sql;
+        private Elements _elements;
         private bool _fakeListener, _busy, _disableNfcError, _startup = true;
         private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
-        private static int _index;
 
-        public Home(MainSql sql)
+        public Home()
         {
             InitializeComponent();
 
-            _sql = sql;
-
             LeftButton.Clicked += LeftButton_Clicked;
             RightButton.Clicked += RightButton_Clicked;
-
+            
             DeleteButton.Clicked += DeleteButton_Clicked;
             ManualAddButton.Clicked += ManualAddButton_Clicked;
         }
 
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();
-
-            ObsEntry.Text = "";
-
-            RefreshPage();
-
-            if (_startup)
-                await NfcServiceAsync();
-        }
+        public async Task CreateElementsAsync(MainSql sqlClass) =>
+                _elements = await Elements.CreateAsync(sqlClass, new GetDate());
 
         protected override bool OnBackButtonPressed()
         {
@@ -59,25 +48,25 @@ namespace CheckinLS.Pages
 
         private void LeftButton_Clicked(object sender, EventArgs e)
         {
-            if (_index > 0)
+            if (_elements.Index > 0)
             {
-                --_index;
+                --_elements.Index;
                 RefreshPage();
             }
         }
 
         private void RightButton_Clicked(object sender, EventArgs e)
         {
-            if (_index < _sql.MaxElement() - 1)
+            if (_elements.Index < _elements.MaxElement() - 1)
             {
-                ++_index;
+                ++_elements.Index;
                 RefreshPage();
             }
         }
 
         private async void DeleteButton_Clicked(object sender, EventArgs e)
         {
-            if (_sql.MaxElement() == 0 || !IdLabel.Text.All(char.IsDigit))
+            if (_elements.MaxElement() == 0 || !IdLabel.Text.All(char.IsDigit))
                 return;
 
             var result = await DisplayAlert("Alert!", "Are you sure you want to delete the entry?", "Yes", "No");
@@ -92,10 +81,10 @@ namespace CheckinLS.Pages
 
             DeleteButton.IsEnabled = false;
 
-            await _sql.DeleteFromDbAsync(Convert.ToInt32(IdLabel.Text));
+            await _elements.DeleteEntryAsync(Convert.ToInt32(IdLabel.Text));
 
-            if (_index > 0 && _index > _sql.MaxElement() - 1)
-                --_index;
+            if (_elements.Index > 0 && _elements.Index > _elements.MaxElement() - 1)
+                --_elements.Index;
             RefreshPage();
 
             ShowToast("Entry deleted!");
@@ -104,25 +93,11 @@ namespace CheckinLS.Pages
         }
 
         private void ManualAddButton_Clicked(object sender, EventArgs e) =>
-                Navigation.PushModalAsync(new ManualAdd());
+                Navigation.PushModalAsync(new ManualAdd(_elements, this));
 
-        public static async Task AddNewEntryExternalAsync(string observatii, bool curs, bool pregatire, bool recuperare)
+        public void RefreshPage()
         {
-            await _sql.AddNewEntryInDbAsync(observatii == string.Empty ? "None" : observatii?.ToUpperInvariant(), curs, pregatire, recuperare);
-            _index = _sql.MaxElement() - 1;
-            ShowToast("New entry added!");
-        }
-
-        private async Task AddNewEntryAsync(string observatii = "", bool curs = false, bool pregatire = false, bool recuperare = false)
-        {
-            await AddNewEntryExternalAsync(observatii, curs, pregatire, recuperare);
-            ObsEntry.Text = "";
-            RefreshPage();
-        }
-
-        private void RefreshPage()
-        {
-            if (_sql.MaxElement() == 0)
+            if (_elements.MaxElement() == 0)
             {
                 IdLabel.Text = Observatii.Text = Date.Text = OraIncepere.Text = OraSfarsit.Text =
                    CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
@@ -135,20 +110,20 @@ namespace CheckinLS.Pages
 
             (IdLabel.Text, Observatii.Text, Date.Text, OraIncepere.Text, OraSfarsit.Text, CursAlocat.Text, PregatireAlocat.Text,
                     RecuperareAlocat.Text, Total.Text) =
-                (ConversionWrapper(_sql.Elements[_index].Id),
-                    ConversionWrapper(_sql.Elements[_index].Observatii),
-                    ConversionWrapper(_sql.Elements[_index].Date),
-                    ConversionWrapper(_sql.Elements[_index].OraIncepere),
-                    ConversionWrapper(_sql.Elements[_index].OraFinal),
-                    ConversionWrapper(_sql.Elements[_index].CursAlocat),
-                    ConversionWrapper(_sql.Elements[_index].PregatireAlocat),
-                    ConversionWrapper(_sql.Elements[_index].RecuperareAlocat),
-                    ConversionWrapper(_sql.Elements[_index].Total));
+                (ConversionWrapper(_elements.Entries[_elements.Index].Id),
+                    ConversionWrapper(_elements.Entries[_elements.Index].Observatii),
+                    ConversionWrapper(_elements.Entries[_elements.Index].Date),
+                    ConversionWrapper(_elements.Entries[_elements.Index].OraIncepere),
+                    ConversionWrapper(_elements.Entries[_elements.Index].OraFinal),
+                    ConversionWrapper(_elements.Entries[_elements.Index].CursAlocat),
+                    ConversionWrapper(_elements.Entries[_elements.Index].PregatireAlocat),
+                    ConversionWrapper(_elements.Entries[_elements.Index].RecuperareAlocat),
+                    ConversionWrapper(_elements.Entries[_elements.Index].Total));
 
             SetPrice();
         }
 
-        private async Task NfcServiceAsync()
+        public async Task NfcServiceAsync()
         {
             if (!CrossNFC.IsSupported)
             {
@@ -274,7 +249,7 @@ namespace CheckinLS.Pages
         {
             var total = (curs: 0.0, pregatire: 0.0, recuperare: 0.0);
 
-            foreach (var elem in _sql.Elements)
+            foreach (var elem in _elements.Entries)
             {
                 total.curs += elem.CursAlocat.TotalHours;
                 total.pregatire += elem.PregatireAlocat.TotalHours;
@@ -291,8 +266,11 @@ namespace CheckinLS.Pages
             _busy = true;
 
             await CountdownAsync();
-            await AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire,
-                _ora.recuperare);
+
+            await _elements.AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire, _ora.recuperare);
+            ShowToast("New entry added!");
+            ObsEntry.Text = "";
+            RefreshPage();
 
             (_ora.curs, _ora.pregatire, _ora.recuperare) = (false, false, false);
 
@@ -346,7 +324,7 @@ namespace CheckinLS.Pages
                 App.Close();
             });
 
-        private static void ShowToast(string message) =>
+        public void ShowToast(string message) =>
                 Device.BeginInvokeOnMainThread(() =>
                     UserDialogs.Instance.Toast(message));
     }

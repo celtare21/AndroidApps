@@ -9,20 +9,6 @@ namespace CheckinLS.API
 {
     public partial class MainSql
     {
-        private async Task<string> HasUserAsync()
-        {
-            string result;
-
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                result =
-                    await conn.QueryFirstOrDefaultAsync<string>(
-                        $@"SELECT username FROM users WHERE password = '{_pin}'");
-            }
-
-            return result;
-        }
-
         private static async Task<bool> IsUserAlreadyCreatedAsync(string username)
         {
             IEnumerable<string> result;
@@ -31,6 +17,19 @@ namespace CheckinLS.API
             {
                 result =
                     await conn.QueryAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
+            }
+
+            return result.Any();
+        }
+
+        private static async Task<bool> IsPasswordAlreadyUsedAsync(string password)
+        {
+            IEnumerable<string> result;
+
+            await using (var conn = new SqlConnection(Secrets.ConnStr))
+            {
+                result =
+                    await conn.QueryAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
             }
 
             return result.Any();
@@ -57,6 +56,9 @@ namespace CheckinLS.API
 
             if (await IsUserAlreadyCreatedAsync(username))
                 return -2;
+
+            if (await IsPasswordAlreadyUsedAsync(password))
+                return -3;
 
             const string query = @"INSERT INTO users (username,password)" +
                                  "VALUES (@Username,@Password)";

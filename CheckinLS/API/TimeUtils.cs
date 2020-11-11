@@ -4,7 +4,7 @@ using Xamarin.Forms.Xaml;
 namespace CheckinLS.API
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public static class SqlUtils
+    public static class TimeUtils
     {
         public static TimeSpan StartTime() =>
                         TimeSpan.FromHours(10);

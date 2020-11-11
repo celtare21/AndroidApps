@@ -50,7 +50,10 @@ namespace CheckinLS.Pages
                     await DisplayAlert("Error", "No table found with that name!", "OK");
                     return;
                 case -2:
-                    await DisplayAlert("Error", "User already registered", "OK");
+                    await DisplayAlert("Error", "User already registered!", "OK");
+                    return;
+                case -3:
+                    await DisplayAlert("Error", "Password already used!", "OK");
                     return;
             }
 

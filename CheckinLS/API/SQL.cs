@@ -7,19 +7,17 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Xaml;
-using static CheckinLS.API.SqlUtils;
 
 namespace CheckinLS.API
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MainSql
     {
-        private readonly IGetDate _dateInterface;
-        private static string _pin;
+        private readonly string _pin;
+        private readonly IUsers _usersInterface;
         public static string User;
-        public List<DatabaseEntry> Elements;
 
-        public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IGetDate dateInterface)
+        public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IUsers usersInterface)
         {
             await using (var conn = new SqlConnection(Secrets.ConnStr))
             {
@@ -33,61 +31,31 @@ namespace CheckinLS.API
                 }
             }
 
-            var thisClass = new MainSql(pin, dateInterface);
-            var result = await thisClass.HasUserAsync().ConfigureAwait(false);
+            var thisClass = new MainSql(pin, usersInterface);
+
+            await thisClass._usersInterface.CreateUsersCacheAsync();
+
+            string result = null;
+
+            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var user in thisClass._usersInterface.DeserializeCache())
+            {
+                if (user.Password == pin)
+                    result = user.Username;
+            }
 
             if (result == null)
                 return new Tuple<MainSql, int>(null, -2);
 
             User = result;
 
-            await thisClass.RefreshElementsAsync().ConfigureAwait(false);
-
             return new Tuple<MainSql, int>(thisClass, 0);
         }
 
-        private MainSql(string pin, IGetDate dateInterface)
-        {
-            _dateInterface = dateInterface;
-            _pin = pin;
-        }
+        private MainSql(string pin, IUsers usersInterface) =>
+                (_pin, _usersInterface) = (pin, usersInterface);
 
-        public async Task AddNewEntryInDbAsync(string observatii, bool curs, bool pregatire, bool recuperare)
-        {
-            await AddToDbAsync(await NewElementsTableAsync(observatii ?? "None", curs, pregatire, recuperare).ConfigureAwait(false))
-                .ConfigureAwait(false);
-
-            await RefreshElementsAsync().ConfigureAwait(false);
-        }
-
-        public async Task RefreshElementsAsync() =>
-                    Elements = await GetAllElementsAsync().ConfigureAwait(false);
-
-        private async Task<DatabaseEntry> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
-        {
-            if (!curs && !pregatire && !recuperare)
-            {
-                throw new AllParametersFalse();
-            }
-
-            (TimeSpan oraIncepere, TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat) =
-                (await MaxHourInDbAsync().ConfigureAwait(false), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
-
-            TimeSpan total = cursAlocat + pregatireAlocat + recuperareAlocat;
-            TimeSpan oraFinal = oraIncepere + total;
-
-            if (oraFinal.TotalDays > 1)
-            {
-                throw new HoursOutOfBounds();
-            }
-
-            var date = _dateInterface.GetCurrentDate();
-
-            return new DatabaseEntry(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
-                recuperareAlocat, total, observatii);
-        }
-
-        private async Task AddToDbAsync(DatabaseEntry table)
+        public async Task AddToDbAsync(DatabaseEntry table)
         {
             string query =
                 $@"INSERT INTO ""prezenta.{User}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
@@ -121,11 +89,9 @@ namespace CheckinLS.API
                 else
                     await conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'");
             }
-
-            await RefreshElementsAsync().ConfigureAwait(false);
         }
 
-        private async Task<List<DatabaseEntry>> GetAllElementsAsync()
+        public async Task<List<DatabaseEntry>> GetAllElementsAsync()
         {
             IEnumerable<DatabaseEntry> result;
 
@@ -139,22 +105,19 @@ namespace CheckinLS.API
             return elements;
         }
 
-        private async Task<TimeSpan> MaxHourInDbAsync()
+        public async Task<TimeSpan> MaxHourInDbAsync(IGetDate dateInterface)
         {
             IEnumerable<TimeSpan?> result;
 
             await using (var conn = new SqlConnection(Secrets.ConnStr))
             {
                 result = await conn.QueryAsync<TimeSpan?>(
-                    $@"SELECT oraFinal FROM ""prezenta.{User}"" WHERE date LIKE '%{_dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
+                    $@"SELECT oraFinal FROM ""prezenta.{User}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
             }
 
             var max = result.ToList().Max();
 
-            return max ?? StartTime();
+            return max ?? TimeUtils.StartTime();
         }
-
-        public int MaxElement() =>
-                    Elements?.Count ?? 0;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CheckinLS.API;
 using CheckinLS.InterfacesAndClasses;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using NSubstitute;
@@ -10,19 +11,32 @@ namespace CheckingLSTests
     [TestFixture]
     public class SqlTests
     {
-        private IGetDate _dateInterface;
-
-        [SetUp]
-        public void SetInterfaces()
+        private async Task<Elements> CreateTaskAsync()
         {
-            _dateInterface = Substitute.For<IGetDate>();
-            _dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
+            var dateInterface = Substitute.For<IGetDate>();
+            dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
+            
+            var accounts = new List<Accounts> { new Accounts("test", "1111") };
+            var userInterface = Substitute.For<IUsers>();
+            userInterface.DeserializeCache().Returns(accounts);
+
+            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", userInterface);
+
+            return await Elements.CreateAsync(sqlClass, dateInterface).ConfigureAwait(false);
+
         }
 
         [TestCase("1111")]
         public async Task CreateAsync_CorrectUser_ReturnsClassAsync(string pin)
         {
-            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(pin, _dateInterface);
+            var dateInterface = Substitute.For<IGetDate>();
+            dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
+
+            var accounts = new List<Accounts> { new Accounts("test", "1111") };
+            var userInterface = Substitute.For<IUsers>();
+            userInterface.DeserializeCache().Returns(accounts);
+
+            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(pin, userInterface);
 
             Assert.IsNotNull(sqlClass);
             Assert.AreEqual(returnCode, 0);
@@ -33,284 +47,298 @@ namespace CheckingLSTests
         [TestCase("!@#")]
         public async Task CreateAsync_IncorrectUser_ReturnsNullAsync(string pin)
         {
-            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(pin, _dateInterface);
+            var dateInterface = Substitute.For<IGetDate>();
+            dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
+
+            var accounts = new List<Accounts> { new Accounts("test", "1111") };
+            var userInterface = Substitute.For<IUsers>();
+            userInterface.DeserializeCache().Returns(accounts);
+
+            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(pin, userInterface);
 
             Assert.IsNull(sqlClass);
             Assert.AreEqual(returnCode, -2);
         }
 
         [Test]
-        public async Task AddNewEntryInDbAsync_AllFalse_ReturnsException()
+        public async Task AddNewEntryAsync_AllFalse_ReturnsException()
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            Assert.CatchAsync(() => sqlClass.AddNewEntryInDbAsync(null, false, false, false), "All parameters are false!");
+            Assert.CatchAsync(() => elements.AddNewEntryAsync(null, false, false, false), "All parameters are false!");
         }
 
         [TestCase(null)]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
-        public async Task AddNewEntryInDbAsync_CursMultipleObservations_ReturnsCursAndObservation(string obs)
+        public async Task AddNewEntryAsync_CursMultipleObservations_ReturnsCursAndObservation(string obs)
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(obs, true, false, false);
+            await elements.AddNewEntryAsync(obs, true, false, false);
 
-            var index = sqlClass.MaxElement() - 1;
+            var index = elements.MaxElement() - 1;
 
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
+                    Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
+                    Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("11:30"));
-            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("01:30"));
-            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("11:30"));
+            Assert.AreEqual(elements.Entries[index].CursAlocat, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(elements.Entries[index].PregatireAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].Total, TimeSpan.Parse("01:30"));
         }
 
         [TestCase(null)]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
-        public async Task AddNewEntryInDbAsync_PregatireMultipleObservations_ReturnsPregatireAndObservation(string obs)
+        public async Task AddNewEntryAsync_PregatireMultipleObservations_ReturnsPregatireAndObservation(string obs)
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(obs, false, true, false);
+            await elements.AddNewEntryAsync(obs, false, true, false);
 
-            var index = sqlClass.MaxElement() - 1;
+            var index = elements.MaxElement() - 1;
 
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
+                    Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
+                    Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("10:30"));
-            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("10:30"));
+            Assert.AreEqual(elements.Entries[index].CursAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].PregatireAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].Total, TimeSpan.Parse("00:30"));
         }
 
         [TestCase(null)]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
-        public async Task AddNewEntryInDbAsync_RecuperareMultipleObservations_ReturnsRecuperareAndObservation(string obs)
+        public async Task AddNewEntryAsync_RecuperareMultipleObservations_ReturnsRecuperareAndObservation(string obs)
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(obs, false, false, true);
+            await elements.AddNewEntryAsync(obs, false, false, true);
 
-            var index = sqlClass.MaxElement() - 1;
+            var index = elements.MaxElement() - 1;
 
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
+                    Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
+                    Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("10:30"));
-            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("10:30"));
+            Assert.AreEqual(elements.Entries[index].CursAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].PregatireAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].Total, TimeSpan.Parse("00:30"));
         }
 
         [TestCase(null)]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
-        public async Task AddNewEntryInDbAsync_CursPregatireMultipleObservations_ReturnsCursPregatireandObservation(string obs)
+        public async Task AddNewEntryAsync_CursPregatireMultipleObservations_ReturnsCursPregatireandObservation(string obs)
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(obs, true, true, false);
+            await elements.AddNewEntryAsync(obs, true, true, false);
 
-            var index = sqlClass.MaxElement() - 1;
+            var index = elements.MaxElement() - 1;
 
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
+                    Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
+                    Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("12:00"));
-            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("01:30"));
-            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("02:00"));
+            Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("12:00"));
+            Assert.AreEqual(elements.Entries[index].CursAlocat, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(elements.Entries[index].PregatireAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].RecuperareAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].Total, TimeSpan.Parse("02:00"));
         }
 
         [TestCase(null)]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
-        public async Task AddNewEntryInDbAsync_CursRecuperareMultipleObservations_ReturnsCursRecuperareandObservation(string obs)
+        public async Task AddNewEntryAsync_CursRecuperareMultipleObservations_ReturnsCursRecuperareandObservation(string obs)
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(obs, true, false, true);
+            await elements.AddNewEntryAsync(obs, true, false, true);
 
-            var index = sqlClass.MaxElement() - 1;
+            var index = elements.MaxElement() - 1;
 
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
+                    Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
+                    Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("12:00"));
-            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("01:30"));
-            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("02:00"));
+            Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("12:00"));
+            Assert.AreEqual(elements.Entries[index].CursAlocat, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(elements.Entries[index].PregatireAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].Total, TimeSpan.Parse("02:00"));
         }
 
         [TestCase(null)]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
-        public async Task AddNewEntryInDbAsync_PregatireRecuperareMultipleObservations_ReturnsPregatireRecuperareandObservation(string obs)
+        public async Task AddNewEntryAsync_PregatireRecuperareMultipleObservations_ReturnsPregatireRecuperareandObservation(string obs)
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(obs, false, true, true);
+            await elements.AddNewEntryAsync(obs, false, true, true);
 
-            var index = sqlClass.MaxElement() - 1;
+            var index = elements.MaxElement() - 1;
 
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
+                    Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
+                    Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("11:00"));
-            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("00:00"));
-            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("01:00"));
+            Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("11:00"));
+            Assert.AreEqual(elements.Entries[index].CursAlocat, TimeSpan.Parse("00:00"));
+            Assert.AreEqual(elements.Entries[index].PregatireAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].Total, TimeSpan.Parse("01:00"));
         }
 
         [TestCase(null)]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
-        public async Task AddNewEntryInDbAsync_CursRecuperarePregatireMultipleObservations_ReturnsCursPregatireRecuperareandObservation(string obs)
+        public async Task AddNewEntryAsync_CursRecuperarePregatireMultipleObservations_ReturnsCursPregatireRecuperareandObservation(string obs)
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(obs, true, true, true);
+            await elements.AddNewEntryAsync(obs, true, true, true);
 
-            var index = sqlClass.MaxElement() - 1;
+            var index = elements.MaxElement() - 1;
 
             switch (obs)
             {
                 case null:
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, "None");
+                    Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
                 case "this is a test":
                 case "this is an even longer test":
-                    Assert.AreEqual(sqlClass.Elements[index].Observatii, obs);
+                    Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
-            Assert.AreEqual(sqlClass.Elements[index].Date, DateTime.Parse("2020-01-01"));
-            Assert.AreEqual(sqlClass.Elements[index].OraIncepere, TimeSpan.Parse("10:00"));
-            Assert.AreEqual(sqlClass.Elements[index].OraFinal, TimeSpan.Parse("12:30"));
-            Assert.AreEqual(sqlClass.Elements[index].CursAlocat, TimeSpan.Parse("01:30"));
-            Assert.AreEqual(sqlClass.Elements[index].PregatireAlocat, TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
-            Assert.AreEqual(sqlClass.Elements[index].Total, TimeSpan.Parse("02:30"));
+            Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
+            Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
+            Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("12:30"));
+            Assert.AreEqual(elements.Entries[index].CursAlocat, TimeSpan.Parse("01:30"));
+            Assert.AreEqual(elements.Entries[index].PregatireAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].RecuperareAlocat, TimeSpan.Parse("00:30"));
+            Assert.AreEqual(elements.Entries[index].Total, TimeSpan.Parse("02:30"));
         }
 
         [Test]
-        public async Task AddNewEntryInDbAsync_AllTillOverflow_ReturnsException()
+        public async Task AddNewEntryAsync_AllTillOverflow_ReturnsException()
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(null, true, true, true);
-            await sqlClass.AddNewEntryInDbAsync(null, true, true, true);
-            await sqlClass.AddNewEntryInDbAsync(null, true, true, true);
-            await sqlClass.AddNewEntryInDbAsync(null, true, true, true);
-            await sqlClass.AddNewEntryInDbAsync(null, true, true, true);
+            await elements.AddNewEntryAsync(null, true, true, true);
+            await elements.AddNewEntryAsync(null, true, true, true);
+            await elements.AddNewEntryAsync(null, true, true, true);
+            await elements.AddNewEntryAsync(null, true, true, true);
+            await elements.AddNewEntryAsync(null, true, true, true);
 
-            Assert.CatchAsync(() => sqlClass.AddNewEntryInDbAsync(null, true, true, true), "Hours out of bounds!");
+            Assert.CatchAsync(() => elements.AddNewEntryAsync(null, true, true, true), "Hours out of bounds!");
         }
 
         [Test]
-        public async Task DeleteFromDbAsync_NoArguments_ReturnsException()
+        public async Task DeleteEntryAsync_NoArguments_ReturnsException()
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            Assert.CatchAsync(() => sqlClass.DeleteFromDbAsync(), "All parameters are false!");
+            Assert.CatchAsync(() => elements.DeleteEntryAsync(), "All parameters are false!");
         }
 
         [Test]
-        public async Task DeleteFromDbAsync_ById_ReturnSmallerMax()
+        public async Task DeleteEntryAsync_ById_ReturnSmallerMax()
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var elements = await CreateTaskAsync();
 
-            await sqlClass.AddNewEntryInDbAsync(null, false, false, true);
+            await elements.AddNewEntryAsync(null, false, false, true);
 
-            var max = sqlClass.MaxElement();
+            var max = elements.MaxElement();
 
-            await sqlClass.DeleteFromDbAsync(sqlClass.Elements[sqlClass.MaxElement() - 1].Id);
+            await elements.DeleteEntryAsync(elements.Entries[elements.MaxElement() - 1].Id);
 
-            Assert.AreNotEqual(sqlClass.MaxElement(), max);
+            Assert.AreNotEqual(elements.MaxElement(), max);
         }
 
         [TearDown]
         public async Task CleanupAsync()
         {
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", _dateInterface);
+            var dateInterface = Substitute.For<IGetDate>();
+            dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
+
+            var accounts = new List<Accounts> { new Accounts("test", "1111") };
+            var userInterface = Substitute.For<IUsers>();
+            userInterface.DeserializeCache().Returns(accounts);
+
+            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", userInterface);
 
             await sqlClass.DeleteFromDbAsync(date: "2020-01-01").ConfigureAwait(false);
         }

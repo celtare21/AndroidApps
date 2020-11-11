@@ -1,6 +1,6 @@
 ﻿using CheckinLS.API;
-using CheckinLS.InterfacesAndClasses;
 using System;
+using CheckinLS.InterfacesAndClasses;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 // ReSharper disable RedundantCapturedContext
@@ -39,7 +39,7 @@ namespace CheckinLS.Pages
 
             Enter.IsEnabled = false;
 
-            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(entryPin, new GetDate());
+            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(entryPin, new Users());
 
             switch (returnCode)
             {
@@ -52,7 +52,11 @@ namespace CheckinLS.Pages
                     await Navigation.PushModalAsync(new AddUser(entryPin));
                     return;
                 default:
-                    await Navigation.PushModalAsync(new Home(sqlClass));
+                    var homeClass = new Home();
+                    await Navigation.PushModalAsync(homeClass);
+                    await homeClass.CreateElementsAsync(sqlClass);
+                    homeClass.RefreshPage();
+                    await homeClass.NfcServiceAsync();
                     break;
             }
         }
