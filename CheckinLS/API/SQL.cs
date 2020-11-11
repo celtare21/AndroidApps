@@ -17,7 +17,7 @@ namespace CheckinLS.API
         private readonly IGetDate _dateInterface;
         private static string _pin;
         public static string User;
-        public List<TableColumns> Elements;
+        public List<DatabaseEntry> Elements;
 
         public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IGetDate dateInterface)
         {
@@ -63,7 +63,7 @@ namespace CheckinLS.API
         public async Task RefreshElementsAsync() =>
                     Elements = await GetAllElementsAsync().ConfigureAwait(false);
 
-        private async Task<TableColumns> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
+        private async Task<DatabaseEntry> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
             if (!curs && !pregatire && !recuperare)
             {
@@ -83,11 +83,11 @@ namespace CheckinLS.API
 
             var date = _dateInterface.GetCurrentDate();
 
-            return new TableColumns(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
+            return new DatabaseEntry(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
                 recuperareAlocat, total, observatii);
         }
 
-        private async Task AddToDbAsync(TableColumns table)
+        private async Task AddToDbAsync(DatabaseEntry table)
         {
             string query =
                 $@"INSERT INTO ""prezenta.{User}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
@@ -125,13 +125,13 @@ namespace CheckinLS.API
             await RefreshElementsAsync().ConfigureAwait(false);
         }
 
-        private async Task<List<TableColumns>> GetAllElementsAsync()
+        private async Task<List<DatabaseEntry>> GetAllElementsAsync()
         {
-            IEnumerable<TableColumns> result;
+            IEnumerable<DatabaseEntry> result;
 
             await using (var conn = new SqlConnection(Secrets.ConnStr))
             {
-                result = await conn.QueryAsync<TableColumns>($@"SELECT * FROM ""prezenta.{User}""");
+                result = await conn.QueryAsync<DatabaseEntry>($@"SELECT * FROM ""prezenta.{User}""");
             }
 
             var elements = result.ToList();

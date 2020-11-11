@@ -1,6 +1,5 @@
 ﻿using CheckinLS.Helpers;
 using CheckinLS.Pages;
-using System;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
@@ -39,7 +38,7 @@ namespace CheckinLS
 
         public static void Close()
         {
-            Environment.Exit(0);
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
         private void CheckInternet()
