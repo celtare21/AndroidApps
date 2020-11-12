@@ -1,4 +1,6 @@
-﻿using CheckinLS.Helpers;
+﻿using System.Threading.Tasks;
+using CheckinLS.API;
+using CheckinLS.Helpers;
 using CheckinLS.Pages;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
@@ -16,7 +18,7 @@ namespace CheckinLS
 
             Distribute.UpdateTrack = UpdateTrack.Private;
             AppCenter.Start(Secrets.analytics,
-                typeof(Analytics), typeof(Crashes), typeof(Distribute));
+              typeof(Analytics), typeof(Crashes), typeof(Distribute));
 
             CheckInternet();
             Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
@@ -26,14 +28,17 @@ namespace CheckinLS
 
         protected override void OnStart()
         {
+            Task.Run(MainSql.CreateConnection).ContinueWith(task => MainSql.CkeckConnectionAsync());
         }
 
         protected override void OnSleep()
         {
+            Task.Run(MainSql.CloseConnectionAsync);
         }
 
         protected override void OnResume()
         {
+            Task.Run(MainSql.CkeckConnectionAsync);
         }
 
         public static void Close()

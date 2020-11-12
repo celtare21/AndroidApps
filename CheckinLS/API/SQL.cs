@@ -3,6 +3,7 @@ using CheckinLS.InterfacesAndClasses;
 using Dapper;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace CheckinLS.API
     {
         private readonly string _pin;
         private readonly IUsers _usersInterface;
+        public static SqlConnection Conn;
         public static string User;
 
         public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IUsers usersInterface)
@@ -40,29 +42,42 @@ namespace CheckinLS.API
             return new Tuple<MainSql, int>(thisClass, 0);
         }
 
+        public static void CreateConnection()
+        {
+            Conn = new SqlConnection(Secrets.ConnStr);
+        }
+
         private MainSql(string pin, IUsers usersInterface) =>
                 (_pin, _usersInterface) = (pin, usersInterface);
+
+        public static async Task CkeckConnectionAsync()
+        {
+            if (Conn?.State == ConnectionState.Closed)
+                await Conn.OpenAsync();
+        }
+
+        public static Task CloseConnectionAsync() =>
+                    Conn.CloseAsync();
 
         public async Task AddToDbAsync(DatabaseEntry table)
         {
             string query =
                 $@"INSERT INTO ""prezenta.{User}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
 
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                await conn.ExecuteAsync(query,
-                    new
-                    {
-                        date = table.Date,
-                        oraIncepere = table.OraIncepere,
-                        oraFinal = table.OraFinal,
-                        cursAlocat = table.CursAlocat,
-                        pregatireAlocat = table.PregatireAlocat,
-                        recuperareAlocat = table.RecuperareAlocat,
-                        total = table.Total,
-                        observatii = table.Observatii
-                    });
-            }
+            await CkeckConnectionAsync();
+
+            await Conn.ExecuteAsync(query,
+                new
+                {
+                    date = table.Date,
+                    oraIncepere = table.OraIncepere,
+                    oraFinal = table.OraFinal,
+                    cursAlocat = table.CursAlocat,
+                    pregatireAlocat = table.PregatireAlocat,
+                    recuperareAlocat = table.RecuperareAlocat,
+                    total = table.Total,
+                    observatii = table.Observatii
+                }).ConfigureAwait(false);
         }
 
         public async Task DeleteFromDbAsync(int? id = null, string date = null)
@@ -70,23 +85,20 @@ namespace CheckinLS.API
             if (!id.HasValue && string.IsNullOrEmpty(date))
                 throw new AllParametersFalse();
 
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                if (id.HasValue)
-                    await conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}");
-                else
-                    await conn.ExecuteAsync($@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'");
-            }
+            await CkeckConnectionAsync();
+
+            string query = id.HasValue
+                ? $@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}"
+                : $@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'";
+
+            await Conn.ExecuteAsync(query).ConfigureAwait(false);
         }
 
         public async Task<List<DatabaseEntry>> GetAllElementsAsync()
         {
-            IEnumerable<DatabaseEntry> result;
+            await CkeckConnectionAsync();
 
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                result = await conn.QueryAsync<DatabaseEntry>($@"SELECT * FROM ""prezenta.{User}""");
-            }
+            var result = await Conn.QueryAsync<DatabaseEntry>($@"SELECT * FROM ""prezenta.{User}""");
 
             var elements = result.ToList();
 
@@ -95,13 +107,10 @@ namespace CheckinLS.API
 
         public async Task<TimeSpan> MaxHourInDbAsync(IGetDate dateInterface)
         {
-            IEnumerable<TimeSpan?> result;
+            await CkeckConnectionAsync();
 
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                result = await conn.QueryAsync<TimeSpan?>(
-                    $@"SELECT oraFinal FROM ""prezenta.{User}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
-            }
+            var result = await Conn.QueryAsync<TimeSpan?>(
+                $@"SELECT oraFinal FROM ""prezenta.{User}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
 
             var max = result.ToList().Max();
 

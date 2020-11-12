@@ -15,7 +15,9 @@ namespace CheckinLS.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class Home
     {
+#pragma warning disable CS0649
         private Elements _elements;
+#pragma warning restore CS0649
         private bool _fakeListener, _busy, _disableNfcError, _startup = true;
         private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
 
@@ -250,6 +252,9 @@ namespace CheckinLS.Pages
 
         private void SetPrice()
         {
+            if (_elements == null)
+                return;
+
             var total = (curs: 0.0, pregatire: 0.0, recuperare: 0.0);
 
             foreach (var elem in _elements.Entries)

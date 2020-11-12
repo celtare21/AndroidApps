@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Data.SqlClient;
-using Dapper;
+﻿using Dapper;
 using System.Linq;
 using System.Threading.Tasks;
-using CheckinLS.Helpers;
 
 namespace CheckinLS.API
 {
@@ -11,40 +8,28 @@ namespace CheckinLS.API
     {
         private async Task<bool> IsUserAlreadyCreatedAsync(string username)
         {
-            IEnumerable<string> result;
+            await CkeckConnectionAsync();
 
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                result =
-                    await conn.QueryAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
-            }
+            var result = await Conn.QueryAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
 
             return result.Any();
         }
 
         private async Task<bool> IsPasswordAlreadyUsedAsync(string password)
         {
-            IEnumerable<string> result;
+            await CkeckConnectionAsync();
 
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                result =
-                    await conn.QueryAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
-            }
+            var result = await Conn.QueryAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
 
             return result.Any();
         }
 
         private async Task<bool> IsUserAsync(string username)
         {
-            IEnumerable<string> result;
+            await CkeckConnectionAsync();
 
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                result =
-                    await conn.QueryAsync<string>(
-                        $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
-            }
+            var result = await Conn.QueryAsync<string>(
+                $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
 
             return result.Any();
         }
@@ -63,10 +48,9 @@ namespace CheckinLS.API
             const string query = @"INSERT INTO users (username,password)" +
                                  "VALUES (@Username,@Password)";
 
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                await conn.ExecuteAsync(query, new {Username = username, Password = password});
-            }
+            await CkeckConnectionAsync();
+
+            await Conn.ExecuteAsync(query, new { Username = username, Password = password });
 
             return 0;
         }

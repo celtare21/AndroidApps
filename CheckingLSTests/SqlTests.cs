@@ -20,6 +20,8 @@ namespace CheckingLSTests
             var userInterface = Substitute.For<IUsers>();
             userInterface.DeserializeCache().Returns(accounts);
 
+            MainSql.CreateConnection();
+            await MainSql.CkeckConnectionAsync();
             (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", userInterface);
 
             return await Elements.CreateAsync(sqlClass, dateInterface).ConfigureAwait(false);
@@ -36,6 +38,8 @@ namespace CheckingLSTests
             var userInterface = Substitute.For<IUsers>();
             userInterface.DeserializeCache().Returns(accounts);
 
+            MainSql.CreateConnection();
+            await MainSql.CkeckConnectionAsync();
             (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(pin, userInterface);
 
             Assert.IsNotNull(sqlClass);
@@ -54,10 +58,12 @@ namespace CheckingLSTests
             var userInterface = Substitute.For<IUsers>();
             userInterface.DeserializeCache().Returns(accounts);
 
+            MainSql.CreateConnection();
+            await MainSql.CkeckConnectionAsync();
             (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(pin, userInterface);
 
             Assert.IsNull(sqlClass);
-            Assert.AreEqual(returnCode, -2);
+            Assert.AreEqual(returnCode, -1);
         }
 
         [Test]
@@ -331,6 +337,8 @@ namespace CheckingLSTests
         [TearDown]
         public async Task CleanupAsync()
         {
+            MainSql.Conn = null;
+
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
 
@@ -338,9 +346,13 @@ namespace CheckingLSTests
             var userInterface = Substitute.For<IUsers>();
             userInterface.DeserializeCache().Returns(accounts);
 
+            MainSql.CreateConnection();
+            await MainSql.CkeckConnectionAsync();
             (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", userInterface);
 
             await sqlClass.DeleteFromDbAsync(date: "2020-01-01").ConfigureAwait(false);
+
+            MainSql.Conn = null;
         }
     }
 }

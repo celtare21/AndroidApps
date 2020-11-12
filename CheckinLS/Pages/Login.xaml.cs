@@ -32,6 +32,9 @@ namespace CheckinLS.Pages
 
         private async void Enter_Clicked(object sender, EventArgs e)
         {
+            if (MainSql.Conn == null)
+                return;
+
             string entryPin = Pin.Text;
 
             if (string.IsNullOrEmpty(entryPin))
