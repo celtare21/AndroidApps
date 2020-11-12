@@ -8,7 +8,7 @@ namespace CheckinLS.API
 {
     public class Elements
     {
-        public List<DatabaseEntry> Entries;
+        public List<DatabaseEntry> Entries { get; private set; }
         public int Index;
         private static MainSql _sql;
         private readonly IGetDate _dateInterface;
@@ -27,8 +27,8 @@ namespace CheckinLS.API
 
         public async Task AddNewEntryAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
-            await _sql.AddToDbAsync(await NewElementsTableAsync(observatii ?? "None", curs, pregatire, recuperare)).ConfigureAwait(false);
-            await RefreshElementsAsync().ConfigureAwait(false);
+            await _sql.AddToDbAsync(await NewElementsTableAsync(observatii ?? "None", curs, pregatire, recuperare));
+            await RefreshElementsAsync();
             Index = MaxElement() - 1;
         }
 
@@ -40,7 +40,7 @@ namespace CheckinLS.API
             }
 
             (TimeSpan oraIncepere, TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat) =
-                (await _sql.MaxHourInDbAsync(_dateInterface).ConfigureAwait(false), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
+                (await _sql.MaxHourInDbAsync(_dateInterface), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
 
             TimeSpan total = cursAlocat + pregatireAlocat + recuperareAlocat;
             TimeSpan oraFinal = oraIncepere + total;
@@ -58,12 +58,12 @@ namespace CheckinLS.API
 
         public async Task DeleteEntryAsync(int? id = null, string date = null)
         {
-            await _sql.DeleteFromDbAsync(id).ConfigureAwait(false);
+            await _sql.DeleteFromDbAsync(id);
             await RefreshElementsAsync().ConfigureAwait(false);
         }
 
         private async Task RefreshElementsAsync() =>
-                Entries = await _sql.GetAllElementsAsync().ConfigureAwait(false);
+                Entries = await _sql.GetAllElementsAsync();
 
         public int MaxElement() =>
                 Entries?.Count ?? 0;

@@ -14,10 +14,10 @@ namespace CheckinLS.API
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MainSql
     {
+        public static SqlConnection Conn { get; private set; }
+        public static string User { get; private set; }
         private readonly string _pin;
         private readonly IUsers _usersInterface;
-        public static SqlConnection Conn;
-        public static string User;
 
         public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IUsers usersInterface)
         {
@@ -58,6 +58,9 @@ namespace CheckinLS.API
 
         public static Task CloseConnectionAsync() =>
                     Conn.CloseAsync();
+
+        public static void SetNullConnection() =>
+                    Conn = null;
 
         public async Task AddToDbAsync(DatabaseEntry table)
         {

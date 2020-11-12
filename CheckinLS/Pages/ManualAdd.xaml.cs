@@ -10,7 +10,7 @@ namespace CheckinLS.Pages
         private readonly Elements _elements;
         private readonly Home _home;
 
-        public ManualAdd(Elements elements, Home home)
+        public ManualAdd(Elements elements, in Home home)
         {
             InitializeComponent();
 

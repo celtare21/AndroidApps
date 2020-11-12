@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
-using CheckinLS.API;
+﻿using CheckinLS.API;
 using CheckinLS.Helpers;
 using CheckinLS.Pages;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using Microsoft.AppCenter.Distribute;
+using System.Threading.Tasks;
 using Xamarin.Essentials;
 
 namespace CheckinLS
@@ -18,7 +18,7 @@ namespace CheckinLS
 
             Distribute.UpdateTrack = UpdateTrack.Private;
             AppCenter.Start(Secrets.analytics,
-              typeof(Analytics), typeof(Crashes), typeof(Distribute));
+                typeof(Analytics), typeof(Crashes), typeof(Distribute));
 
             CheckInternet();
             Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;

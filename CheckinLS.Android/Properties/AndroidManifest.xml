@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="2.3" package="com.logiscool.checkinls" android:installLocation="auto">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="2.4" package="com.logiscool.checkinls" android:installLocation="auto">
 	<uses-sdk android:minSdkVersion="25" android:targetSdkVersion="29" />
 	<application android:label="CheckinLS" android:theme="@style/MainTheme" android:icon="@mipmap/icon" android:extractNativeLibs="true"></application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

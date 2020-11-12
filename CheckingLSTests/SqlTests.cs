@@ -337,7 +337,7 @@ namespace CheckingLSTests
         [TearDown]
         public async Task CleanupAsync()
         {
-            MainSql.Conn = null;
+            MainSql.SetNullConnection();
 
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
@@ -352,7 +352,7 @@ namespace CheckingLSTests
 
             await sqlClass.DeleteFromDbAsync(date: "2020-01-01").ConfigureAwait(false);
 
-            MainSql.Conn = null;
+            MainSql.SetNullConnection();
         }
     }
 }
