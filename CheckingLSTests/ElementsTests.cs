@@ -9,7 +9,7 @@ using NSubstitute;
 namespace CheckingLSTests
 {
     [TestFixture]
-    public class SqlTests
+    public class ElementsTests
     {
         private async Task<Elements> CreateTaskAsync()
         {
@@ -75,6 +75,7 @@ namespace CheckingLSTests
         }
 
         [TestCase(null)]
+        [TestCase("")]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
@@ -89,6 +90,7 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
+                case "":
                     Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
@@ -107,6 +109,7 @@ namespace CheckingLSTests
         }
 
         [TestCase(null)]
+        [TestCase("")]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
@@ -121,6 +124,7 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
+                case "":
                     Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
@@ -139,6 +143,7 @@ namespace CheckingLSTests
         }
 
         [TestCase(null)]
+        [TestCase("")]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
@@ -153,6 +158,7 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
+                case "":
                     Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
@@ -171,6 +177,7 @@ namespace CheckingLSTests
         }
 
         [TestCase(null)]
+        [TestCase("")]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
@@ -185,6 +192,7 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
+                case "":
                     Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
@@ -203,6 +211,7 @@ namespace CheckingLSTests
         }
 
         [TestCase(null)]
+        [TestCase("")]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
@@ -217,6 +226,7 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
+                case "":
                     Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
@@ -235,6 +245,7 @@ namespace CheckingLSTests
         }
 
         [TestCase(null)]
+        [TestCase("")]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
@@ -249,6 +260,7 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
+                case "":
                     Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
@@ -267,6 +279,7 @@ namespace CheckingLSTests
         }
 
         [TestCase(null)]
+        [TestCase("")]
         [TestCase("test")]
         [TestCase("this is a test")]
         [TestCase("this is an even longer test")]
@@ -281,6 +294,7 @@ namespace CheckingLSTests
             switch (obs)
             {
                 case null:
+                case "":
                     Assert.AreEqual(elements.Entries[index].Observatii, "None");
                     break;
                 case "test":
