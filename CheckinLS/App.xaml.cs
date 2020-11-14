@@ -1,4 +1,5 @@
-﻿using CheckinLS.API;
+﻿using CheckinLS.API.Misc;
+using CheckinLS.API.Sql;
 using CheckinLS.Helpers;
 using CheckinLS.Pages;
 using Microsoft.AppCenter;
@@ -49,7 +50,7 @@ namespace CheckinLS
         private void CheckInternet()
         {
             if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-                Home.ShowAlertKill("No internet connection!");
+                HelperFunctions.ShowAlertKill("No internet connection!");
         }
 
         private void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)

@@ -1,4 +1,4 @@
-﻿namespace CheckinLS.API
+﻿namespace CheckinLS.API.Misc
 {
     public readonly struct Accounts
     {

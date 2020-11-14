@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
-using System.Threading.Tasks;
-using CheckinLS.API;
+﻿using CheckinLS.API.Misc;
 using CheckinLS.Helpers;
 using Dapper;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.IO;
+using System.Threading.Tasks;
+using Xamarin.Forms.Xaml;
 
-namespace CheckinLS.InterfacesAndClasses
+namespace CheckinLS.InterfacesAndClasses.Users
 {
+    [XamlCompilation(XamlCompilationOptions.Compile)]
     public class Users : IUsers
     {
         private static readonly string AppFolder = Xamarin.Essentials.FileSystem.AppDataDirectory;

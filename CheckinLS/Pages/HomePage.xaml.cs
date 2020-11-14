@@ -1,6 +1,7 @@
 ﻿using Acr.UserDialogs;
-using CheckinLS.API;
-using CheckinLS.InterfacesAndClasses;
+using CheckinLS.API.Misc;
+using CheckinLS.API.Standard;
+using CheckinLS.InterfacesAndClasses.Date;
 using Microsoft.AppCenter.Analytics;
 using Plugin.NFC;
 using System;
@@ -9,6 +10,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using MainSql = CheckinLS.API.Sql.MainSql;
+
+// ReSharper disable RedundantCapturedContext
 
 namespace CheckinLS.Pages
 {
@@ -16,8 +20,9 @@ namespace CheckinLS.Pages
     public partial class Home
     {
 #pragma warning disable CS0649
-        private Elements _elements;
+        private StandardElements _elements;
 #pragma warning restore CS0649
+        private MainSql _sql;
         private bool _fakeListener, _busy, _disableNfcError, _startup = true;
         private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
 
@@ -30,10 +35,19 @@ namespace CheckinLS.Pages
             
             DeleteButton.Clicked += DeleteButton_Clicked;
             ManualAddButton.Clicked += ManualAddButton_Clicked;
+
+            OreOfficeButton.Clicked += OreOfficeButton_Clicked;
         }
 
-        public async Task CreateElementsAsync(MainSql sqlClass) =>
-                _elements = await Elements.CreateAsync(sqlClass, new GetDate());
+        public async Task CreateElementsAsync(MainSql sqlClass)
+        {
+            _sql = sqlClass;
+
+            if (_sql.UserHasOffice())
+                OreOfficeButton.IsVisible = true;
+
+            _elements = await StandardElements.CreateAsync(sqlClass, new GetDate());
+        }
 
         protected override bool OnBackButtonPressed()
         {
@@ -89,7 +103,7 @@ namespace CheckinLS.Pages
                 --_elements.Index;
             RefreshPage();
 
-            ShowToast("Entry deleted!");
+            HelperFunctions.ShowToast("Entry deleted!");
 
             DeleteButton.IsEnabled = true;
         }
@@ -97,30 +111,36 @@ namespace CheckinLS.Pages
         private void ManualAddButton_Clicked(object sender, EventArgs e) =>
                 Navigation.PushModalAsync(new ManualAdd(_elements, this));
 
+        private async void OreOfficeButton_Clicked(object sender, EventArgs e)
+        {
+            var officeClass = new OreOffice();
+            await Navigation.PushModalAsync(officeClass);
+            await officeClass.CreateElementsAsync(_sql);
+            officeClass.RefreshPage();
+        }
+
         public void RefreshPage()
         {
             if (_elements == null || _elements.MaxElement() == 0)
             {
                 IdLabel.Text = Observatii.Text = Date.Text = OraIncepere.Text = OraSfarsit.Text =
-                   CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
-                   Total.Text = "Not found!";
-
+                        CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
+                        Total.Text = "Not found!";
                 PretTotal.Text = "0";
-
                 return;
             }
 
             (IdLabel.Text, Observatii.Text, Date.Text, OraIncepere.Text, OraSfarsit.Text, CursAlocat.Text, PregatireAlocat.Text,
                     RecuperareAlocat.Text, Total.Text) =
-                (ConversionWrapper(_elements.Entries[_elements.Index].Id),
-                    ConversionWrapper(_elements.Entries[_elements.Index].Observatii),
-                    ConversionWrapper(_elements.Entries[_elements.Index].Date),
-                    ConversionWrapper(_elements.Entries[_elements.Index].OraIncepere),
-                    ConversionWrapper(_elements.Entries[_elements.Index].OraFinal),
-                    ConversionWrapper(_elements.Entries[_elements.Index].CursAlocat),
-                    ConversionWrapper(_elements.Entries[_elements.Index].PregatireAlocat),
-                    ConversionWrapper(_elements.Entries[_elements.Index].RecuperareAlocat),
-                    ConversionWrapper(_elements.Entries[_elements.Index].Total));
+                (HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Id),
+                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Observatii),
+                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Date),
+                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].OraIncepere),
+                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].OraFinal),
+                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].CursAlocat),
+                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].PregatireAlocat),
+                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].RecuperareAlocat),
+                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Total));
 
             SetPrice();
         }
@@ -276,7 +296,7 @@ namespace CheckinLS.Pages
             await CountdownAsync();
 
             await _elements.AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire, _ora.recuperare);
-            ShowToast("New entry added!");
+            HelperFunctions.ShowToast("New entry added!");
             ObsEntry.Text = "";
             RefreshPage();
 
@@ -313,27 +333,5 @@ namespace CheckinLS.Pages
 
             return record.Message;
         }
-
-        private string ConversionWrapper<T>(T elem) =>
-            elem switch
-            {
-                int i => i.ToString(),
-                string str => str,
-                DateTime time => time.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
-                TimeSpan span => span.ToString(@"hh\:mm"),
-                _ => throw new ArgumentException()
-            };
-
-        public static void ShowAlertKill(string message) =>
-            Device.BeginInvokeOnMainThread(async () =>
-            {
-                await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
-                Analytics.TrackEvent("App crashed");
-                App.Close();
-            });
-
-        public void ShowToast(string message) =>
-                Device.BeginInvokeOnMainThread(() =>
-                    UserDialogs.Instance.Toast(message));
     }
 }

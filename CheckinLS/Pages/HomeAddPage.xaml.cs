@@ -1,4 +1,5 @@
-﻿using CheckinLS.API;
+﻿using CheckinLS.API.Misc;
+using CheckinLS.API.Standard;
 using Microsoft.AppCenter.Analytics;
 using Xamarin.Forms.Xaml;
 
@@ -7,10 +8,10 @@ namespace CheckinLS.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class ManualAdd
     {
-        private readonly Elements _elements;
+        private readonly StandardElements _elements;
         private readonly Home _home;
 
-        public ManualAdd(Elements elements, in Home home)
+        public ManualAdd(StandardElements elements, in Home home)
         {
             InitializeComponent();
 
@@ -32,7 +33,7 @@ namespace CheckinLS.Pages
 
             Analytics.TrackEvent("Manual entry added");
             await _elements.AddNewEntryAsync(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled, RecuperareToggle.IsToggled);
-            _home.ShowToast("New entry added!");
+            HelperFunctions.ShowToast("New entry added!");
             _home.RefreshPage();
             ObsManualEntry.Text = "";
 

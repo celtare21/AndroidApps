@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CheckinLS.InterfacesAndClasses
+namespace CheckinLS.InterfacesAndClasses.Date
 {
     public interface IGetDate
     {

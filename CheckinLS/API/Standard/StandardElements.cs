@@ -1,28 +1,32 @@
-﻿using System;
+﻿using CheckinLS.API.Misc;
+using CheckinLS.InterfacesAndClasses.Date;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CheckinLS.InterfacesAndClasses;
-using static CheckinLS.API.TimeUtils;
+using Xamarin.Forms.Xaml;
+using static CheckinLS.API.Misc.TimeUtils;
+using MainSql = CheckinLS.API.Sql.MainSql;
 
-namespace CheckinLS.API
+namespace CheckinLS.API.Standard
 {
-    public class Elements
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public class StandardElements
     {
-        public List<DatabaseEntry> Entries { get; private set; }
+        public List<StandardDatabaseEntry> Entries { get; private set; }
         public int Index;
         private static MainSql _sql;
         private readonly IGetDate _dateInterface;
 
-        public static async Task<Elements> CreateAsync(MainSql sql, IGetDate dateInterface)
+        public static async Task<StandardElements> CreateAsync(MainSql sql, IGetDate dateInterface)
         {
-            var elementsClass = new Elements(sql, dateInterface);
+            var elementsClass = new StandardElements(sql, dateInterface);
 
             await elementsClass.RefreshElementsAsync();
 
             return elementsClass;
         }
 
-        private Elements(MainSql sql, IGetDate dateInterface) =>
+        private StandardElements(MainSql sql, IGetDate dateInterface) =>
                 (_sql, _dateInterface) = (sql, dateInterface);
 
         public async Task AddNewEntryAsync(string observatii, bool curs, bool pregatire, bool recuperare)
@@ -32,7 +36,7 @@ namespace CheckinLS.API
             Index = MaxElement() - 1;
         }
 
-        public async Task<DatabaseEntry> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
+        public async Task<StandardDatabaseEntry> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
             if (!curs && !pregatire && !recuperare)
             {
@@ -52,18 +56,18 @@ namespace CheckinLS.API
 
             var date = _dateInterface.GetCurrentDate();
 
-            return new DatabaseEntry(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
+            return new StandardDatabaseEntry(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
                 recuperareAlocat, total, observatii);
         }
 
         public async Task DeleteEntryAsync(int? id = null, string date = null)
         {
-            await _sql.DeleteFromDbAsync(id);
+            await _sql.DeleteFromDbAsync(false, id);
             await RefreshElementsAsync().ConfigureAwait(false);
         }
 
         private async Task RefreshElementsAsync() =>
-                Entries = await _sql.GetAllElementsAsync();
+                Entries = await _sql.GetAllElementsAsync<StandardDatabaseEntry>();
 
         public int MaxElement() =>
                 Entries?.Count ?? 0;

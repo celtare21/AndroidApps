@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CheckinLS.Pages.OreOffice"
+             BackgroundColor="Black"
+             Title="Office">
+
+    <ContentPage.Content>
+        <Grid Padding="10,20,10,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="150"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+            </Grid.RowDefinitions>
+
+            <Label Text="ID:" Grid.Row="1" Grid.Column="0"/>
+            <Label x:Name="IdLabel" Text="Not found!" Grid.Row="1" Grid.Column="1"/>
+
+            <Label Text="Data:" Grid.Row="2" Grid.Column="0"/>
+            <Label x:Name="DateLabel" Text="Not found!" Grid.Row="2" Grid.Column="1"/>
+
+            <Label Text="Ora Incepere:" Grid.Row="3" Grid.Column="0"/>
+            <Label x:Name="OraIncepereLabel" Text="Not found!" Grid.Row="3" Grid.Column="1"/>
+
+            <Label Text="Ora Final:" Grid.Row="4" Grid.Column="0"/>
+            <Label x:Name="OraFinalLabel" Text="Not found!" Grid.Row="4" Grid.Column="1"/>
+
+            <Label Text="Total:" Grid.Row="5" Grid.Column="0"/>
+            <Label x:Name="TotalLabel" Text="Not found!" Grid.Row="5" Grid.Column="1"/>
+
+            <Label Text="Start:" HorizontalOptions="Center" Grid.Row="7" Grid.Column="0"/>
+            <Label Text="Final:" HorizontalOptions="Center" Grid.Row="7" Grid.Column="1"/>
+
+            <TimePicker x:Name="OraIncepereTime" Format="HH:mm" TextColor="AntiqueWhite" HorizontalOptions="Center" Time="8:00:00" Grid.Row="8" Grid.Column="0"/>
+            <TimePicker x:Name="OraFinalTime" Format="HH:mm" TextColor="AntiqueWhite" HorizontalOptions="Center" Time="8:00:00" Grid.Row="8" Grid.Column="1"/>
+
+            <Button x:Name="LeftButton" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="9" Grid.Column="0"/>
+            <Button x:Name="RightButton" Text="Right" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="9" Grid.Column="1"/>
+
+            <Button x:Name="AddButton" Text="Add" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="10" Grid.Column="0"/>
+            <Button x:Name="DeleteButton" Text="Delete" Margin="10,0,0,0" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="10" Grid.Column="1"/>
+
+            <Label Text="Pret Total:" Padding="0,0,-40,0" Grid.Row="11" Grid.Column="0"/>
+            <Label x:Name="PretTotal" Text="0" Padding="0,0,40,0" Grid.Row="11" Grid.Column="1"/>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

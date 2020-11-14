@@ -1,7 +1,8 @@
-﻿using CheckinLS.API;
-using System;
+﻿using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using MainSql = CheckinLS.API.Sql.MainSql;
+
 // ReSharper disable RedundantCapturedContext
 
 namespace CheckinLS.Pages

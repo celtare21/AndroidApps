@@ -26,6 +26,7 @@
                 <RowDefinition Height="45"/>
                 <RowDefinition Height="45"/>
                 <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
             </Grid.RowDefinitions>
 
             <Label Text="ID:" Grid.Row="0" Grid.Column="0"/>
@@ -74,7 +75,8 @@
                     </Keyboard>
                 </Entry.Keyboard>
             </Entry>
-        </Grid>
 
+            <Button x:Name="OreOfficeButton" Text="Office Hours" Margin="140,0,-80,0" HorizontalOptions="StartAndExpand" VerticalOptions="Center" IsVisible="False" Grid.Row="14" Grid.Column="0"/>
+        </Grid>
     </ContentPage.Content>
 </ContentPage>

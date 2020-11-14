@@ -45,6 +45,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Pages\AddNewUserPage.xaml.cs">
+      <DependentUpon>AddNewUserPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\HomePage.xaml.cs">
+      <DependentUpon>HomePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\HomeAddPage.xaml.cs">
+      <DependentUpon>HomeAddPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\LoginPage.xaml.cs">
+      <DependentUpon>LoginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\OfficeHomePage.xaml.cs">
+      <DependentUpon>OfficeHomePage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -53,16 +68,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Pages\AddUser.xaml">
+    <EmbeddedResource Update="Pages\AddNewUserPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Pages\Home.xaml">
+    <EmbeddedResource Update="Pages\HomePage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Pages\Login.xaml">
+    <EmbeddedResource Update="Pages\LoginPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Pages\ManualAdd.xaml">
+    <EmbeddedResource Update="Pages\HomeAddPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\OfficeHomePage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Properties\Resources.resx">

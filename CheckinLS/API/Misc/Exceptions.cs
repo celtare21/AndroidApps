@@ -1,7 +1,7 @@
 ﻿using System;
 using Xamarin.Forms.Xaml;
 
-namespace CheckinLS.API
+namespace CheckinLS.API.Misc
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public class HoursOutOfBounds : Exception

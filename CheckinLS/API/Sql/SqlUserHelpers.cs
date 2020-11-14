@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CheckinLS.API
+namespace CheckinLS.API.Sql
 {
     public partial class MainSql
     {
@@ -32,6 +32,16 @@ namespace CheckinLS.API
                 $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
 
             return result.Any();
+        }
+
+        public bool UserHasOffice()
+        {
+            var office = new[]
+            {
+                "alin", "vasile", "test"
+            };
+
+            return office.Contains(User);
         }
 
         public async Task<int> MakeUserAccountAsync(string username, string password)

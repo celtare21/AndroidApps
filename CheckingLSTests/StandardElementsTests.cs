@@ -1,17 +1,20 @@
-﻿using CheckinLS.API;
-using CheckinLS.InterfacesAndClasses;
+﻿using CheckinLS.API.Misc;
+using CheckinLS.API.Standard;
+using CheckinLS.InterfacesAndClasses.Date;
+using CheckinLS.InterfacesAndClasses.Users;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using NSubstitute;
+using MainSql = CheckinLS.API.Sql.MainSql;
 
 namespace CheckingLSTests
 {
     [TestFixture]
-    public class ElementsTests
+    public class StandardElementsTests
     {
-        private async Task<Elements> CreateTaskAsync()
+        private async Task<StandardElements> CreateTaskAsync()
         {
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
@@ -24,8 +27,7 @@ namespace CheckingLSTests
             await MainSql.CkeckConnectionAsync();
             (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", userInterface);
 
-            return await Elements.CreateAsync(sqlClass, dateInterface).ConfigureAwait(false);
-
+            return await StandardElements.CreateAsync(sqlClass, dateInterface).ConfigureAwait(false);
         }
 
         [TestCase("1111")]
@@ -364,7 +366,7 @@ namespace CheckingLSTests
             await MainSql.CkeckConnectionAsync();
             (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", userInterface);
 
-            await sqlClass.DeleteFromDbAsync(date: "2020-01-01").ConfigureAwait(false);
+            await sqlClass.DeleteFromDbAsync(false, date: "2020-01-01").ConfigureAwait(false);
 
             MainSql.SetNullConnection();
         }

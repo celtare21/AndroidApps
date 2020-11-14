@@ -1,8 +1,8 @@
-﻿using CheckinLS.API;
+﻿using CheckinLS.API.Misc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CheckinLS.InterfacesAndClasses
+namespace CheckinLS.InterfacesAndClasses.Users
 {
     public interface IUsers
     {
