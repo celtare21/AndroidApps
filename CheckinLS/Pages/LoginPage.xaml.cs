@@ -54,7 +54,7 @@ namespace CheckinLS.Pages
                 default:
                     var homeClass = new Home();
                     await Navigation.PushModalAsync(homeClass);
-                    await homeClass.CreateElementsAsync(sqlClass);
+                    await homeClass.CreateElementsAsync();
                     homeClass.RefreshPage();
                     await homeClass.NfcServiceAsync();
                     break;

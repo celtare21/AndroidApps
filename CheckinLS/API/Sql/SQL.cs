@@ -19,7 +19,7 @@ namespace CheckinLS.API.Sql
     public partial class MainSql
     {
         public static SqlConnection Conn { get; private set; }
-        public static string User { get; private set; }
+        private static string _user;
         private readonly string _pin;
         private readonly IUsers _usersInterface;
 
@@ -41,7 +41,7 @@ namespace CheckinLS.API.Sql
             if (result == null)
                 return new Tuple<MainSql, int>(null, -1);
 
-            User = result;
+            _user = result;
 
             return new Tuple<MainSql, int>(thisClass, 0);
         }
@@ -66,7 +66,7 @@ namespace CheckinLS.API.Sql
         public static void SetNullConnection() =>
                     Conn = null;
 
-        public async Task AddToDbAsync(StandardDatabaseEntry standard = default, OfficeDatabaseEntries office = default)
+        public static async Task AddToDbAsync(StandardDatabaseEntry standard = default, OfficeDatabaseEntries office = default)
         {
             await CkeckConnectionAsync();
 
@@ -76,7 +76,7 @@ namespace CheckinLS.API.Sql
             if (standard != default)
             {
                 string query =
-                    $@"INSERT INTO ""prezenta.{User}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
+                    $@"INSERT INTO ""prezenta.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
 
                 await Conn.ExecuteAsync(query,
                     new
@@ -93,7 +93,7 @@ namespace CheckinLS.API.Sql
             }
             else
             {
-                string query = $@"INSERT INTO ""prezenta.office.{User}"" VALUES (@date, @oraIncepere, @oraFinal, @total)";
+                string query = $@"INSERT INTO ""prezenta.office.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @total)";
 
                 await Conn.ExecuteAsync(query,
                     new
@@ -106,7 +106,7 @@ namespace CheckinLS.API.Sql
             }
         }
 
-        public async Task DeleteFromDbAsync(bool office, int? id = null, string date = null)
+        public static async Task DeleteFromDbAsync(bool office, int? id = null, string date = null)
         {
 
             if (!id.HasValue && string.IsNullOrEmpty(date))
@@ -119,20 +119,20 @@ namespace CheckinLS.API.Sql
             if (id.HasValue)
             {
                 query = office
-                    ? $@"DELETE FROM ""prezenta.office.{User}"" WHERE id = {id}"
-                    : $@"DELETE FROM ""prezenta.{User}"" WHERE id = {id}";
+                    ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE id = {id}"
+                    : $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id}";
             }
             else
             {
                 query = office
-                    ? $@"DELETE FROM ""prezenta.office.{User}"" WHERE date = '{date}'"
-                    : $@"DELETE FROM ""prezenta.{User}"" WHERE date = '{date}'";
+                    ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE date = '{date}'"
+                    : $@"DELETE FROM ""prezenta.{_user}"" WHERE date = '{date}'";
             }
 
             await Conn.ExecuteAsync(query).ConfigureAwait(false);
         }
 
-        public async Task<List<T>> GetAllElementsAsync<T>()
+        public static async Task<List<T>> GetAllElementsAsync<T>()
         {
             await CkeckConnectionAsync();
 
@@ -142,8 +142,8 @@ namespace CheckinLS.API.Sql
             {
                 result = typeof(T).Name switch
                 {
-                    nameof(StandardDatabaseEntry) => await Conn.QueryAsync<T>($@"SELECT * FROM ""prezenta.{User}"""),
-                    nameof(OfficeDatabaseEntries) => await Conn.QueryAsync<T>($@"SELECT * FROM ""prezenta.office.{User}"""),
+                    nameof(StandardDatabaseEntry) => await Conn.QueryAsync<T>($@"SELECT * FROM ""prezenta.{_user}"""),
+                    nameof(OfficeDatabaseEntries) => await Conn.QueryAsync<T>($@"SELECT * FROM ""prezenta.office.{_user}"""),
                     _ => throw new ArgumentException("Type not implemented")
                 };
             }
@@ -158,12 +158,12 @@ namespace CheckinLS.API.Sql
             return elements;
         }
 
-        public async Task<TimeSpan> MaxHourInDbAsync(IGetDate dateInterface)
+        public static async Task<TimeSpan> MaxHourInDbAsync(IGetDate dateInterface)
         {
             await CkeckConnectionAsync();
 
             var result = await Conn.QueryAsync<TimeSpan?>(
-                $@"SELECT oraFinal FROM ""prezenta.{User}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
+                $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
 
             var max = result.ToList().Max();
 

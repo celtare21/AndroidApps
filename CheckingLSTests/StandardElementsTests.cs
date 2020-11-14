@@ -25,9 +25,9 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", userInterface);
+            (_, _) = await MainSql.CreateAsync("1111", userInterface);
 
-            return await StandardElements.CreateAsync(sqlClass, dateInterface).ConfigureAwait(false);
+            return await StandardElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
 
         [TestCase("1111")]
@@ -364,9 +364,9 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            (MainSql sqlClass, _) = await MainSql.CreateAsync("1111", userInterface);
+            (_, _) = await MainSql.CreateAsync("1111", userInterface);
 
-            await sqlClass.DeleteFromDbAsync(false, date: "2020-01-01").ConfigureAwait(false);
+            await MainSql.DeleteFromDbAsync(false, date: "2020-01-01").ConfigureAwait(false);
 
             MainSql.SetNullConnection();
         }

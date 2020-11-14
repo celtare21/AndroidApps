@@ -22,7 +22,6 @@ namespace CheckinLS.Pages
 #pragma warning disable CS0649
         private StandardElements _elements;
 #pragma warning restore CS0649
-        private MainSql _sql;
         private bool _fakeListener, _busy, _disableNfcError, _startup = true;
         private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
 
@@ -39,14 +38,12 @@ namespace CheckinLS.Pages
             OreOfficeButton.Clicked += OreOfficeButton_Clicked;
         }
 
-        public async Task CreateElementsAsync(MainSql sqlClass)
+        public async Task CreateElementsAsync()
         {
-            _sql = sqlClass;
-
-            if (_sql.UserHasOffice())
+            if (MainSql.UserHasOffice())
                 OreOfficeButton.IsVisible = true;
 
-            _elements = await StandardElements.CreateAsync(sqlClass, new GetDate());
+            _elements = await StandardElements.CreateAsync(new GetDate());
         }
 
         protected override bool OnBackButtonPressed()
@@ -115,7 +112,7 @@ namespace CheckinLS.Pages
         {
             var officeClass = new OreOffice();
             await Navigation.PushModalAsync(officeClass);
-            await officeClass.CreateElementsAsync(_sql);
+            await officeClass.CreateElementsAsync();
             officeClass.RefreshPage();
         }
 

@@ -34,14 +34,14 @@ namespace CheckinLS.API.Sql
             return result.Any();
         }
 
-        public bool UserHasOffice()
+        public static bool UserHasOffice()
         {
             var office = new[]
             {
                 "alin", "vasile", "test"
             };
 
-            return office.Contains(User);
+            return office.Contains(_user);
         }
 
         public async Task<int> MakeUserAccountAsync(string username, string password)

@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Xaml;
-using MainSql = CheckinLS.API.Sql.MainSql;
 
 namespace CheckinLS.Pages
 {
@@ -14,9 +13,9 @@ namespace CheckinLS.Pages
     {
         private OfficeElements _officeElements;
 
-        public async Task CreateElementsAsync(MainSql sqlClass)
+        public async Task CreateElementsAsync()
         {
-            _officeElements = await OfficeElements.CreateAsync(sqlClass, new GetDate());
+            _officeElements = await OfficeElements.CreateAsync(new GetDate());
         }
 
         public OreOffice()
