@@ -23,7 +23,7 @@ namespace CheckinLS.API.Sql
         private readonly string _pin;
         private readonly IUsers _usersInterface;
 
-        public static async Task<Tuple<MainSql, int>> CreateAsync(string pin, IUsers usersInterface)
+        public static async Task<int> CreateAsync(string pin, IUsers usersInterface)
         {
             var thisClass = new MainSql(pin, usersInterface);
 
@@ -39,11 +39,11 @@ namespace CheckinLS.API.Sql
             }
 
             if (result == null)
-                return new Tuple<MainSql, int>(null, -1);
+                return -1;
 
             _user = result;
 
-            return new Tuple<MainSql, int>(thisClass, 0);
+            return 0;
         }
 
         public static void CreateConnection()
@@ -101,7 +101,7 @@ namespace CheckinLS.API.Sql
                         date = office.Date,
                         oraIncepere = office.OraIncepere,
                         oraFinal = office.OraFinal,
-                        total = office.Total,
+                        total = office.Total
                     }).ConfigureAwait(false);
             }
         }
@@ -144,7 +144,7 @@ namespace CheckinLS.API.Sql
                 {
                     nameof(StandardDatabaseEntry) => await Conn.QueryAsync<T>($@"SELECT * FROM ""prezenta.{_user}"""),
                     nameof(OfficeDatabaseEntries) => await Conn.QueryAsync<T>($@"SELECT * FROM ""prezenta.office.{_user}"""),
-                    _ => throw new ArgumentException("Type not implemented")
+                    var _ => throw new ArgumentException("Type not implemented")
                 };
             }
             catch (SqlException e)
@@ -153,9 +153,7 @@ namespace CheckinLS.API.Sql
                 return null;
             }
 
-            var elements = result.ToList();
-
-            return elements;
+            return result.ToList();
         }
 
         public static async Task<TimeSpan> MaxHourInDbAsync(IGetDate dateInterface)
@@ -164,10 +162,8 @@ namespace CheckinLS.API.Sql
 
             var result = await Conn.QueryAsync<TimeSpan?>(
                 $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
-
-            var max = result.ToList().Max();
-
-            return max ?? TimeUtils.StartTime();
+            
+            return result.ToList().Max() ?? TimeUtils.StartTime();
         }
     }
 }

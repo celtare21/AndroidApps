@@ -25,7 +25,7 @@ namespace CheckinLS.API.Office
         }
 
         private OfficeElements(IGetDate dateInterface) =>
-                (_dateInterface) = (dateInterface);
+                _dateInterface = dateInterface;
 
         public async Task AddNewEntryAsync(TimeSpan start, TimeSpan finish)
         {
@@ -37,17 +37,13 @@ namespace CheckinLS.API.Office
         private OfficeDatabaseEntries NewElementsTable(TimeSpan start, TimeSpan finish)
         {
             if (start == finish || start > finish)
-            {
                 throw new AllParametersFalse();
-            }
 
             TimeSpan total = finish - start;
 
             if (total.TotalDays > 1)
-            {
                 throw new HoursOutOfBounds();
-            }
-
+            
             var date = _dateInterface.GetCurrentDate();
 
             return new OfficeDatabaseEntries(date, start, finish, total);

@@ -13,7 +13,6 @@ using Xamarin.Forms.Xaml;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
 // ReSharper disable RedundantCapturedContext
-
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
@@ -124,6 +123,7 @@ namespace CheckinLS.Pages
                         CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
                         Total.Text = "Not found!";
                 PretTotal.Text = "0";
+
                 return;
             }
 
@@ -262,7 +262,7 @@ namespace CheckinLS.Pages
             Analytics.TrackEvent("NFC tag read");
 
             if (!_busy)
-                _ = WaitAndAddAsync();
+                WaitAndAddAsync();
 
             StartListening();
         }
@@ -286,7 +286,7 @@ namespace CheckinLS.Pages
             PretTotal.Text = valoare.ToString(CultureInfo.InvariantCulture);
         }
 
-        private async Task WaitAndAddAsync()
+        private async void WaitAndAddAsync()
         {
             _busy = true;
 
@@ -302,7 +302,7 @@ namespace CheckinLS.Pages
             _busy = false;
         }
 
-        private async Task CountdownAsync()
+        private static async Task CountdownAsync()
         {
             UserDialogs.Instance.ShowLoading("Waiting...");
             await Task.Delay(6000).ConfigureAwait(false);
@@ -317,12 +317,12 @@ namespace CheckinLS.Pages
             Indicator.Color = Color.Green;
         }
 
-        private void Current_OnMessageReceivedFake(ITagInfo tagInfo)
+        private static void Current_OnMessageReceivedFake(ITagInfo tagInfo)
         {
             // Do nothing;
         }
 
-        private string GetMessage(NFCNdefRecord record)
+        private static string GetMessage(NFCNdefRecord record)
         {
             if (record.TypeFormat != NFCNdefTypeFormat.WellKnown ||
                 string.IsNullOrWhiteSpace(record.MimeType) && record.MimeType != "text/plain")

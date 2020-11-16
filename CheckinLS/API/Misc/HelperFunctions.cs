@@ -13,11 +13,11 @@ namespace CheckinLS.API.Misc
         public static string ConversionWrapper<T>(T elem) =>
             elem switch
             {
-                int i => i.ToString(),
+                int i => Convert.ToString(i),
                 string str => str,
                 DateTime time => time.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture),
                 TimeSpan span => span.ToString(@"hh\:mm"),
-                _ => throw new ArgumentException()
+                var _ => throw new ArgumentException()
             };
 
         public static void ShowAlertKill(string message) =>

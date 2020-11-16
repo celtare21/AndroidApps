@@ -6,7 +6,7 @@ namespace CheckinLS.API.Sql
 {
     public partial class MainSql
     {
-        private async Task<bool> IsUserAlreadyCreatedAsync(string username)
+        private static async Task<bool> IsUserAlreadyCreatedAsync(string username)
         {
             await CkeckConnectionAsync();
 
@@ -15,7 +15,7 @@ namespace CheckinLS.API.Sql
             return result.Any();
         }
 
-        private async Task<bool> IsPasswordAlreadyUsedAsync(string password)
+        private static async Task<bool> IsPasswordAlreadyUsedAsync(string password)
         {
             await CkeckConnectionAsync();
 
@@ -24,7 +24,7 @@ namespace CheckinLS.API.Sql
             return result.Any();
         }
 
-        private async Task<bool> IsUserAsync(string username)
+        private static async Task<bool> IsUserAsync(string username)
         {
             await CkeckConnectionAsync();
 
@@ -44,7 +44,7 @@ namespace CheckinLS.API.Sql
             return office.Contains(_user);
         }
 
-        public async Task<int> MakeUserAccountAsync(string username, string password)
+        public static async Task<int> MakeUserAccountAsync(string username, string password)
         {
             if (!await IsUserAsync(username))
                 return -1;

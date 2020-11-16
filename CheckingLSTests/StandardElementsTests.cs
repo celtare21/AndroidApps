@@ -25,7 +25,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            (_, _) = await MainSql.CreateAsync("1111", userInterface);
+            _ = await MainSql.CreateAsync("1111", userInterface);
 
             return await StandardElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -42,9 +42,8 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(pin, userInterface);
+            int returnCode = await MainSql.CreateAsync(pin, userInterface);
 
-            Assert.IsNotNull(sqlClass);
             Assert.AreEqual(returnCode, 0);
         }
 
@@ -62,9 +61,8 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(pin, userInterface);
+            int returnCode = await MainSql.CreateAsync(pin, userInterface);
 
-            Assert.IsNull(sqlClass);
             Assert.AreEqual(returnCode, -1);
         }
 
@@ -356,7 +354,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            (_, _) = await MainSql.CreateAsync("1111", userInterface);
+            _ = await MainSql.CreateAsync("1111", userInterface);
 
             await MainSql.DeleteFromDbAsync(false, date: "2020-01-01").ConfigureAwait(false);
 

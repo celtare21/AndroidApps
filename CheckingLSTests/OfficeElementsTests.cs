@@ -25,7 +25,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            (_, _) = await MainSql.CreateAsync("1111", userInterface);
+            _ = await MainSql.CreateAsync("1111", userInterface);
 
             return await OfficeElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -89,7 +89,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            (_, _) = await MainSql.CreateAsync("1111", userInterface);
+            _ = await MainSql.CreateAsync("1111", userInterface);
 
             await MainSql.DeleteFromDbAsync(true, date: "2020-01-01").ConfigureAwait(false);
 

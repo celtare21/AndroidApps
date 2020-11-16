@@ -11,14 +11,12 @@ namespace CheckinLS.Pages
     public partial class AddUser
     {
         private readonly string _password;
-        private readonly MainSql _sqlClass;
 
-        public AddUser(string password, MainSql sqlClass)
+        public AddUser(string password)
         {
             InitializeComponent();
 
             _password = password;
-            _sqlClass = sqlClass;
 
             Enter.Clicked += Enter_Clicked;
         }
@@ -45,7 +43,7 @@ namespace CheckinLS.Pages
 
             username = RemoveWhitespace(username.ToLowerInvariant());
 
-            var result = await _sqlClass.MakeUserAccountAsync(username, _password);
+            var result = await MainSql.MakeUserAccountAsync(username, _password);
 
             switch (result)
             {
@@ -65,7 +63,7 @@ namespace CheckinLS.Pages
             await Navigation.PushModalAsync(new Login());
         }
 
-        private string RemoveWhitespace(string str) =>
+        private static string RemoveWhitespace(string str) =>
                     string.Join("", str.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
     }
 }

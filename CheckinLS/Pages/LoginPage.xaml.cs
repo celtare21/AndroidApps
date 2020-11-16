@@ -43,13 +43,13 @@ namespace CheckinLS.Pages
 
             Enter.IsEnabled = false;
 
-            (MainSql sqlClass, int returnCode) = await MainSql.CreateAsync(entryPin, new Users());
+            int returnCode = await MainSql.CreateAsync(entryPin, new Users());
 
             switch (returnCode)
             {
                 case -1:
                     await DisplayAlert("Error", "No user found! Please create one.", "OK");
-                    await Navigation.PushModalAsync(new AddUser(entryPin, sqlClass));
+                    await Navigation.PushModalAsync(new AddUser(entryPin));
                     return;
                 default:
                     var homeClass = new Home();

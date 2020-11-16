@@ -26,7 +26,7 @@ namespace CheckinLS.API.Standard
         }
 
         private StandardElements(IGetDate dateInterface) =>
-                (_dateInterface) = (dateInterface);
+                _dateInterface = dateInterface;
 
         public async Task AddNewEntryAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
@@ -38,9 +38,7 @@ namespace CheckinLS.API.Standard
         private async Task<StandardDatabaseEntry> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
             if (!curs && !pregatire && !recuperare)
-            {
                 throw new AllParametersFalse();
-            }
 
             (TimeSpan oraIncepere, TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat) =
                 (await MainSql.MaxHourInDbAsync(_dateInterface), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
@@ -49,9 +47,7 @@ namespace CheckinLS.API.Standard
             TimeSpan oraFinal = oraIncepere + total;
 
             if (oraFinal.TotalDays > 1)
-            {
                 throw new HoursOutOfBounds();
-            }
 
             var date = _dateInterface.GetCurrentDate();
 

@@ -47,13 +47,13 @@ namespace CheckinLS
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
-        private void CheckInternet()
+        private static void CheckInternet()
         {
             if (Connectivity.NetworkAccess != NetworkAccess.Internet)
                 HelperFunctions.ShowAlertKill("No internet connection!");
         }
 
-        private void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
+        private static void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
         {
             CheckInternet();
         }
