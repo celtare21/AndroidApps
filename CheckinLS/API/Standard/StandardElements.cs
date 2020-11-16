@@ -30,7 +30,8 @@ namespace CheckinLS.API.Standard
 
         public async Task AddNewEntryAsync(string observatii, bool curs, bool pregatire, bool recuperare)
         {
-            await MainSql.AddToDbAsync(await NewElementsTableAsync(string.IsNullOrEmpty(observatii) ? "None" : observatii, curs, pregatire, recuperare));
+            await MainSql.AddToDbAsync(await NewElementsTableAsync(string.IsNullOrEmpty(observatii) ? "None" : observatii, curs,
+                pregatire, recuperare));
             await RefreshElementsAsync();
             Index = MaxElement() - 1;
         }

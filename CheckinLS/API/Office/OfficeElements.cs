@@ -29,7 +29,7 @@ namespace CheckinLS.API.Office
 
         public async Task AddNewEntryAsync(TimeSpan start, TimeSpan finish)
         {
-            await MainSql.AddToDbAsync(office: NewElementsTable(start, finish));
+            await MainSql.AddToDbAsync(NewElementsTable(start, finish));
             await RefreshElementsAsync();
             Index = MaxElement() - 1;
         }

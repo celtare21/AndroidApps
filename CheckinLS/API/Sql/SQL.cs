@@ -20,12 +20,11 @@ namespace CheckinLS.API.Sql
     {
         public static SqlConnection Conn { get; private set; }
         private static string _user;
-        private readonly string _pin;
         private readonly IUsers _usersInterface;
 
         public static async Task<int> CreateAsync(string pin, IUsers usersInterface)
         {
-            var thisClass = new MainSql(pin, usersInterface);
+            var thisClass = new MainSql(usersInterface);
 
             await thisClass._usersInterface.CreateUsersCacheAsync();
 
@@ -34,7 +33,7 @@ namespace CheckinLS.API.Sql
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (var user in thisClass._usersInterface.DeserializeCache())
             {
-                if (user.Password == thisClass._pin)
+                if (user.Password == pin)
                     result = user.Username;
             }
 
@@ -46,13 +45,14 @@ namespace CheckinLS.API.Sql
             return 0;
         }
 
+
         public static void CreateConnection()
         {
             Conn = new SqlConnection(Secrets.ConnStr);
         }
 
-        private MainSql(string pin, IUsers usersInterface) =>
-                (_pin, _usersInterface) = (pin, usersInterface);
+        private MainSql(IUsers usersInterface) =>
+                _usersInterface = usersInterface;
 
         public static async Task CkeckConnectionAsync()
         {
@@ -66,43 +66,48 @@ namespace CheckinLS.API.Sql
         public static void SetNullConnection() =>
                     Conn = null;
 
-        public static async Task AddToDbAsync(StandardDatabaseEntry standard = default, OfficeDatabaseEntries office = default)
+        public static async Task AddToDbAsync<T>(T entries)
         {
             await CkeckConnectionAsync();
 
-            if (standard == default && office == default)
-                return;
-
-            if (standard != default)
+            switch (entries)
             {
-                string query =
-                    $@"INSERT INTO ""prezenta.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
+                case StandardDatabaseEntry standard:
+                {
+                    string query =
+                        $@"INSERT INTO ""prezenta.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
 
-                await Conn.ExecuteAsync(query,
-                    new
-                    {
-                        date = standard.Date,
-                        oraIncepere = standard.OraIncepere,
-                        oraFinal = standard.OraFinal,
-                        cursAlocat = standard.CursAlocat,
-                        pregatireAlocat = standard.PregatireAlocat,
-                        recuperareAlocat = standard.RecuperareAlocat,
-                        total = standard.Total,
-                        observatii = standard.Observatii
-                    }).ConfigureAwait(false);
-            }
-            else
-            {
-                string query = $@"INSERT INTO ""prezenta.office.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @total)";
+                    await Conn.ExecuteAsync(query,
+                        new
+                        {
+                            date = standard.Date,
+                            oraIncepere = standard.OraIncepere,
+                            oraFinal = standard.OraFinal,
+                            cursAlocat = standard.CursAlocat,
+                            pregatireAlocat = standard.PregatireAlocat,
+                            recuperareAlocat = standard.RecuperareAlocat,
+                            total = standard.Total,
+                            observatii = standard.Observatii
+                        }).ConfigureAwait(false);
+                    break;
+                }
+                case OfficeDatabaseEntries office:
+                {
+                    string query =
+                        $@"INSERT INTO ""prezenta.office.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @total)";
 
-                await Conn.ExecuteAsync(query,
-                    new
-                    {
-                        date = office.Date,
-                        oraIncepere = office.OraIncepere,
-                        oraFinal = office.OraFinal,
-                        total = office.Total
-                    }).ConfigureAwait(false);
+                    await Conn.ExecuteAsync(query,
+                        new
+                        {
+                            date = office.Date,
+                            oraIncepere = office.OraIncepere,
+                            oraFinal = office.OraFinal,
+                            total = office.Total
+                        }).ConfigureAwait(false);
+                    break;
+                }
+                default:
+                    throw new NotImplementedException();
             }
         }
 
