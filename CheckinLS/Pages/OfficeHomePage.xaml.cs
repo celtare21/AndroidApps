@@ -9,7 +9,7 @@ using Xamarin.Forms.Xaml;
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class OreOffice
+    public partial class OfficeHomePage
     {
         private OfficeElements _officeElements;
 
@@ -18,7 +18,7 @@ namespace CheckinLS.Pages
             _officeElements = await OfficeElements.CreateAsync(new GetDate());
         }
 
-        public OreOffice()
+        public OfficeHomePage()
         {
             InitializeComponent();
 

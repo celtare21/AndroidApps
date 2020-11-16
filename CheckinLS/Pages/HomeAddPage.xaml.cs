@@ -6,12 +6,12 @@ using Xamarin.Forms.Xaml;
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class ManualAdd
+    public partial class HomeAddPage
     {
         private readonly StandardElements _elements;
         private readonly Home _home;
 
-        public ManualAdd(StandardElements elements, in Home home)
+        public HomeAddPage(StandardElements elements, in Home home)
         {
             InitializeComponent();
 

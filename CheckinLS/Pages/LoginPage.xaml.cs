@@ -9,9 +9,9 @@ using MainSql = CheckinLS.API.Sql.MainSql;
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class Login
+    public partial class LoginPage
     {
-        public Login()
+        public LoginPage()
         {
             InitializeComponent();
 
@@ -49,7 +49,7 @@ namespace CheckinLS.Pages
             {
                 case -1:
                     await DisplayAlert("Error", "No user found! Please create one.", "OK");
-                    await Navigation.PushModalAsync(new AddUser(entryPin));
+                    await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
                     return;
                 default:
                     var homeClass = new Home();

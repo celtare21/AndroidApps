@@ -105,11 +105,11 @@ namespace CheckinLS.Pages
         }
 
         private void ManualAddButton_Clicked(object sender, EventArgs e) =>
-                Navigation.PushModalAsync(new ManualAdd(_elements, this));
+                Navigation.PushModalAsync(new HomeAddPage(_elements, this));
 
         private async void OreOfficeButton_Clicked(object sender, EventArgs e)
         {
-            var officeClass = new OreOffice();
+            var officeClass = new OfficeHomePage();
             await Navigation.PushModalAsync(officeClass);
             await officeClass.CreateElementsAsync();
             officeClass.RefreshPage();

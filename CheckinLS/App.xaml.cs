@@ -24,7 +24,7 @@ namespace CheckinLS
             CheckInternet();
             Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
 
-            MainPage = new Login();
+            MainPage = new LoginPage();
         }
 
         protected override void OnStart()

@@ -8,11 +8,11 @@ using MainSql = CheckinLS.API.Sql.MainSql;
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class AddUser
+    public partial class AddNewUserPage
     {
         private readonly string _password;
 
-        public AddUser(string password)
+        public AddNewUserPage(string password)
         {
             InitializeComponent();
 
@@ -60,7 +60,7 @@ namespace CheckinLS.Pages
 
             await DisplayAlert("New user", "User created! Please re-enter pin", "OK");
 
-            await Navigation.PushModalAsync(new Login());
+            await Navigation.PushModalAsync(new LoginPage());
         }
 
         private static string RemoveWhitespace(string str) =>
