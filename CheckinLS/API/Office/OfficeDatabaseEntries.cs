@@ -13,7 +13,7 @@ namespace CheckinLS.API.Office
         public OfficeDatabaseEntries(DateTime date, TimeSpan oraIncepere, TimeSpan oraFinal, TimeSpan total) =>
             (Id, Date, OraIncepere, OraFinal, Total) = (0, date, oraIncepere, oraFinal, total);
 
-        public bool Equals(OfficeDatabaseEntries other) =>
+        private bool Equals(OfficeDatabaseEntries other) =>
                 Id == other.Id && Date.Equals(other.Date) && OraIncepere.Equals(other.OraIncepere) && OraFinal.Equals(other.OraFinal) && Total.Equals(other.Total);
 
         public override bool Equals(object obj) =>

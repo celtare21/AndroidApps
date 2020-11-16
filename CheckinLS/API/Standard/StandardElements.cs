@@ -59,7 +59,7 @@ namespace CheckinLS.API.Standard
                 recuperareAlocat, total, observatii);
         }
 
-        public async Task DeleteEntryAsync(int? id = null, string date = null)
+        public async Task DeleteEntryAsync(int id)
         {
             await MainSql.DeleteFromDbAsync(false, id);
             await RefreshElementsAsync().ConfigureAwait(false);

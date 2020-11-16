@@ -339,5 +339,5 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
-# Secrets class
+# Secrets json
 CheckinLS/secrets.json

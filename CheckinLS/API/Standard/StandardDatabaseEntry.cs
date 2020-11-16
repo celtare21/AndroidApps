@@ -30,7 +30,7 @@ namespace CheckinLS.API.Standard
             x.PregatireAlocat != y.RecuperareAlocat || x.Total != y.Total ||
             !string.Equals(x.Observatii, y.Observatii);
 
-        public bool Equals(StandardDatabaseEntry other) =>
+        private bool Equals(StandardDatabaseEntry other) =>
                 Id == other.Id && Date.Equals(other.Date) && OraIncepere.Equals(other.OraIncepere) &&
                     OraFinal.Equals(other.OraFinal) && CursAlocat.Equals(other.CursAlocat) &&
                     PregatireAlocat.Equals(other.PregatireAlocat) && RecuperareAlocat.Equals(other.RecuperareAlocat) &&

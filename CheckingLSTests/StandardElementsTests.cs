@@ -327,15 +327,7 @@ namespace CheckingLSTests
 
             Assert.CatchAsync(() => elements.AddNewEntryAsync(null, true, true, true), "Hours out of bounds!");
         }
-
-        [Test]
-        public async Task DeleteEntryAsync_NoArguments_ReturnsException()
-        {
-            var elements = await CreateTaskAsync();
-
-            Assert.CatchAsync(() => elements.DeleteEntryAsync(), "All parameters are false!");
-        }
-
+        
         [Test]
         public async Task DeleteEntryAsync_ById_ReturnSmallerMax()
         {

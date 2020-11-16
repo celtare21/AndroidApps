@@ -53,7 +53,7 @@ namespace CheckinLS.API.Office
             return new OfficeDatabaseEntries(date, start, finish, total);
         }
 
-        public async Task DeleteEntryAsync(int? id = null, string date = null)
+        public async Task DeleteEntryAsync(int id)
         {
             await MainSql.DeleteFromDbAsync(true, id);
             await RefreshElementsAsync().ConfigureAwait(false);
