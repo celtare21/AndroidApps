@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using System.Linq;
 using System.Threading.Tasks;
+using CheckinLS.API.Misc;
 
 namespace CheckinLS.API.Sql
 {
@@ -44,25 +45,23 @@ namespace CheckinLS.API.Sql
             return office.Contains(_user);
         }
 
-        public static async Task<int> MakeUserAccountAsync(string username, string password)
+        public static async Task MakeUserAccountAsync(string username, string password)
         {
             if (!await IsUserAsync(username))
-                return -1;
+                throw new UserTableNotFound();
 
             if (await IsUserAlreadyCreatedAsync(username))
-                return -2;
+                throw new UserAlreadyExists();
 
             if (await IsPasswordAlreadyUsedAsync(password))
-                return -3;
+                throw new PinAlreadyExists();
 
             const string query = @"INSERT INTO users (username,password)" +
                                  "VALUES (@Username,@Password)";
 
             await CkeckConnectionAsync();
 
-            await Conn.ExecuteAsync(query, new { Username = username, Password = password });
-
-            return 0;
+            await Conn.ExecuteAsync(query, new { Username = username, Password = password }).ConfigureAwait(false);
         }
     }
 }

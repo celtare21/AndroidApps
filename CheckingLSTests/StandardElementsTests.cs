@@ -14,7 +14,7 @@ namespace CheckingLSTests
     [TestFixture]
     public class StandardElementsTests
     {
-        private async Task<StandardElements> CreateTaskAsync()
+        private static async Task<StandardElements> CreateTaskAsync()
         {
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
@@ -25,7 +25,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            _ = await MainSql.CreateAsync("1111", userInterface);
+            await MainSql.CreateAsync("1111", userInterface);
 
             return await StandardElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -42,9 +42,10 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            int returnCode = await MainSql.CreateAsync(pin, userInterface);
 
-            Assert.AreEqual(returnCode, 0);
+            Task AsyncTestDelegate() => MainSql.CreateAsync(pin, userInterface);
+
+            Assert.DoesNotThrowAsync(AsyncTestDelegate);
         }
 
         [TestCase("Alex")]
@@ -61,9 +62,10 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            int returnCode = await MainSql.CreateAsync(pin, userInterface);
 
-            Assert.AreEqual(returnCode, -1);
+            Task AsyncTestDelegate() => MainSql.CreateAsync(pin, userInterface);
+
+            Assert.CatchAsync<NoUserFound>(AsyncTestDelegate);
         }
 
         [Test]
@@ -71,7 +73,9 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            Assert.CatchAsync(() => elements.AddNewEntryAsync(null, false, false, false), "All parameters are false!");
+            Task AsyncTestDelegate() => elements.AddNewEntryAsync(null, false, false, false);
+
+            Assert.CatchAsync<AllParametersFalse>(AsyncTestDelegate);
         }
 
         [TestCase(null)]
@@ -323,7 +327,9 @@ namespace CheckingLSTests
             await elements.AddNewEntryAsync(null, true, true, true);
             await elements.AddNewEntryAsync(null, true, true, true);
 
-            Assert.CatchAsync(() => elements.AddNewEntryAsync(null, true, true, true), "Hours out of bounds!");
+            Task AsyncTestDelegate() => elements.AddNewEntryAsync(null, true, true, true);
+
+            Assert.CatchAsync<HoursOutOfBounds>(AsyncTestDelegate);
         }
         
         [Test]
@@ -354,7 +360,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            _ = await MainSql.CreateAsync("1111", userInterface);
+            await MainSql.CreateAsync("1111", userInterface);
 
             await MainSql.DeleteFromDbAsync(false, date: "2020-01-01").ConfigureAwait(false);
 

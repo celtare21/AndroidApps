@@ -1,5 +1,6 @@
 ﻿using CheckinLS.InterfacesAndClasses.Users;
 using System;
+using CheckinLS.API.Misc;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using MainSql = CheckinLS.API.Sql.MainSql;
@@ -43,23 +44,23 @@ namespace CheckinLS.Pages
 
             Enter.IsEnabled = false;
 
-            int returnCode = await MainSql.CreateAsync(entryPin, new Users());
-
-            switch (returnCode)
+            try
             {
-                case -1:
-                    await DisplayAlert("Error", "No user found! Please create one.", "OK");
-                    await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
-                    Enter.IsEnabled = true;
-                    return;
-                default:
-                    var homeClass = new Home();
-                    await Navigation.PushModalAsync(homeClass);
-                    await homeClass.CreateElementsAsync();
-                    homeClass.RefreshPage();
-                    await homeClass.NfcServiceAsync();
-                    break;
+                await MainSql.CreateAsync(entryPin, new Users());
             }
+            catch (NoUserFound)
+            {
+                await DisplayAlert("Error", "No user found! Please create one.", "OK");
+                await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
+                Enter.IsEnabled = true;
+                return;
+            }
+
+            var homeClass = new Home();
+            await Navigation.PushModalAsync(homeClass);
+            await homeClass.CreateElementsAsync();
+            homeClass.RefreshPage();
+            await homeClass.NfcServiceAsync();
         }
     }
 }

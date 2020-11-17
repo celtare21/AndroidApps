@@ -26,13 +26,27 @@ namespace CheckinLS.Pages
             if (_elements == null)
                 return;
 
-            if (!CursToggle.IsToggled && !PregatireToggle.IsToggled && !RecuperareToggle.IsToggled)
-                return;
-
             AddButton.IsEnabled = false;
 
+            try
+            {
+                await _elements.AddNewEntryAsync(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled,
+                    RecuperareToggle.IsToggled);
+            }
+            catch (AllParametersFalse)
+            {
+                HelperFunctions.ShowToast("Please select at least one item.");
+                AddButton.IsEnabled = true;
+                return;
+            }
+            catch (HoursOutOfBounds)
+            {
+                HelperFunctions.ShowToast("Too many entries in a day!");
+                AddButton.IsEnabled = true;
+                return;
+            }
+
             Analytics.TrackEvent("Manual entry added");
-            await _elements.AddNewEntryAsync(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled, RecuperareToggle.IsToggled);
             HelperFunctions.ShowToast("New entry added!");
             _home.RefreshPage();
             ObsManualEntry.Text = "";

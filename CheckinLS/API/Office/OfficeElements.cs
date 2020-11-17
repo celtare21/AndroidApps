@@ -36,8 +36,11 @@ namespace CheckinLS.API.Office
 
         private OfficeDatabaseEntries NewElementsTable(TimeSpan start, TimeSpan finish)
         {
-            if (start == finish || start > finish)
-                throw new AllParametersFalse();
+            if (start == finish)
+                throw new HoursCantBeEqual();
+
+            if (start > finish)
+                throw new StartCantBeBigger();
 
             TimeSpan total = finish - start;
 

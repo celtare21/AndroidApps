@@ -77,21 +77,25 @@ namespace CheckinLS.Pages
             if (_officeElements == null)
                 return;
 
-            if (start == finish)
-            {
-                HelperFunctions.ShowToast("Can't have the start time equal to finish time!");
-                return;
-            }
-
-            if (start > finish)
-            {
-                HelperFunctions.ShowToast("Start time can't be bigger than finish time");
-                return;
-            }
-
             AddButton.IsEnabled = false;
 
-            await _officeElements.AddNewEntryAsync(start, finish);
+            try
+            {
+                await _officeElements.AddNewEntryAsync(start, finish);
+            }
+            catch (HoursCantBeEqual)
+            {
+                HelperFunctions.ShowToast("Can't have the start time equal to finish time!");
+                AddButton.IsEnabled = true;
+                return;
+            }
+            catch (StartCantBeBigger)
+            {
+                HelperFunctions.ShowToast("Start time can't be bigger than finish time");
+                AddButton.IsEnabled = true;
+                return;
+            }
+
             RefreshPage();
             HelperFunctions.ShowToast("New entry added!");
 

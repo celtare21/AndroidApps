@@ -14,7 +14,7 @@ namespace CheckingLSTests
     [TestFixture]
     public class OfficeElementsTests
     {
-        private async Task<OfficeElements> CreateTaskAsync()
+        private static async Task<OfficeElements> CreateTaskAsync()
         {
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
@@ -25,7 +25,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            _ = await MainSql.CreateAsync("1111", userInterface);
+            await MainSql.CreateAsync("1111", userInterface);
 
             return await OfficeElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -35,7 +35,9 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            Assert.CatchAsync(() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(8)), "All parameters are false!");
+            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(8));
+
+            Assert.CatchAsync<HoursCantBeEqual>(AsyncTestDelegate);
         }
 
         [Test]
@@ -43,7 +45,9 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            Assert.CatchAsync(() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(9), TimeSpan.FromHours(8)), "All parameters are false!");
+            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(9), TimeSpan.FromHours(8));
+
+            Assert.CatchAsync<StartCantBeBigger>(AsyncTestDelegate);
         }
 
         [Test]
@@ -89,7 +93,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            _ = await MainSql.CreateAsync("1111", userInterface);
+            await MainSql.CreateAsync("1111", userInterface);
 
             await MainSql.DeleteFromDbAsync(true, date: "2020-01-01").ConfigureAwait(false);
 

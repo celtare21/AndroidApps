@@ -22,7 +22,7 @@ namespace CheckinLS.API.Sql
         private static string _user;
         private readonly IUsers _usersInterface;
 
-        public static async Task<int> CreateAsync(string pin, IUsers usersInterface)
+        public static async Task CreateAsync(string pin, IUsers usersInterface)
         {
             var thisClass = new MainSql(usersInterface);
 
@@ -37,12 +37,7 @@ namespace CheckinLS.API.Sql
                     result = user.Username;
             }
 
-            if (result == null)
-                return -1;
-
-            _user = result;
-
-            return 0;
+            _user = result ?? throw new NoUserFound();
         }
 
 

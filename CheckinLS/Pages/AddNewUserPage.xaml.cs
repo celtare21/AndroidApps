@@ -1,4 +1,5 @@
 ﻿using System;
+using CheckinLS.API.Misc;
 using Xamarin.Forms.Xaml;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
@@ -32,19 +33,24 @@ namespace CheckinLS.Pages
 
             username = RemoveWhitespace(username.ToLowerInvariant());
 
-            var result = await MainSql.MakeUserAccountAsync(username, _password);
-
-            switch (result)
+            try
             {
-                case -1:
-                    await DisplayAlert("Error", "No table found with that name!", "OK");
-                    return;
-                case -2:
-                    await DisplayAlert("Error", "User already registered!", "OK");
-                    return;
-                case -3:
-                    await DisplayAlert("Error", "Password already used!", "OK");
-                    return;
+                await MainSql.MakeUserAccountAsync(username, _password);
+            }
+            catch (UserTableNotFound)
+            {
+                await DisplayAlert("Error", "No table found with that name!", "OK");
+                return;
+            }
+            catch (UserAlreadyExists)
+            {
+                await DisplayAlert("Error", "User already registered!", "OK");
+                return;
+            }
+            catch (PinAlreadyExists)
+            {
+                await DisplayAlert("Error", "Password already used!", "OK");
+                return;
             }
 
             await DisplayAlert("New user", "User created! Please re-enter pin", "OK");
