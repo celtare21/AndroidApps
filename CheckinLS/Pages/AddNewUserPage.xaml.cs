@@ -1,5 +1,4 @@
 ﻿using System;
-using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
@@ -21,21 +20,11 @@ namespace CheckinLS.Pages
             Enter.Clicked += Enter_Clicked;
         }
 
-        protected override bool OnBackButtonPressed()
-        {
-            Device.BeginInvokeOnMainThread(async () =>
-            {
-                var result = await DisplayAlert("Alert!", "Do you really want to exit the application?", "Yes", "No");
-
-                if (result)
-                    App.Close();
-            });
-
-            return true;
-        }
-
         private async void Enter_Clicked(object sender, EventArgs e)
         {
+            if (MainSql.Conn == null)
+                return;
+
             var username = Username.Text;
 
             if (string.IsNullOrEmpty(username))

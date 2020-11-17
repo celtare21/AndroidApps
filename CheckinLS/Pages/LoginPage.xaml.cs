@@ -50,6 +50,7 @@ namespace CheckinLS.Pages
                 case -1:
                     await DisplayAlert("Error", "No user found! Please create one.", "OK");
                     await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
+                    Enter.IsEnabled = true;
                     return;
                 default:
                     var homeClass = new Home();
