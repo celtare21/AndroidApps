@@ -1,5 +1,6 @@
 ﻿using CheckinLS.InterfacesAndClasses.Users;
 using System;
+using Acr.UserDialogs;
 using CheckinLS.API.Misc;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -42,16 +43,22 @@ namespace CheckinLS.Pages
             if (string.IsNullOrEmpty(entryPin))
                 return;
 
+            UserDialogs.Instance.ShowLoading();
+
             Enter.IsEnabled = false;
+
+            var usersInterface = new Users();
 
             try
             {
-                await MainSql.CreateAsync(entryPin, new Users());
+                await MainSql.CreateAsync(entryPin, usersInterface);
             }
             catch (NoUserFound)
             {
+                UserDialogs.Instance.HideLoading();
                 await DisplayAlert("Error", "No user found! Please create one.", "OK");
                 await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
+                usersInterface.DropCache();
                 Enter.IsEnabled = true;
                 return;
             }
@@ -61,6 +68,8 @@ namespace CheckinLS.Pages
             await homeClass.CreateElementsAsync();
             homeClass.RefreshPage();
             await homeClass.NfcServiceAsync();
+
+            UserDialogs.Instance.HideLoading();
         }
     }
 }

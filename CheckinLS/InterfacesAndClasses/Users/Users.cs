@@ -19,7 +19,7 @@ namespace CheckinLS.InterfacesAndClasses.Users
 
         public async Task CreateUsersCacheAsync()
         {
-            if (Directory.Exists(UsersFolder))
+            if (Directory.Exists(UsersFolder) && File.Exists(JsonPath))
                 return;
 
             IEnumerable<Accounts> result;
@@ -30,20 +30,30 @@ namespace CheckinLS.InterfacesAndClasses.Users
             }
 
             Directory.CreateDirectory(UsersFolder);
-            if (File.Exists(JsonPath))
-                File.Delete(JsonPath);
 
             await File.WriteAllTextAsync(JsonPath, JsonConvert.SerializeObject(result)).ConfigureAwait(false);
         }
 
         public List<Accounts> DeserializeCache()
         {
-            if (!File.Exists(JsonPath))
-                return null;
+            string jsonString;
 
-            string jsonString = File.ReadAllText(JsonPath);
+            try
+            {
+                jsonString = File.ReadAllText(JsonPath);
+            }
+            catch (FileNotFoundException)
+            {
+                HelperFunctions.ShowAlertKill("Please wipe the app data.");
+                return null;
+            }
 
             return JsonConvert.DeserializeObject<List<Accounts>>(jsonString);
+        }
+
+        public void DropCache()
+        {
+            File.Delete(JsonPath);
         }
     }
 }

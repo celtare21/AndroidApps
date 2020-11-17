@@ -8,5 +8,6 @@ namespace CheckinLS.InterfacesAndClasses.Users
     {
         Task CreateUsersCacheAsync();
         List<Accounts> DeserializeCache();
+        void DropCache();
     }
 }

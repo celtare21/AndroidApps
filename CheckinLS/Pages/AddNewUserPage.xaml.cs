@@ -55,7 +55,7 @@ namespace CheckinLS.Pages
 
             await DisplayAlert("New user", "User created! Please re-enter pin", "OK");
 
-            await Navigation.PushModalAsync(new LoginPage());
+            await Navigation.PopModalAsync();
         }
 
         private static string RemoveWhitespace(string str) =>
