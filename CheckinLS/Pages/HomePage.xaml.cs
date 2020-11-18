@@ -27,14 +27,6 @@ namespace CheckinLS.Pages
         public Home()
         {
             InitializeComponent();
-
-            LeftButton.Clicked += LeftButton_Clicked;
-            RightButton.Clicked += RightButton_Clicked;
-            
-            DeleteButton.Clicked += DeleteButton_Clicked;
-            ManualAddButton.Clicked += ManualAddButton_Clicked;
-
-            OreOfficeButton.Clicked += OreOfficeButton_Clicked;
         }
 
         public async Task CreateElementsAsync()
@@ -43,6 +35,20 @@ namespace CheckinLS.Pages
                 OreOfficeButton.IsVisible = true;
 
             _elements = await StandardElements.CreateAsync(new GetDate());
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            AddEvents();
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            RemoveEvents();
         }
 
         protected override bool OnBackButtonPressed()
@@ -142,53 +148,72 @@ namespace CheckinLS.Pages
             SetPrice();
         }
 
-        public async Task NfcServiceAsync()
+        private void AddEvents()
         {
-            if (!CrossNFC.IsSupported)
-            {
-                if (!_disableNfcError)
-                {
-                    await DisplayAlert("Error", "NFC is not supported! Please manually add new lessons.", "OK");
-                    _disableNfcError = true;
-                }
-                return;
-            }
+            LeftButton.Clicked += LeftButton_Clicked;
+            RightButton.Clicked += RightButton_Clicked;
 
-            if (!CrossNFC.Current.IsAvailable)
-            {
-                if (!_disableNfcError)
-                {
-                    await DisplayAlert("Error", "NFC is not available", "OK");
-                    _disableNfcError = true;
-                }
-                return;
-            }
+            DeleteButton.Clicked += DeleteButton_Clicked;
+            ManualAddButton.Clicked += ManualAddButton_Clicked;
 
+            OreOfficeButton.Clicked += OreOfficeButton_Clicked;
+
+            RegisterNfsStatusListener();
+            StartListening();
+        }
+
+        private void RemoveEvents()
+        {
+            LeftButton.Clicked -= LeftButton_Clicked;
+            RightButton.Clicked -= RightButton_Clicked;
+
+            DeleteButton.Clicked -= DeleteButton_Clicked;
+            ManualAddButton.Clicked -= ManualAddButton_Clicked;
+
+            OreOfficeButton.Clicked -= OreOfficeButton_Clicked;
+            
+            RemoveNfsStatusListener();
+            StopListening();
+        }
+
+        public async Task CheckNfcStatusAsync()
+        {
             if (!CrossNFC.Current.IsEnabled)
             {
+                Indicator.Color = Color.Gray;
+
                 if (!_disableNfcError)
                 {
                     await DisplayAlert("Error", "NFC is disabled", "OK");
                     _disableNfcError = true;
                 }
-
-                RegisterNfsStatusListener();
-                return;
             }
-
-            StartListening();
+            else
+            {
+                Indicator.Color = Color.Green;
+            }
         }
 
         private void RegisterNfsStatusListener() =>
                 CrossNFC.Current.OnNfcStatusChanged += Current_OnNfcStatusChanged;
 
-        private async void Current_OnNfcStatusChanged(bool isEnabled)
-        {
-            if (isEnabled)
-            {
+        private void RemoveNfsStatusListener() =>
                 CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
 
-                await NfcServiceAsync();
+        private async void Current_OnNfcStatusChanged(bool isEnabled)
+        {
+            if (!isEnabled)
+            {
+                Indicator.Color = Color.Gray;
+                if (!_disableNfcError)
+                {
+                    await DisplayAlert("Error", "NFC is disabled", "OK");
+                    _disableNfcError = true;
+                }
+            }
+            else
+            {
+                Indicator.Color = Color.Green;
             }
         }
 
@@ -199,11 +224,8 @@ namespace CheckinLS.Pages
 
                     if (_startup)
                     {
-                        Indicator.Color = Color.Green;
-
                         CrossNFC.Current.StartListening();
                         _startup = false;
-                        _disableNfcError = false;
                     }
                 });
 
@@ -262,7 +284,7 @@ namespace CheckinLS.Pages
             Analytics.TrackEvent("NFC tag read");
 
             if (!_busy)
-                WaitAndAddAsync();
+                _ = WaitAndAddAsync();
 
             StartListening();
         }
@@ -286,7 +308,7 @@ namespace CheckinLS.Pages
             PretTotal.Text = valoare.ToString(CultureInfo.InvariantCulture);
         }
 
-        private async void WaitAndAddAsync()
+        private async Task WaitAndAddAsync()
         {
             _busy = true;
 

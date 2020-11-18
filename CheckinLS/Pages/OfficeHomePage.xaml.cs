@@ -21,12 +21,20 @@ namespace CheckinLS.Pages
         public OfficeHomePage()
         {
             InitializeComponent();
+        }
 
-            LeftButton.Clicked += LeftButton_Clicked;
-            RightButton.Clicked += RightButton_Clicked;
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
 
-            DeleteButton.Clicked += DeleteButton_Clicked;
-            AddButton.Clicked += AddButton_Clicked;
+            AddEvents();
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            RemoveEvents();
         }
 
         private void LeftButton_Clicked(object sender, EventArgs e)
@@ -134,6 +142,24 @@ namespace CheckinLS.Pages
             var valoare = total * Constants.PretOffice;
 
             PretTotal.Text = valoare.ToString("0.##");
+        }
+
+        private void AddEvents()
+        {
+            LeftButton.Clicked += LeftButton_Clicked;
+            RightButton.Clicked += RightButton_Clicked;
+
+            DeleteButton.Clicked += DeleteButton_Clicked;
+            AddButton.Clicked += AddButton_Clicked;
+        }
+
+        private void RemoveEvents()
+        {
+            LeftButton.Clicked -= LeftButton_Clicked;
+            RightButton.Clicked -= RightButton_Clicked;
+
+            DeleteButton.Clicked -= DeleteButton_Clicked;
+            AddButton.Clicked -= AddButton_Clicked;
         }
     }
 }

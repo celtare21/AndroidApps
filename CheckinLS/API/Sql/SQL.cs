@@ -42,10 +42,10 @@ namespace CheckinLS.API.Sql
 
 
         public static void CreateConnection() =>
-                Conn = new SqlConnection(Secrets.ConnStr);
+                    Conn = new SqlConnection(Secrets.ConnStr);
 
         private MainSql(IUsers usersInterface) =>
-                _usersInterface = usersInterface;
+                    _usersInterface = usersInterface;
 
         public static async Task CkeckConnectionAsync()
         {

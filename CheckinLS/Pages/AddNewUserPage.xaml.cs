@@ -17,8 +17,20 @@ namespace CheckinLS.Pages
             InitializeComponent();
 
             _password = password;
+        }
 
-            Enter.Clicked += Enter_Clicked;
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            AddEvents();
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            RemoveEvents();
         }
 
         private async void Enter_Clicked(object sender, EventArgs e)
@@ -60,5 +72,11 @@ namespace CheckinLS.Pages
 
         private static string RemoveWhitespace(string str) =>
                     string.Join("", str.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
+
+        private void AddEvents() =>
+                    Enter.Clicked += Enter_Clicked;
+
+        private void RemoveEvents() =>
+                    Enter.Clicked -= Enter_Clicked;
     }
 }

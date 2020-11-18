@@ -22,19 +22,27 @@ namespace CheckinLS
                 typeof(Analytics), typeof(Crashes), typeof(Distribute));
 
             CheckInternet();
-            Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
 
             MainPage = new LoginPage();
         }
 
-        protected override void OnStart() =>
-                Task.Run(MainSql.CreateConnection).ContinueWith(task => MainSql.CkeckConnectionAsync());
+        protected override void OnStart()
+        {
+            AddEvents();
+            Task.Run(MainSql.CreateConnection).ContinueWith(task => MainSql.CkeckConnectionAsync());
+        }
 
-        protected override void OnSleep() =>
-                Task.Run(MainSql.CloseConnectionAsync);
+        protected override void OnSleep()
+        {
+            RemoveEvents();
+            Task.Run(MainSql.CloseConnectionAsync);
+        }
 
-        protected override void OnResume() =>
-                Task.Run(MainSql.CkeckConnectionAsync);
+        protected override void OnResume()
+        {
+            AddEvents();
+            Task.Run(MainSql.CkeckConnectionAsync);
+        }
 
         public static void Close() =>
                 System.Diagnostics.Process.GetCurrentProcess().Kill();
@@ -47,5 +55,11 @@ namespace CheckinLS
             if (Connectivity.NetworkAccess != NetworkAccess.Internet)
                 HelperFunctions.ShowAlertKill("No internet connection!");
         }
+
+        private static void AddEvents() =>
+                Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+
+        private static void RemoveEvents() =>
+                Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
     }
 }

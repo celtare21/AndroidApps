@@ -16,8 +16,20 @@ namespace CheckinLS.Pages
         public LoginPage()
         {
             InitializeComponent();
+        }
 
-            Enter.Clicked += Enter_Clicked;
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            AddEvents();
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            RemoveEvents();
         }
 
         protected override bool OnBackButtonPressed()
@@ -67,9 +79,15 @@ namespace CheckinLS.Pages
             await Navigation.PushModalAsync(homeClass);
             await homeClass.CreateElementsAsync();
             homeClass.RefreshPage();
-            await homeClass.NfcServiceAsync();
+            await homeClass.CheckNfcStatusAsync();
 
             UserDialogs.Instance.HideLoading();
         }
+
+        private void AddEvents() =>
+                Enter.Clicked += Enter_Clicked;
+
+        private void RemoveEvents() =>
+                Enter.Clicked -= Enter_Clicked;
     }
 }
