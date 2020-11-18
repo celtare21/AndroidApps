@@ -41,10 +41,8 @@ namespace CheckinLS.API.Sql
         }
 
 
-        public static void CreateConnection()
-        {
-            Conn = new SqlConnection(Secrets.ConnStr);
-        }
+        public static void CreateConnection() =>
+                Conn = new SqlConnection(Secrets.ConnStr);
 
         private MainSql(IUsers usersInterface) =>
                 _usersInterface = usersInterface;
@@ -108,7 +106,6 @@ namespace CheckinLS.API.Sql
 
         public static async Task DeleteFromDbAsync(bool office, int? id = null, string date = null)
         {
-
             if (!id.HasValue && string.IsNullOrEmpty(date))
                 throw new AllParametersFalse();
 

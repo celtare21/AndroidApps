@@ -27,35 +27,25 @@ namespace CheckinLS
             MainPage = new LoginPage();
         }
 
-        protected override void OnStart()
-        {
-            Task.Run(MainSql.CreateConnection).ContinueWith(task => MainSql.CkeckConnectionAsync());
-        }
+        protected override void OnStart() =>
+                Task.Run(MainSql.CreateConnection).ContinueWith(task => MainSql.CkeckConnectionAsync());
 
-        protected override void OnSleep()
-        {
-            Task.Run(MainSql.CloseConnectionAsync);
-        }
+        protected override void OnSleep() =>
+                Task.Run(MainSql.CloseConnectionAsync);
 
-        protected override void OnResume()
-        {
-            Task.Run(MainSql.CkeckConnectionAsync);
-        }
+        protected override void OnResume() =>
+                Task.Run(MainSql.CkeckConnectionAsync);
 
-        public static void Close()
-        {
-            System.Diagnostics.Process.GetCurrentProcess().Kill();
-        }
+        public static void Close() =>
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+
+        private static void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e) =>
+                CheckInternet();
 
         private static void CheckInternet()
         {
             if (Connectivity.NetworkAccess != NetworkAccess.Internet)
                 HelperFunctions.ShowAlertKill("No internet connection!");
-        }
-
-        private static void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
-        {
-            CheckInternet();
         }
     }
 }
