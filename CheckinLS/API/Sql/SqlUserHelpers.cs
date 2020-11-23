@@ -1,7 +1,7 @@
-﻿using Dapper;
+﻿using CheckinLS.API.Misc;
+using Dapper;
 using System.Linq;
 using System.Threading.Tasks;
-using CheckinLS.API.Misc;
 
 namespace CheckinLS.API.Sql
 {

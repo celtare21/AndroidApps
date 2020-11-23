@@ -134,12 +134,7 @@ namespace CheckinLS.Pages
             if (_officeElements == null)
                 return;
 
-            var total = 0.0;
-
-            foreach (var elem in _officeElements.Entries)
-                total += elem.Total.TotalHours;
-            
-            var valoare = total * Constants.PretOffice;
+            var valoare = _officeElements.Entries.Sum(hours => hours.Total.TotalHours) * Constants.PretOffice;
 
             PretTotal.Text = valoare.ToString("0.##");
         }

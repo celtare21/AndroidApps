@@ -1,7 +1,7 @@
-﻿using CheckinLS.InterfacesAndClasses.Users;
-using System;
-using Acr.UserDialogs;
+﻿using Acr.UserDialogs;
 using CheckinLS.API.Misc;
+using CheckinLS.InterfacesAndClasses.Users;
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using MainSql = CheckinLS.API.Sql.MainSql;
@@ -70,7 +70,7 @@ namespace CheckinLS.Pages
                 UserDialogs.Instance.HideLoading();
                 await DisplayAlert("Error", "No user found! Please create one.", "OK");
                 await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
-                usersInterface.DropCache();
+                Users.DropCache();
                 Enter.IsEnabled = true;
                 return;
             }

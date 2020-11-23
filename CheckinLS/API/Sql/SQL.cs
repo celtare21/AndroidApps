@@ -26,20 +26,14 @@ namespace CheckinLS.API.Sql
         {
             var thisClass = new MainSql(usersInterface);
 
-            await thisClass._usersInterface.CreateUsersCacheAsync();
+            await thisClass._usersInterface.CreateUsersCacheAsync(Conn);
 
-            string result = null;
-
-            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var user in thisClass._usersInterface.DeserializeCache())
-            {
-                if (user.Password == pin)
-                    result = user.Username;
-            }
+            var result = (from account in thisClass._usersInterface.DeserializeCache()
+                where account.Password == pin
+                select account.Username).SingleOrDefault();
 
             _user = result ?? throw new NoUserFound();
         }
-
 
         public static void CreateConnection() =>
                     Conn = new SqlConnection(Secrets.ConnStr);
@@ -50,7 +44,16 @@ namespace CheckinLS.API.Sql
         public static async Task CkeckConnectionAsync()
         {
             if (Conn?.State == ConnectionState.Closed)
-                await Conn.OpenAsync();
+            {
+                try
+                {
+                    await Conn.OpenAsync();
+                }
+                catch (SqlException)
+                {
+                    HelperFunctions.ShowAlertKill("Couldn't connect to the database!");
+                }
+            }
         }
 
         public static Task CloseConnectionAsync() =>
@@ -81,7 +84,7 @@ namespace CheckinLS.API.Sql
                             recuperareAlocat = standard.RecuperareAlocat,
                             total = standard.Total,
                             observatii = standard.Observatii
-                        }).ConfigureAwait(false);
+                        });
                     break;
                 }
                 case OfficeDatabaseEntries office:
@@ -96,11 +99,11 @@ namespace CheckinLS.API.Sql
                             oraIncepere = office.OraIncepere,
                             oraFinal = office.OraFinal,
                             total = office.Total
-                        }).ConfigureAwait(false);
+                        });
                     break;
                 }
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentException();
             }
         }
 

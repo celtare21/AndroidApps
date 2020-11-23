@@ -90,7 +90,7 @@ namespace CheckinLS.Pages
             var result = await DisplayAlert("Alert!", "Are you sure you want to delete the entry?", "Yes", "No");
 
             if (!result)
-            {
+            { 
                 Analytics.TrackEvent("Delete entry cancelled");
                 return;
             }
@@ -294,16 +294,9 @@ namespace CheckinLS.Pages
             if (_elements == null)
                 return;
 
-            var total = (curs: 0.0, pregatire: 0.0, recuperare: 0.0);
-
-            foreach (var elem in _elements.Entries)
-            {
-                total.curs += elem.CursAlocat.TotalHours;
-                total.pregatire += elem.PregatireAlocat.TotalHours;
-                total.recuperare += elem.RecuperareAlocat.TotalHours;
-            }
-
-            var valoare = total.curs * Constants.PretCurs + total.pregatire * Constants.PretPregatire + total.recuperare * Constants.PretRecuperare;
+            var valoare = _elements.Entries.Sum(hours => hours.CursAlocat.TotalHours) * Constants.PretCurs +
+                          _elements.Entries.Sum(hours => hours.PregatireAlocat.TotalHours) * Constants.PretPregatire +
+                          _elements.Entries.Sum(hours => hours.RecuperareAlocat.TotalHours) * Constants.PretRecuperare;
 
             PretTotal.Text = valoare.ToString(CultureInfo.InvariantCulture);
         }
@@ -319,17 +312,18 @@ namespace CheckinLS.Pages
             ObsEntry.Text = "";
             RefreshPage();
 
-            (_ora.curs, _ora.pregatire, _ora.recuperare) = (false, false, false);
+            _ora = (false, false, false);
 
             _busy = false;
         }
 
-        private static async Task CountdownAsync()
+        private async Task CountdownAsync()
         {
             UserDialogs.Instance.ShowLoading("Waiting...");
-            await Task.Delay(6000).ConfigureAwait(false);
+            for (int i = 0; i < 12 && _ora != (true, true, true); i++)
+                await Task.Delay(500);
             UserDialogs.Instance.HideLoading();
-            await Task.Delay(100).ConfigureAwait(false);
+            await Task.Delay(100);
         }
 
         private async Task FlashColorAsync()

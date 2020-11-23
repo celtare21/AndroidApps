@@ -1,5 +1,4 @@
 ﻿using CheckinLS.API.Misc;
-using CheckinLS.Helpers;
 using Dapper;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -17,17 +16,12 @@ namespace CheckinLS.InterfacesAndClasses.Users
         private static readonly string UsersFolder = Path.Combine(AppFolder, "users");
         private static readonly string JsonPath = Path.Combine(UsersFolder, "accounts.json");
 
-        public async Task CreateUsersCacheAsync()
+        public async Task CreateUsersCacheAsync(SqlConnection conn)
         {
             if (Directory.Exists(UsersFolder) && File.Exists(JsonPath))
                 return;
 
-            IEnumerable<Accounts> result;
-
-            await using (var conn = new SqlConnection(Secrets.ConnStr))
-            {
-                result = await conn.QueryAsync<Accounts>(@"SELECT * FROM users");
-            }
+            var result = await conn.QueryAsync<Accounts>(@"SELECT * FROM users");
 
             Directory.CreateDirectory(UsersFolder);
 
@@ -51,7 +45,7 @@ namespace CheckinLS.InterfacesAndClasses.Users
             return JsonConvert.DeserializeObject<List<Accounts>>(jsonString);
         }
 
-        public void DropCache()
+        public static void DropCache()
         {
             File.Delete(JsonPath);
         }
