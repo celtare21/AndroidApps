@@ -16,19 +16,16 @@ using Xamarin.Forms.Xaml;
 namespace CheckinLS.API.Sql
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class MainSql
+    public static partial class MainSql
     {
         public static SqlConnection Conn { get; private set; }
         private static string _user;
-        private readonly IUsers _usersInterface;
 
         public static async Task CreateAsync(string pin, IUsers usersInterface)
         {
-            var thisClass = new MainSql(usersInterface);
+            await usersInterface.CreateUsersCacheAsync(Conn);
 
-            await thisClass._usersInterface.CreateUsersCacheAsync(Conn);
-
-            var result = (from account in thisClass._usersInterface.DeserializeCache()
+            var result = (from account in usersInterface.DeserializeCache()
                 where account.Password == pin
                 select account.Username).SingleOrDefault();
 
@@ -37,9 +34,6 @@ namespace CheckinLS.API.Sql
 
         public static void CreateConnection() =>
                     Conn = new SqlConnection(Secrets.ConnStr);
-
-        private MainSql(IUsers usersInterface) =>
-                    _usersInterface = usersInterface;
 
         public static async Task CkeckConnectionAsync()
         {
@@ -62,98 +56,95 @@ namespace CheckinLS.API.Sql
         public static void SetNullConnection() =>
                     Conn = null;
 
-        public static async Task AddToDbAsync<T>(T entries)
+        public static async Task AddToDbAsync(StandardDatabaseEntry entries)
         {
             await CkeckConnectionAsync();
 
-            switch (entries)
-            {
-                case StandardDatabaseEntry standard:
-                {
-                    string query =
-                        $@"INSERT INTO ""prezenta.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
+            string query =
+                $@"INSERT INTO ""prezenta.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
 
-                    await Conn.ExecuteAsync(query,
-                        new
-                        {
-                            date = standard.Date,
-                            oraIncepere = standard.OraIncepere,
-                            oraFinal = standard.OraFinal,
-                            cursAlocat = standard.CursAlocat,
-                            pregatireAlocat = standard.PregatireAlocat,
-                            recuperareAlocat = standard.RecuperareAlocat,
-                            total = standard.Total,
-                            observatii = standard.Observatii
-                        });
-                    break;
-                }
-                case OfficeDatabaseEntries office:
+            await Conn.ExecuteAsync(query,
+                new
                 {
-                    string query =
-                        $@"INSERT INTO ""prezenta.office.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @total)";
-
-                    await Conn.ExecuteAsync(query,
-                        new
-                        {
-                            date = office.Date,
-                            oraIncepere = office.OraIncepere,
-                            oraFinal = office.OraFinal,
-                            total = office.Total
-                        });
-                    break;
-                }
-                default:
-                    throw new ArgumentException();
-            }
+                    date = entries.Date,
+                    oraIncepere = entries.OraIncepere,
+                    oraFinal = entries.OraFinal,
+                    cursAlocat = entries.CursAlocat,
+                    pregatireAlocat = entries.PregatireAlocat,
+                    recuperareAlocat = entries.RecuperareAlocat,
+                    total = entries.Total,
+                    observatii = entries.Observatii
+                }).ConfigureAwait(false);
         }
 
-        public static async Task DeleteFromDbAsync(bool office, int? id = null, string date = null)
+        public static async Task AddToDbAsync(OfficeDatabaseEntries entries)
         {
-            if (!id.HasValue && string.IsNullOrEmpty(date))
-                throw new AllParametersFalse();
-
             await CkeckConnectionAsync();
 
-            string query;
+            string query =
+                $@"INSERT INTO ""prezenta.office.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @total)";
 
-            if (id.HasValue)
-            {
-                query = office
-                    ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE id = {id}"
-                    : $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id}";
-            }
-            else
-            {
-                query = office
-                    ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE date = '{date}'"
-                    : $@"DELETE FROM ""prezenta.{_user}"" WHERE date = '{date}'";
-            }
+            await Conn.ExecuteAsync(query,
+                new
+                {
+                    date = entries.Date,
+                    oraIncepere = entries.OraIncepere,
+                    oraFinal = entries.OraFinal,
+                    total = entries.Total
+                }).ConfigureAwait(false);
+        }
+
+        public static async Task DeleteFromDbAsync(bool office, int id)
+        {
+            await CkeckConnectionAsync();
+
+            var query = office
+                ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE id = {id}"
+                : $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id}";
+
 
             await Conn.ExecuteAsync(query).ConfigureAwait(false);
         }
 
-        public static async Task<List<T>> GetAllElementsAsync<T>()
+        public static async Task DeleteFromDbAsync(bool office, string date)
         {
             await CkeckConnectionAsync();
 
-            IEnumerable<T> result;
+            var query = office
+                ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE date = '{date}'"
+                : $@"DELETE FROM ""prezenta.{_user}"" WHERE date = '{date}'";
+
+            await Conn.ExecuteAsync(query).ConfigureAwait(false);
+        }
+
+        public static async Task<IEnumerable<StandardDatabaseEntry>> GetAllElementsStandardAsync()
+        {
+            await CkeckConnectionAsync();
 
             try
             {
-                result = typeof(T).Name switch
-                {
-                    nameof(StandardDatabaseEntry) => await Conn.QueryAsync<T>($@"SELECT * FROM ""prezenta.{_user}"""),
-                    nameof(OfficeDatabaseEntries) => await Conn.QueryAsync<T>($@"SELECT * FROM ""prezenta.office.{_user}"""),
-                    var _ => throw new ArgumentException("Type not implemented")
-                };
+                return await Conn.QueryAsync<StandardDatabaseEntry>($@"SELECT * FROM ""prezenta.{_user}""");
             }
             catch (SqlException e)
             {
                 HelperFunctions.ShowAlertKill(e.Message);
                 return null;
             }
+        }
 
-            return result.ToList();
+        public static async Task<IEnumerable<OfficeDatabaseEntries>> GetAllElementsOfficeAsync()
+        {
+            await CkeckConnectionAsync();
+
+            try
+            {
+                return await Conn.QueryAsync<OfficeDatabaseEntries>($@"SELECT * FROM ""prezenta.office.{_user}""");
+            }
+            catch (SqlException e)
+            {
+                HelperFunctions.ShowAlertKill(e.Message);
+                return null;
+            }
         }
 
         public static async Task<TimeSpan> MaxHourInDbAsync(IGetDate dateInterface)
@@ -163,7 +154,7 @@ namespace CheckinLS.API.Sql
             var result = await Conn.QueryAsync<TimeSpan?>(
                 $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
             
-            return result.ToList().Max() ?? TimeUtils.StartTime();
+            return result.Max() ?? TimeUtils.StartTime();
         }
     }
 }

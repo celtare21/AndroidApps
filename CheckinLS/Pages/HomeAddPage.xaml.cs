@@ -49,7 +49,7 @@ namespace CheckinLS.Pages
             Analytics.TrackEvent("Manual entry added");
             HelperFunctions.ShowToast("New entry added!");
             _home.RefreshPage();
-            ObsManualEntry.Text = "";
+            ObsManualEntry.Text = string.Empty;
 
             AddButton.IsEnabled = true;
         }

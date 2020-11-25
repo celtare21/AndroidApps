@@ -268,18 +268,14 @@ namespace CheckinLS.Pages
 
             _ = FlashColorAsync();
 
-            switch (GetMessage(tagInfo.Records[0]))
-            {
-                case "adauga_ora_curs":
-                    _ora.curs = true;
-                    break;
-                case "adauga_ora_pregatire":
-                    _ora.pregatire = true;
-                    break;
-                case "adauga_ora_recuperare":
-                    _ora.recuperare = true;
-                    break;
-            }
+            var message = GetMessage(tagInfo.Records[0]);
+
+            if (message.Contains("adauga_ora_curs"))
+                _ora.curs = true;
+            else if (message.Contains("adauga_ora_pregatire"))
+                _ora.pregatire = true;
+            else if (message.Contains("adauga_ora_recuperare"))
+                _ora.recuperare = true;
 
             Analytics.TrackEvent("NFC tag read");
 
@@ -309,7 +305,7 @@ namespace CheckinLS.Pages
 
             await _elements.AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire, _ora.recuperare);
             HelperFunctions.ShowToast("New entry added!");
-            ObsEntry.Text = "";
+            ObsEntry.Text = string.Empty;
             RefreshPage();
 
             _ora = (false, false, false);
@@ -341,7 +337,7 @@ namespace CheckinLS.Pages
         private static string GetMessage(NFCNdefRecord record)
         {
             if (record.TypeFormat != NFCNdefTypeFormat.WellKnown ||
-                string.IsNullOrWhiteSpace(record.MimeType) && record.MimeType != "text/plain")
+                string.IsNullOrWhiteSpace(record.MimeType) && string.CompareOrdinal(record.MimeType, "text/plain") != 0)
                 return null;
 
             return record.Message;

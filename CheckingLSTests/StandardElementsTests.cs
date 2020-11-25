@@ -362,7 +362,7 @@ namespace CheckingLSTests
             await MainSql.CkeckConnectionAsync();
             await MainSql.CreateAsync("1111", userInterface);
 
-            await MainSql.DeleteFromDbAsync(false, date: "2020-01-01").ConfigureAwait(false);
+            await MainSql.DeleteFromDbAsync(false, "2020-01-01").ConfigureAwait(false);
 
             MainSql.SetNullConnection();
         }

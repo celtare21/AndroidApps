@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace CheckinLS.API.Sql
 {
-    public partial class MainSql
+    public static partial class MainSql
     {
         private static async Task<bool> IsUserAlreadyCreatedAsync(string username)
         {
@@ -37,10 +37,7 @@ namespace CheckinLS.API.Sql
 
         public static bool UserHasOffice()
         {
-            var office = new[]
-            {
-                "alin", "vasile", "test"
-            };
+            const string office = "alin, vasile, test";
 
             return office.Contains(_user);
         }

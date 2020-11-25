@@ -2,6 +2,7 @@
 using CheckinLS.InterfacesAndClasses.Date;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Xaml;
 using static CheckinLS.API.Misc.TimeUtils;
@@ -63,7 +64,7 @@ namespace CheckinLS.API.Standard
         }
 
         private async Task RefreshElementsAsync() =>
-                Entries = await MainSql.GetAllElementsAsync<StandardDatabaseEntry>();
+                Entries = (await MainSql.GetAllElementsStandardAsync()).ToList();
 
         public int MaxElement() =>
                 Entries?.Count ?? 0;

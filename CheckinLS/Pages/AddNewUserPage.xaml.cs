@@ -38,12 +38,10 @@ namespace CheckinLS.Pages
             if (MainSql.Conn == null)
                 return;
 
-            var username = Username.Text;
-
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(Username.Text))
                 return;
 
-            username = RemoveWhitespace(username.ToLowerInvariant());
+            var username = RemoveWhitespace(Username.Text.ToLowerInvariant());
 
             try
             {
@@ -71,7 +69,7 @@ namespace CheckinLS.Pages
         }
 
         private static string RemoveWhitespace(string str) =>
-                    string.Join("", str.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
+                    string.Join(string.Empty, str.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
 
         private void AddEvents() =>
                     Enter.Clicked += Enter_Clicked;
