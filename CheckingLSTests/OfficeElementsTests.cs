@@ -18,8 +18,11 @@ namespace CheckingLSTests
         {
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
-            
-            var accounts = new List<Accounts> { new Accounts("test", "1111") };
+
+            var accounts = new Dictionary<string, string>
+            {
+                {"1111", "test"}
+            };
             var userInterface = Substitute.For<IUsers>();
             userInterface.DeserializeCache().Returns(accounts);
 
@@ -87,7 +90,10 @@ namespace CheckingLSTests
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
 
-            var accounts = new List<Accounts> { new Accounts("test", "1111") };
+            var accounts = new Dictionary<string, string>
+            {
+                {"1111", "test"}
+            };
             var userInterface = Substitute.For<IUsers>();
             userInterface.DeserializeCache().Returns(accounts);
 

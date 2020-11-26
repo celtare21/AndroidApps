@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Xaml;
 
@@ -21,14 +22,17 @@ namespace CheckinLS.InterfacesAndClasses.Users
             if (Directory.Exists(UsersFolder) && File.Exists(JsonPath))
                 return;
 
-            var result = await conn.QueryAsync<Accounts>(@"SELECT * FROM users");
+            var result =
+                (await conn.QueryAsync<KeyValuePair<string, string>>(
+                    @"SELECT DISTINCT username AS [Value],password AS [Key] FROM users"))
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
 
             Directory.CreateDirectory(UsersFolder);
 
             await File.WriteAllTextAsync(JsonPath, JsonConvert.SerializeObject(result)).ConfigureAwait(false);
         }
 
-        public List<Accounts> DeserializeCache()
+        public Dictionary<string, string> DeserializeCache()
         {
             string jsonString;
 
@@ -42,7 +46,7 @@ namespace CheckinLS.InterfacesAndClasses.Users
                 return null;
             }
 
-            return JsonConvert.DeserializeObject<List<Accounts>>(jsonString);
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
         }
 
         public static void DropCache()

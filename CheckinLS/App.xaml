@@ -6,7 +6,6 @@
     <Application.Resources>
         <ResourceDictionary>
             <Style TargetType="Label">
-                <Setter Property="FontFamily" Value="sans-serif"/>
                 <Setter Property="TextColor" Value="AntiqueWhite"/>
                 <Setter Property="FontSize" Value="Medium"/>
                 <Setter Property="VerticalOptions" Value="Center"/>

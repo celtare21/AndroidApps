@@ -1,5 +1,6 @@
 ﻿using Acr.UserDialogs;
 using CheckinLS.API.Misc;
+using CheckinLS.API.Sql;
 using CheckinLS.API.Standard;
 using CheckinLS.InterfacesAndClasses.Date;
 using Microsoft.AppCenter.Analytics;
@@ -8,26 +9,23 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using MainSql = CheckinLS.API.Sql.MainSql;
+using static CheckinLS.API.Misc.TimerHelper;
 
-// ReSharper disable RedundantCapturedContext
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class Home
     {
-#pragma warning disable CS0649
         private StandardElements _elements;
-#pragma warning restore CS0649
         private bool _fakeListener, _busy, _disableNfcError, _startup = true;
         private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
 
-        public Home()
-        {
-            InitializeComponent();
-        }
+        public Home() =>
+                InitializeComponent();
 
         public async Task CreateElementsAsync()
         {
@@ -49,6 +47,7 @@ namespace CheckinLS.Pages
             base.OnDisappearing();
 
             RemoveEvents();
+            ButtonTimer.Stop();
         }
 
         protected override bool OnBackButtonPressed()
@@ -64,22 +63,60 @@ namespace CheckinLS.Pages
             return true;
         }
 
-        private void LeftButton_Clicked(object sender, EventArgs e)
+        private static void LeftButton_Pressed(object sender, EventArgs e)
         {
-            if (_elements == null || _elements.Index <= 0)
-                return;
-
-            --_elements.Index;
-            RefreshPage();
+            ButtonTimer.Start();
+            StartTime = DateTime.Now;
+            LeftRightButton = false;
         }
 
-        private void RightButton_Clicked(object sender, EventArgs e)
+        private void LeftButton_Released(object sender, EventArgs e)
         {
-            if (_elements == null || _elements.Index >= _elements.MaxElement() - 1)
+            ButtonTimer.Stop();
+
+            if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
+            {
+                if (_elements == null || _elements.Index <= 0)
+                    return;
+
+                --_elements.Index;
+                RefreshPage();
+            }
+        }
+
+        private static void RightButton_Pressed(object sender, EventArgs e)
+        {
+            ButtonTimer.Start();
+            StartTime = DateTime.Now;
+            LeftRightButton = true;
+        }
+
+        private void RightButton_Released(object sender, EventArgs e)
+        {
+            ButtonTimer.Stop();
+
+            if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
+            {
+                if (_elements == null || _elements.Index >= _elements.MaxElement() - 1)
+                    return;
+
+                ++_elements.Index;
+                RefreshPage();
+            }
+        }
+
+        private void ButtonTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            if (_elements == null)
                 return;
 
-            ++_elements.Index;
-            RefreshPage();
+            if (!LeftRightButton)
+                _elements.Index = 0;
+            else
+                _elements.Index = _elements.MaxElement() - 1;
+            
+            Vibration.Vibrate(100);
+            Device.BeginInvokeOnMainThread(RefreshPage);
         }
 
         private async void DeleteButton_Clicked(object sender, EventArgs e)
@@ -150,13 +187,18 @@ namespace CheckinLS.Pages
 
         private void AddEvents()
         {
-            LeftButton.Clicked += LeftButton_Clicked;
-            RightButton.Clicked += RightButton_Clicked;
+            LeftButton.Pressed += LeftButton_Pressed;
+            LeftButton.Released += LeftButton_Released;
+
+            RightButton.Pressed += RightButton_Pressed;
+            RightButton.Released += RightButton_Released;
 
             DeleteButton.Clicked += DeleteButton_Clicked;
             ManualAddButton.Clicked += ManualAddButton_Clicked;
 
             OreOfficeButton.Clicked += OreOfficeButton_Clicked;
+
+            ButtonTimer.Elapsed += ButtonTimer_Elapsed;
 
             RegisterNfsStatusListener();
             StartListening();
@@ -164,14 +206,19 @@ namespace CheckinLS.Pages
 
         private void RemoveEvents()
         {
-            LeftButton.Clicked -= LeftButton_Clicked;
-            RightButton.Clicked -= RightButton_Clicked;
+            LeftButton.Pressed -= LeftButton_Pressed;
+            LeftButton.Released -= LeftButton_Released;
+
+            RightButton.Pressed -= RightButton_Pressed;
+            RightButton.Released -= RightButton_Released;
 
             DeleteButton.Clicked -= DeleteButton_Clicked;
             ManualAddButton.Clicked -= ManualAddButton_Clicked;
 
             OreOfficeButton.Clicked -= OreOfficeButton_Clicked;
-            
+
+            ButtonTimer.Elapsed -= ButtonTimer_Elapsed;
+
             RemoveNfsStatusListener();
             StopListening();
         }
@@ -319,7 +366,7 @@ namespace CheckinLS.Pages
             for (int i = 0; i < 12 && _ora != (true, true, true); i++)
                 await Task.Delay(500);
             UserDialogs.Instance.HideLoading();
-            await Task.Delay(100);
+            await Task.Delay(100).ConfigureAwait(false);
         }
 
         private async Task FlashColorAsync()

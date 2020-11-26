@@ -25,11 +25,12 @@ namespace CheckinLS.API.Sql
         {
             await usersInterface.CreateUsersCacheAsync(Conn);
 
-            var result = (from account in usersInterface.DeserializeCache()
-                where account.Password == pin
-                select account.Username).SingleOrDefault();
+            var accounts = usersInterface.DeserializeCache();
 
-            _user = result ?? throw new NoUserFound();
+            if (accounts.TryGetValue(pin, out _user))
+                return;
+
+            throw new NoUserFound();
         }
 
         public static void CreateConnection() =>
@@ -51,7 +52,7 @@ namespace CheckinLS.API.Sql
         }
 
         public static Task CloseConnectionAsync() =>
-                    Conn.CloseAsync();
+                    Conn?.CloseAsync();
 
         public static void SetNullConnection() =>
                     Conn = null;
@@ -153,7 +154,7 @@ namespace CheckinLS.API.Sql
 
             var result = await Conn.QueryAsync<TimeSpan?>(
                 $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
-            
+
             return result.Max() ?? TimeUtils.StartTime();
         }
     }
