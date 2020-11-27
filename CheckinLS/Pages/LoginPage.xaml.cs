@@ -2,27 +2,59 @@
 using CheckinLS.API.Misc;
 using CheckinLS.InterfacesAndClasses.Users;
 using System;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using MainSql = CheckinLS.API.Sql.MainSql;
-
-// ReSharper disable RedundantCapturedContext
 
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class LoginPage
     {
+        private readonly IUsers _usersInterface;
+
         public LoginPage()
         {
             InitializeComponent();
+
+            _usersInterface = new Users();
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
 
-            AddEvents();
+            if (Users.LoggedAccountExists())
+            {
+                try
+                {
+                    UserDialogs.Instance.ShowLoading();
+
+                    Pin.Text = "0000";
+                    Enter.IsEnabled = false;
+
+                    await MainSql.CreateAsync(_usersInterface);
+
+                    await MainSql.CkeckConnectionAsync();
+
+                    var homeClass = new Home();
+                    await Navigation.PushModalAsync(homeClass);
+                    await homeClass.CreateElementsAsync();
+                    homeClass.RefreshPage();
+                    await homeClass.CheckNfcStatusAsync();
+
+                    UserDialogs.Instance.HideLoading();
+                }
+                catch (TaskCanceledException)
+                {
+                    App.Close();
+                }
+            }
+            else
+            {
+                AddEvents();
+            }
         }
 
         protected override void OnDisappearing()
@@ -59,21 +91,21 @@ namespace CheckinLS.Pages
 
             Enter.IsEnabled = false;
 
-            var usersInterface = new Users();
-
             try
             {
-                await MainSql.CreateAsync(entryPin, usersInterface);
+                await MainSql.CreateAsync(_usersInterface, entryPin);
             }
             catch (NoUserFound)
             {
+                await MainSql.CkeckConnectionAsync();
                 UserDialogs.Instance.HideLoading();
                 await DisplayAlert("Error", "No user found! Please create one.", "OK");
                 await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
-                Users.DropCache();
                 Enter.IsEnabled = true;
                 return;
             }
+
+            await MainSql.CkeckConnectionAsync();
 
             var homeClass = new Home();
             await Navigation.PushModalAsync(homeClass);

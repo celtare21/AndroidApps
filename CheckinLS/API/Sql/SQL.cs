@@ -21,14 +21,23 @@ namespace CheckinLS.API.Sql
         public static SqlConnection Conn { get; private set; }
         private static string _user;
 
-        public static async Task CreateAsync(string pin, IUsers usersInterface)
+        public static async Task CreateAsync(IUsers usersInterface, string pin = null)
         {
             await usersInterface.CreateUsersCacheAsync(Conn);
 
             var accounts = usersInterface.DeserializeCache();
 
-            if (accounts.TryGetValue(pin, out _user))
+            var result = pin ?? usersInterface.ReadLoggedUser();
+
+            if (result != null && accounts.TryGetValue(result, out _user))
+            {
+                usersInterface.CreateLoggedUser(pin);
                 return;
+            }
+
+            var helpers = usersInterface.GetHelpers();
+            helpers.DropLoggedAccount();
+            helpers.DropCache();
 
             throw new NoUserFound();
         }
@@ -49,6 +58,9 @@ namespace CheckinLS.API.Sql
                     HelperFunctions.ShowAlertKill("Couldn't connect to the database!");
                 }
             }
+
+            while (Conn?.State == ConnectionState.Connecting)
+                await Task.Delay(100);
         }
 
         public static Task CloseConnectionAsync() =>

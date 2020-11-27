@@ -1,11 +1,11 @@
-﻿using CheckinLS.API.Misc;
-using Dapper;
+﻿using Dapper;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms.Xaml;
 
 namespace CheckinLS.InterfacesAndClasses.Users
@@ -13,13 +13,13 @@ namespace CheckinLS.InterfacesAndClasses.Users
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public class Users : IUsers
     {
-        private static readonly string AppFolder = Xamarin.Essentials.FileSystem.AppDataDirectory;
+        private static readonly string AppFolder = FileSystem.AppDataDirectory;
         private static readonly string UsersFolder = Path.Combine(AppFolder, "users");
-        private static readonly string JsonPath = Path.Combine(UsersFolder, "accounts.json");
+        private static readonly string AllAccounts = Path.Combine(UsersFolder, "accounts.json");
 
         public async Task CreateUsersCacheAsync(SqlConnection conn)
         {
-            if (Directory.Exists(UsersFolder) && File.Exists(JsonPath))
+            if (Directory.Exists(UsersFolder) && File.Exists(AllAccounts))
                 return;
 
             var result =
@@ -29,29 +29,46 @@ namespace CheckinLS.InterfacesAndClasses.Users
 
             Directory.CreateDirectory(UsersFolder);
 
-            await File.WriteAllTextAsync(JsonPath, JsonConvert.SerializeObject(result)).ConfigureAwait(false);
+            await File.WriteAllTextAsync(AllAccounts, JsonConvert.SerializeObject(result)).ConfigureAwait(false);
         }
 
         public Dictionary<string, string> DeserializeCache()
         {
-            string jsonString;
-
             try
             {
-                jsonString = File.ReadAllText(JsonPath);
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(AllAccounts));
             }
             catch (FileNotFoundException)
             {
-                HelperFunctions.ShowAlertKill("Please wipe the app data.");
-                return null;
+                return new Dictionary<string, string>
+                {
+                    {string.Empty, string.Empty}
+                };
             }
-
-            return JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
         }
 
-        public static void DropCache()
+        public void CreateLoggedUser(string pin)
         {
-            File.Delete(JsonPath);
+            if (!LoggedAccountExists())
+                Preferences.Set("localPin", pin);
+        }
+
+        public string ReadLoggedUser() =>
+                Preferences.Get("localPin", null);
+
+        public static bool LoggedAccountExists() =>
+                Preferences.ContainsKey("localPin");
+
+        public UserHelpers GetHelpers() =>
+                new UserHelpers();
+
+        public class UserHelpers
+        {
+            public virtual void DropCache() =>
+                File.Delete(AllAccounts);
+
+            public virtual void DropLoggedAccount() =>
+                Preferences.Remove("localPin");
         }
     }
 }

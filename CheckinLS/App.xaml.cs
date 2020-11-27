@@ -29,19 +29,19 @@ namespace CheckinLS
         protected override void OnStart()
         {
             AddEvents();
-            Task.Run(MainSql.CreateConnection).ContinueWith(task => MainSql.CkeckConnectionAsync());
+            Task.Run(MainSql.CreateConnection);
         }
 
         protected override void OnSleep()
         {
             RemoveEvents();
-            Task.Run(MainSql.CloseConnectionAsync);
+            Task.Run(MainSql.CloseConnectionAsync).ConfigureAwait(false);
         }
 
         protected override void OnResume()
         {
             AddEvents();
-            Task.Run(MainSql.CkeckConnectionAsync);
+            Task.Run(MainSql.CkeckConnectionAsync).ConfigureAwait(false);
         }
 
         public static void Close() =>

@@ -8,5 +8,8 @@ namespace CheckinLS.InterfacesAndClasses.Users
     {
         Task CreateUsersCacheAsync(SqlConnection conn);
         Dictionary<string, string> DeserializeCache();
+        void CreateLoggedUser(string pin);
+        string ReadLoggedUser();
+        Users.UserHelpers GetHelpers();
     }
 }

@@ -28,7 +28,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync("1111", userInterface);
+            await MainSql.CreateAsync(userInterface, "1111");
 
             return await StandardElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -49,7 +49,7 @@ namespace CheckingLSTests
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
 
-            Task AsyncTestDelegate() => MainSql.CreateAsync(pin, userInterface);
+            Task AsyncTestDelegate() => MainSql.CreateAsync(userInterface, pin);
 
             Assert.DoesNotThrowAsync(AsyncTestDelegate);
         }
@@ -68,11 +68,12 @@ namespace CheckingLSTests
             };
             var userInterface = Substitute.For<IUsers>();
             userInterface.DeserializeCache().Returns(accounts);
+            userInterface.GetHelpers().Returns(new TestUserHelpers());
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
 
-            Task AsyncTestDelegate() => MainSql.CreateAsync(pin, userInterface);
+            Task AsyncTestDelegate() => MainSql.CreateAsync(userInterface, pin);
 
             Assert.CatchAsync<NoUserFound>(AsyncTestDelegate);
         }
@@ -372,11 +373,24 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync("1111", userInterface);
+            await MainSql.CreateAsync(userInterface, "1111");
 
             await MainSql.DeleteFromDbAsync(false, "2020-01-01").ConfigureAwait(false);
 
             MainSql.SetNullConnection();
+        }
+
+        private class TestUserHelpers : Users.UserHelpers
+        {
+            public override void DropCache()
+            {
+                //
+            }
+
+            public override void DropLoggedAccount()
+            {
+                //
+            }
         }
     }
 }
