@@ -25,13 +25,13 @@ namespace CheckinLS.API.Sql
         {
             await usersInterface.CreateUsersCacheAsync(Conn);
 
-            var accounts = usersInterface.DeserializeCache();
+            var accounts = await usersInterface.DeserializeCacheAsync();
 
-            var result = pin ?? usersInterface.ReadLoggedUser();
+            var result = pin ?? await usersInterface.ReadLoggedUserAsync();
 
             if (result != null && accounts.TryGetValue(result, out _user))
             {
-                usersInterface.CreateLoggedUser(pin);
+                await usersInterface.CreateLoggedUserAsync(pin);
                 return;
             }
 

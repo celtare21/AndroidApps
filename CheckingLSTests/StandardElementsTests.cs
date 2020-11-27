@@ -2,11 +2,11 @@
 using CheckinLS.API.Standard;
 using CheckinLS.InterfacesAndClasses.Date;
 using CheckinLS.InterfacesAndClasses.Users;
+using NUnit.Framework;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NUnit.Framework;
-using NSubstitute;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
 namespace CheckingLSTests
@@ -24,7 +24,7 @@ namespace CheckingLSTests
                 {"1111", "test"}
             };
             var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCache().Returns(accounts);
+            userInterface.DeserializeCacheAsync().Returns(accounts);
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
@@ -44,7 +44,7 @@ namespace CheckingLSTests
                 {"1111", "test"}
             };
             var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCache().Returns(accounts);
+            userInterface.DeserializeCacheAsync().Returns(accounts);
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
@@ -67,7 +67,7 @@ namespace CheckingLSTests
                 {"1111", "test"}
             };
             var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCache().Returns(accounts);
+            userInterface.DeserializeCacheAsync().Returns(accounts);
             userInterface.GetHelpers().Returns(new TestUserHelpers());
 
             MainSql.CreateConnection();
@@ -369,7 +369,7 @@ namespace CheckingLSTests
                 {"1111", "test"}
             };
             var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCache().Returns(accounts);
+            userInterface.DeserializeCacheAsync().Returns(accounts);
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();

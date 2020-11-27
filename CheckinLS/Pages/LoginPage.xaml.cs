@@ -2,6 +2,7 @@
 using CheckinLS.API.Misc;
 using CheckinLS.InterfacesAndClasses.Users;
 using System;
+using System.Data;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -46,7 +47,7 @@ namespace CheckinLS.Pages
 
                     UserDialogs.Instance.HideLoading();
                 }
-                catch (TaskCanceledException)
+                catch (Exception ex) when (ex is TaskCanceledException || ex is InvalidOperationException)
                 {
                     App.Close();
                 }
@@ -61,7 +62,8 @@ namespace CheckinLS.Pages
         {
             base.OnDisappearing();
 
-            RemoveEvents();
+            if (!Users.LoggedAccountExists())
+                RemoveEvents();
         }
 
         protected override bool OnBackButtonPressed()
@@ -103,6 +105,10 @@ namespace CheckinLS.Pages
                 await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
                 Enter.IsEnabled = true;
                 return;
+            }
+            catch (Exception ex) when (ex is InvalidOperationException || ex is DataException)
+            {
+                App.Close();
             }
 
             await MainSql.CkeckConnectionAsync();

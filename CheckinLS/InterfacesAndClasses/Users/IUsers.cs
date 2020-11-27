@@ -7,9 +7,9 @@ namespace CheckinLS.InterfacesAndClasses.Users
     public interface IUsers
     {
         Task CreateUsersCacheAsync(SqlConnection conn);
-        Dictionary<string, string> DeserializeCache();
-        void CreateLoggedUser(string pin);
-        string ReadLoggedUser();
+        Task<Dictionary<string, string>> DeserializeCacheAsync();
+        Task CreateLoggedUserAsync(string pin);
+        Task<string> ReadLoggedUserAsync();
         Users.UserHelpers GetHelpers();
     }
 }

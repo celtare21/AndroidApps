@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using CheckinLS.API.Encryption;
+using Dapper;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -22,6 +23,9 @@ namespace CheckinLS.InterfacesAndClasses.Users
             if (Directory.Exists(UsersFolder) && File.Exists(AllAccounts))
                 return;
 
+            Preferences.Clear();
+            SecureStorage.RemoveAll();
+
             var result =
                 (await conn.QueryAsync<KeyValuePair<string, string>>(
                     @"SELECT DISTINCT username AS [Value],password AS [Key] FROM users"))
@@ -29,14 +33,16 @@ namespace CheckinLS.InterfacesAndClasses.Users
 
             Directory.CreateDirectory(UsersFolder);
 
-            await File.WriteAllTextAsync(AllAccounts, JsonConvert.SerializeObject(result)).ConfigureAwait(false);
+            await AesKeyHelper.SetAesKeyAsync();
+
+            await File.WriteAllTextAsync(AllAccounts, Aes256Encrypter.Encrypt(JsonConvert.SerializeObject(result), await AesKeyHelper.GetAesKeyAsync())).ConfigureAwait(false);
         }
 
-        public Dictionary<string, string> DeserializeCache()
+        public async Task<Dictionary<string, string>> DeserializeCacheAsync()
         {
             try
             {
-                return JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(AllAccounts));
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(Aes256Encrypter.Decrypt(await File.ReadAllTextAsync(AllAccounts), await AesKeyHelper.GetAesKeyAsync()));
             }
             catch (FileNotFoundException)
             {
@@ -47,17 +53,20 @@ namespace CheckinLS.InterfacesAndClasses.Users
             }
         }
 
-        public void CreateLoggedUser(string pin)
+        public async Task CreateLoggedUserAsync(string pin)
         {
             if (!LoggedAccountExists())
-                Preferences.Set("localPin", pin);
+            {
+                await SecureStorage.SetAsync("localPin", pin);
+                Preferences.Set("pinCached", "1");
+            }
         }
 
-        public string ReadLoggedUser() =>
-                Preferences.Get("localPin", null);
+        public Task<string> ReadLoggedUserAsync() =>
+                SecureStorage.GetAsync("localPin");
 
         public static bool LoggedAccountExists() =>
-                Preferences.ContainsKey("localPin");
+                string.Equals(Preferences.Get("pinCached", "0"), "1");
 
         public UserHelpers GetHelpers() =>
                 new UserHelpers();
@@ -65,10 +74,10 @@ namespace CheckinLS.InterfacesAndClasses.Users
         public class UserHelpers
         {
             public virtual void DropCache() =>
-                File.Delete(AllAccounts);
+                    File.Delete(AllAccounts);
 
             public virtual void DropLoggedAccount() =>
-                Preferences.Remove("localPin");
+                    SecureStorage.Remove("localPin");
         }
     }
 }

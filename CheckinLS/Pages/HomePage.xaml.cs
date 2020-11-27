@@ -271,7 +271,15 @@ namespace CheckinLS.Pages
 
                     if (_startup)
                     {
-                        CrossNFC.Current.StartListening();
+                        try
+                        {
+                            CrossNFC.Current.StartListening();
+                        }
+                        catch
+                        {
+                            App.Close();
+                        }
+
                         _startup = false;
                     }
                 });

@@ -24,7 +24,7 @@ namespace CheckingLSTests
                 {"1111", "test"}
             };
             var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCache().Returns(accounts);
+            userInterface.DeserializeCacheAsync().Returns(accounts);
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
@@ -95,7 +95,7 @@ namespace CheckingLSTests
                 {"1111", "test"}
             };
             var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCache().Returns(accounts);
+            userInterface.DeserializeCacheAsync().Returns(accounts);
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
