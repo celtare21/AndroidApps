@@ -1,7 +1,9 @@
 ﻿using System;
+using Xamarin.Forms.Xaml;
 
 namespace CheckinLS.API.Standard
 {
+    [XamlCompilation(XamlCompilationOptions.Compile)]
     public class StandardDatabaseEntry
     {
         public readonly int Id;

@@ -1,7 +1,9 @@
 ﻿using System;
+using Xamarin.Forms.Xaml;
 
 namespace CheckinLS.API.Office
 {
+    [XamlCompilation(XamlCompilationOptions.Compile)]
     public class OfficeDatabaseEntries
     {
         public readonly int Id;

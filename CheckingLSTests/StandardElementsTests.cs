@@ -5,7 +5,6 @@ using CheckinLS.InterfacesAndClasses.Users;
 using NUnit.Framework;
 using NSubstitute;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
@@ -18,17 +17,10 @@ namespace CheckingLSTests
         {
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
-            
-            var accounts = new Dictionary<string, string>
-            {
-                {"1111", "test"}
-            };
-            var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCacheAsync().Returns(accounts);
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync(userInterface, "1111");
+            await MainSql.CreateAsync(new TestUserHelpers(), "1111");
 
             return await StandardElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -39,17 +31,10 @@ namespace CheckingLSTests
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
 
-            var accounts = new Dictionary<string, string>
-            {
-                {"1111", "test"}
-            };
-            var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCacheAsync().Returns(accounts);
-
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
 
-            Task AsyncTestDelegate() => MainSql.CreateAsync(userInterface, pin);
+            Task AsyncTestDelegate() => MainSql.CreateAsync(new TestUserHelpers(), pin);
 
             Assert.DoesNotThrowAsync(AsyncTestDelegate);
         }
@@ -62,18 +47,10 @@ namespace CheckingLSTests
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
 
-            var accounts = new Dictionary<string, string>
-            {
-                {"1111", "test"}
-            };
-            var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCacheAsync().Returns(accounts);
-            userInterface.GetHelpers().Returns(new TestUserHelpers());
-
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
 
-            Task AsyncTestDelegate() => MainSql.CreateAsync(userInterface, pin);
+            Task AsyncTestDelegate() => MainSql.CreateAsync(new TestUserHelpers(), pin);
 
             Assert.CatchAsync<NoUserFound>(AsyncTestDelegate);
         }
@@ -364,33 +341,19 @@ namespace CheckingLSTests
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
 
-            var accounts = new Dictionary<string, string>
-            {
-                {"1111", "test"}
-            };
-            var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCacheAsync().Returns(accounts);
-
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync(userInterface, "1111");
+            await MainSql.CreateAsync(new TestUserHelpers(), "1111");
 
             await MainSql.DeleteFromDbAsync(false, "2020-01-01").ConfigureAwait(false);
 
             MainSql.SetNullConnection();
         }
 
-        private class TestUserHelpers : Users.UserHelpers
+        private class TestUserHelpers : UserHelpers
         {
-            public override void DropCache()
-            {
-                //
-            }
-
-            public override void DropLoggedAccount()
-            {
-                //
-            }
+            public override Task CreateLoggedUserAsync(string user) =>
+                Task.CompletedTask;
         }
     }
 }

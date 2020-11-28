@@ -1,6 +1,5 @@
 ﻿using CheckinLS.API.Misc;
 using Dapper;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace CheckinLS.API.Sql
@@ -11,28 +10,28 @@ namespace CheckinLS.API.Sql
         {
             await CkeckConnectionAsync();
 
-            var result = await Conn.QueryAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
+            var result = await Conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
 
-            return result.Any();
+            return string.IsNullOrEmpty(result);
         }
 
         private static async Task<bool> IsPasswordAlreadyUsedAsync(string password)
         {
             await CkeckConnectionAsync();
 
-            var result = await Conn.QueryAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
+            var result = await Conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
 
-            return result.Any();
+            return string.IsNullOrEmpty(result);
         }
 
         private static async Task<bool> IsUserAsync(string username)
         {
             await CkeckConnectionAsync();
 
-            var result = await Conn.QueryAsync<string>(
-                $@"SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
+            var result = await Conn.QuerySingleOrDefaultAsync<string>(
+                $@"SELECT TABLE_CATALOG FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
 
-            return result.Any();
+            return string.IsNullOrEmpty(result);
         }
 
         public static bool UserHasOffice()
@@ -44,13 +43,13 @@ namespace CheckinLS.API.Sql
 
         public static async Task MakeUserAccountAsync(string username, string password)
         {
-            if (!await IsUserAsync(username))
+            if (await IsUserAsync(username))
                 throw new UserTableNotFound();
 
-            if (await IsUserAlreadyCreatedAsync(username))
+            if (!await IsUserAlreadyCreatedAsync(username))
                 throw new UserAlreadyExists();
 
-            if (await IsPasswordAlreadyUsedAsync(password))
+            if (!await IsPasswordAlreadyUsedAsync(password))
                 throw new PinAlreadyExists();
 
             const string query = @"INSERT INTO users (username,password)" +

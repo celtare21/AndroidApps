@@ -3,7 +3,6 @@ using CheckinLS.API.Office;
 using CheckinLS.InterfacesAndClasses.Date;
 using CheckinLS.InterfacesAndClasses.Users;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using NSubstitute;
@@ -19,16 +18,9 @@ namespace CheckingLSTests
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
 
-            var accounts = new Dictionary<string, string>
-            {
-                {"1111", "test"}
-            };
-            var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCacheAsync().Returns(accounts);
-
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync(userInterface, "1111");
+            await MainSql.CreateAsync(new TestUserHelpers(), "1111");
 
             return await OfficeElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -90,20 +82,19 @@ namespace CheckingLSTests
             var dateInterface = Substitute.For<IGetDate>();
             dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
 
-            var accounts = new Dictionary<string, string>
-            {
-                {"1111", "test"}
-            };
-            var userInterface = Substitute.For<IUsers>();
-            userInterface.DeserializeCacheAsync().Returns(accounts);
-
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync(userInterface, "1111");
+            await MainSql.CreateAsync(new TestUserHelpers(), "1111");
 
             await MainSql.DeleteFromDbAsync(true, "2020-01-01").ConfigureAwait(false);
 
             MainSql.SetNullConnection();
+        }
+
+        private class TestUserHelpers : UserHelpers
+        {
+            public override Task CreateLoggedUserAsync(string user) =>
+                    Task.CompletedTask;
         }
     }
 }

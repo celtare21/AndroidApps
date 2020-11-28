@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Timers;
+using Xamarin.Forms.Xaml;
 
 namespace CheckinLS.API.Misc
 {
+    [XamlCompilation(XamlCompilationOptions.Compile)]
     public static class TimerHelper
     {
         public static readonly Timer ButtonTimer;

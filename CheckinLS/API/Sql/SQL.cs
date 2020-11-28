@@ -21,23 +21,24 @@ namespace CheckinLS.API.Sql
         public static SqlConnection Conn { get; private set; }
         private static string _user;
 
-        public static async Task CreateAsync(IUsers usersInterface, string pin = null)
+        public static async Task CreateAsync(UserHelpers usersInterface, string pin = null)
         {
-            await usersInterface.CreateUsersCacheAsync(Conn);
-
-            var accounts = await usersInterface.DeserializeCacheAsync();
-
-            var result = pin ?? await usersInterface.ReadLoggedUserAsync();
-
-            if (result != null && accounts.TryGetValue(result, out _user))
+            if (!string.IsNullOrEmpty(pin))
             {
-                await usersInterface.CreateLoggedUserAsync(pin);
+                var result = await Users.TryGetUserAsync(Conn, pin);
+
+                if (!string.IsNullOrEmpty(result))
+                {
+                    await usersInterface.CreateLoggedUserAsync(result);
+                    _user = result;
+                    return;
+                }
+            }
+            else
+            {
+                _user = await Users.ReadLoggedUserAsync();
                 return;
             }
-
-            var helpers = usersInterface.GetHelpers();
-            helpers.DropLoggedAccount();
-            helpers.DropCache();
 
             throw new NoUserFound();
         }

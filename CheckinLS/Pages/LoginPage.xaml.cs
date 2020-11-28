@@ -13,13 +13,9 @@ namespace CheckinLS.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class LoginPage
     {
-        private readonly IUsers _usersInterface;
-
         public LoginPage()
         {
             InitializeComponent();
-
-            _usersInterface = new Users();
         }
 
         protected override async void OnAppearing()
@@ -35,7 +31,7 @@ namespace CheckinLS.Pages
                     Pin.Text = "0000";
                     Enter.IsEnabled = false;
 
-                    await MainSql.CreateAsync(_usersInterface);
+                    await MainSql.CreateAsync(new UserHelpers());
 
                     await MainSql.CkeckConnectionAsync();
 
@@ -95,7 +91,7 @@ namespace CheckinLS.Pages
 
             try
             {
-                await MainSql.CreateAsync(_usersInterface, entryPin);
+                await MainSql.CreateAsync(new UserHelpers(), entryPin);
             }
             catch (NoUserFound)
             {
