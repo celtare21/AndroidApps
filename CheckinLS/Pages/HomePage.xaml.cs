@@ -76,7 +76,7 @@ namespace CheckinLS.Pages
 
             if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
             {
-                if (_elements == null || _elements.Index <= 0)
+                if (_elements == null || _elements.Index < 1)
                     return;
 
                 --_elements.Index;
@@ -97,7 +97,7 @@ namespace CheckinLS.Pages
 
             if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
             {
-                if (_elements == null || _elements.Index >= _elements.MaxElement() - 1)
+                if (_elements == null || _elements.Index > _elements.MaxElement() - 1)
                     return;
 
                 ++_elements.Index;
@@ -110,10 +110,7 @@ namespace CheckinLS.Pages
             if (_elements == null)
                 return;
 
-            if (!LeftRightButton)
-                _elements.Index = 0;
-            else
-                _elements.Index = _elements.MaxElement() - 1;
+            _elements.Index = LeftRightButton ? _elements.MaxElement() : 0;
             
             Vibration.Vibrate(100);
             Device.BeginInvokeOnMainThread(RefreshPage);
@@ -121,7 +118,7 @@ namespace CheckinLS.Pages
 
         private async void DeleteButton_Clicked(object sender, EventArgs e)
         {
-            if (_elements == null || _elements.MaxElement() == 0 || !IdLabel.Text.All(char.IsDigit))
+            if (_elements == null || _elements.MaxElement() < 0)
                 return;
 
             var result = await DisplayAlert("Alert!", "Are you sure you want to delete the entry?", "Yes", "No");
@@ -138,7 +135,7 @@ namespace CheckinLS.Pages
 
             await _elements.DeleteEntryAsync(Convert.ToInt32(IdLabel.Text));
 
-            if (_elements.Index > 0 && _elements.Index > _elements.MaxElement() - 1)
+            if (_elements.Index > _elements.MaxElement())
                 --_elements.Index;
             RefreshPage();
 
@@ -160,29 +157,29 @@ namespace CheckinLS.Pages
 
         public void RefreshPage()
         {
-            if (_elements == null || _elements.MaxElement() == 0)
+            if (_elements == null || _elements.MaxElement() < 0)
             {
                 IdLabel.Text = Observatii.Text = Date.Text = OraIncepere.Text = OraSfarsit.Text =
                         CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
                         Total.Text = "Not found!";
                 PretTotal.Text = "0";
-
-                return;
             }
+            else
+            {
+                (IdLabel.Text, Observatii.Text, Date.Text, OraIncepere.Text, OraSfarsit.Text, CursAlocat.Text,
+                        PregatireAlocat.Text, RecuperareAlocat.Text, Total.Text) =
+                    (HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Id),
+                        HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Observatii),
+                        HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Date),
+                        HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].OraIncepere),
+                        HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].OraFinal),
+                        HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].CursAlocat),
+                        HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].PregatireAlocat),
+                        HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].RecuperareAlocat),
+                        HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Total));
 
-            (IdLabel.Text, Observatii.Text, Date.Text, OraIncepere.Text, OraSfarsit.Text, CursAlocat.Text, PregatireAlocat.Text,
-                    RecuperareAlocat.Text, Total.Text) =
-                (HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Id),
-                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Observatii),
-                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Date),
-                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].OraIncepere),
-                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].OraFinal),
-                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].CursAlocat),
-                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].PregatireAlocat),
-                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].RecuperareAlocat),
-                    HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Total));
-
-            SetPrice();
+                SetPrice();
+            }
         }
 
         private void AddEvents()
@@ -200,7 +197,8 @@ namespace CheckinLS.Pages
 
             ButtonTimer.Elapsed += ButtonTimer_Elapsed;
 
-            RegisterNfsStatusListener();
+            CrossNFC.Current.OnNfcStatusChanged += Current_OnNfcStatusChanged;
+
             StartListening();
         }
 
@@ -219,7 +217,8 @@ namespace CheckinLS.Pages
 
             ButtonTimer.Elapsed -= ButtonTimer_Elapsed;
 
-            RemoveNfsStatusListener();
+            CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
+
             StopListening();
         }
 
@@ -240,12 +239,6 @@ namespace CheckinLS.Pages
                 Indicator.Color = Color.Green;
             }
         }
-
-        private void RegisterNfsStatusListener() =>
-                CrossNFC.Current.OnNfcStatusChanged += Current_OnNfcStatusChanged;
-
-        private void RemoveNfsStatusListener() =>
-                CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
 
         private async void Current_OnNfcStatusChanged(bool isEnabled)
         {

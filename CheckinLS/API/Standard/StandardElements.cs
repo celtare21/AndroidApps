@@ -34,7 +34,7 @@ namespace CheckinLS.API.Standard
             await MainSql.AddToDbAsync(await NewElementsTableAsync(string.IsNullOrEmpty(observatii) ? "None" : observatii, curs,
                 pregatire, recuperare));
             await RefreshElementsAsync();
-            Index = MaxElement() - 1;
+            Index = MaxElement();
         }
 
         private async Task<StandardDatabaseEntry> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
@@ -67,6 +67,6 @@ namespace CheckinLS.API.Standard
                 Entries = (await MainSql.GetAllElementsStandardAsync()).ToList();
 
         public int MaxElement() =>
-                Entries?.Count ?? 0;
+                Entries.Count - 1;
     }
 }

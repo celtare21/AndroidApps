@@ -76,7 +76,7 @@ namespace CheckingLSTests
 
             await elements.AddNewEntryAsync(obs, true, false, false);
 
-            var index = elements.MaxElement() - 1;
+            var index = elements.MaxElement();
 
             switch (obs)
             {
@@ -110,7 +110,7 @@ namespace CheckingLSTests
 
             await elements.AddNewEntryAsync(obs, false, true, false);
 
-            var index = elements.MaxElement() - 1;
+            var index = elements.MaxElement();
 
             switch (obs)
             {
@@ -144,7 +144,7 @@ namespace CheckingLSTests
 
             await elements.AddNewEntryAsync(obs, false, false, true);
 
-            var index = elements.MaxElement() - 1;
+            var index = elements.MaxElement();
 
             switch (obs)
             {
@@ -178,7 +178,7 @@ namespace CheckingLSTests
 
             await elements.AddNewEntryAsync(obs, true, true, false);
 
-            var index = elements.MaxElement() - 1;
+            var index = elements.MaxElement();
 
             switch (obs)
             {
@@ -212,7 +212,7 @@ namespace CheckingLSTests
 
             await elements.AddNewEntryAsync(obs, true, false, true);
 
-            var index = elements.MaxElement() - 1;
+            var index = elements.MaxElement();
 
             switch (obs)
             {
@@ -246,7 +246,7 @@ namespace CheckingLSTests
 
             await elements.AddNewEntryAsync(obs, false, true, true);
 
-            var index = elements.MaxElement() - 1;
+            var index = elements.MaxElement();
 
             switch (obs)
             {
@@ -280,7 +280,7 @@ namespace CheckingLSTests
 
             await elements.AddNewEntryAsync(obs, true, true, true);
 
-            var index = elements.MaxElement() - 1;
+            var index = elements.MaxElement();
 
             switch (obs)
             {
@@ -328,7 +328,7 @@ namespace CheckingLSTests
 
             var max = elements.MaxElement();
 
-            await elements.DeleteEntryAsync(elements.Entries[elements.MaxElement() - 1].Id);
+            await elements.DeleteEntryAsync(elements.Entries[elements.MaxElement()].Id);
 
             Assert.AreNotEqual(elements.MaxElement(), max);
         }

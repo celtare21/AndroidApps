@@ -32,7 +32,7 @@ namespace CheckinLS.API.Office
         {
             await MainSql.AddToDbAsync(NewElementsTable(start, finish));
             await RefreshElementsAsync();
-            Index = MaxElement() - 1;
+            Index = MaxElement();
         }
 
         private OfficeDatabaseEntries NewElementsTable(TimeSpan start, TimeSpan finish)
@@ -63,6 +63,6 @@ namespace CheckinLS.API.Office
                 Entries = (await MainSql.GetAllElementsOfficeAsync()).ToList();
 
         public int MaxElement() =>
-                Entries?.Count ?? 0;
+                Entries.Count - 1;
     }
 }

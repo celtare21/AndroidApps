@@ -72,7 +72,7 @@ namespace CheckinLS.Pages
 
             if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
             {
-                if (_officeElements == null || _officeElements.Index >= _officeElements.MaxElement() - 1)
+                if (_officeElements == null || _officeElements.Index > _officeElements.MaxElement() - 1)
                     return;
 
                 ++_officeElements.Index;
@@ -85,10 +85,7 @@ namespace CheckinLS.Pages
             if (_officeElements == null)
                 return;
 
-            if (!LeftRightButton)
-                _officeElements.Index = 0;
-            else
-                _officeElements.Index = _officeElements.MaxElement() - 1;
+            _officeElements.Index = LeftRightButton ? _officeElements.MaxElement() : 0;
             
             Vibration.Vibrate(100);
             Device.BeginInvokeOnMainThread(RefreshPage);
@@ -96,7 +93,7 @@ namespace CheckinLS.Pages
 
         private async void DeleteButton_Clicked(object sender, EventArgs e)
         {
-            if (_officeElements == null || _officeElements.MaxElement() == 0 || !IdLabel.Text.All(char.IsDigit))
+            if (_officeElements == null || _officeElements.MaxElement() < 0)
                 return;
 
             var result = await DisplayAlert("Alert!", "Are you sure you want to delete the entry?", "Yes", "No");
@@ -107,7 +104,7 @@ namespace CheckinLS.Pages
             DeleteButton.IsEnabled = false;
 
             await _officeElements.DeleteEntryAsync(Convert.ToInt32(IdLabel.Text));
-            if (_officeElements.Index > 0 && _officeElements.Index > _officeElements.MaxElement() - 1)
+            if (_officeElements.Index > _officeElements.MaxElement())
                 --_officeElements.Index;
             RefreshPage();
 
@@ -151,21 +148,22 @@ namespace CheckinLS.Pages
 
         public void RefreshPage()
         {
-            if (_officeElements == null || _officeElements.MaxElement() == 0)
+            if (_officeElements == null || _officeElements.MaxElement() < 0)
             {
                 IdLabel.Text = DateLabel.Text = OraIncepereLabel.Text = OraFinalLabel.Text = TotalLabel.Text = "Not found!";
                 PretTotal.Text = "0";
-                return;
             }
+            else
+            {
+                (IdLabel.Text, DateLabel.Text, OraIncepereLabel.Text, OraFinalLabel.Text, TotalLabel.Text) =
+                    (HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Id),
+                        HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Date),
+                        HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].OraIncepere),
+                        HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].OraFinal),
+                        HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Total));
 
-            (IdLabel.Text, DateLabel.Text, OraIncepereLabel.Text, OraFinalLabel.Text, TotalLabel.Text) =
-                (HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Id),
-                    HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Date),
-                    HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].OraIncepere),
-                    HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].OraFinal),
-                    HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Total));
-
-            SetPrice();
+                SetPrice();
+            }
         }
 
         private void SetPrice()

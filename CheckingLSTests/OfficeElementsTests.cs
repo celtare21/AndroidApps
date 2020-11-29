@@ -52,7 +52,7 @@ namespace CheckingLSTests
 
             await officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(9));
 
-            var index = officeElements.MaxElement() - 1;
+            var index = officeElements.MaxElement();
 
             Assert.AreEqual(officeElements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(officeElements.Entries[index].OraIncepere, TimeSpan.FromHours(8));
@@ -69,7 +69,7 @@ namespace CheckingLSTests
 
             var max = officeElements.MaxElement();
 
-            await officeElements.DeleteEntryAsync(officeElements.Entries[officeElements.MaxElement() - 1].Id);
+            await officeElements.DeleteEntryAsync(officeElements.Entries[officeElements.MaxElement()].Id);
 
             Assert.AreNotEqual(officeElements.MaxElement(), max);
         }
