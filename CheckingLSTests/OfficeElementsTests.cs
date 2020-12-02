@@ -2,10 +2,10 @@
 using CheckinLS.API.Office;
 using CheckinLS.InterfacesAndClasses.Date;
 using CheckinLS.InterfacesAndClasses.Users;
-using System;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using NSubstitute;
+using System;
+using System.Threading.Tasks;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
 namespace CheckingLSTests
@@ -30,7 +30,7 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(8));
+            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(8), null);
 
             Assert.CatchAsync<HoursCantBeEqual>(AsyncTestDelegate);
         }
@@ -40,20 +40,36 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(9), TimeSpan.FromHours(8));
+            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(9), TimeSpan.FromHours(8), null);
 
             Assert.CatchAsync<StartCantBeBigger>(AsyncTestDelegate);
         }
 
-        [Test]
-        public async Task AddNewEntryAsync_CursMultipleObservations_ReturnNewEntry()
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("test")]
+        [TestCase("this is a test")]
+        [TestCase("this is an even longer test")]
+        public async Task AddNewEntryAsync_CorrectTimeMultipleObservations_ReturnNewEntry(string observatii)
         {
             var officeElements = await CreateTaskAsync();
 
-            await officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(9));
+            await officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(9), observatii);
 
             var index = officeElements.MaxElement();
 
+            switch (observatii)
+            {
+                case null:
+                case "":
+                    Assert.AreEqual(officeElements.Entries[index].Observatii, "None");
+                    break;
+                case "test":
+                case "this is a test":
+                case "this is an even longer test":
+                    Assert.AreEqual(officeElements.Entries[index].Observatii, observatii);
+                    break;
+            }
             Assert.AreEqual(officeElements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(officeElements.Entries[index].OraIncepere, TimeSpan.FromHours(8));
             Assert.AreEqual(officeElements.Entries[index].OraFinal, TimeSpan.FromHours(9));
@@ -65,7 +81,7 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            await officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(9));
+            await officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(9), null);
 
             var max = officeElements.MaxElement();
 

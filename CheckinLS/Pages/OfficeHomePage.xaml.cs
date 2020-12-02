@@ -125,7 +125,7 @@ namespace CheckinLS.Pages
 
             try
             {
-                await _officeElements.AddNewEntryAsync(start, finish);
+                await _officeElements.AddNewEntryAsync(start, finish, ObservatiiEntry.Text);
             }
             catch (HoursCantBeEqual)
             {
@@ -143,6 +143,10 @@ namespace CheckinLS.Pages
             RefreshPage();
             HelperFunctions.ShowToast("New entry added!");
 
+            OraIncepereTime.Time = TimeSpan.FromHours(8);
+            OraFinalTime.Time = TimeSpan.FromHours(8);
+            ObservatiiEntry.Text = string.Empty;
+
             AddButton.IsEnabled = true;
         }
 
@@ -150,17 +154,18 @@ namespace CheckinLS.Pages
         {
             if (_officeElements == null || _officeElements.MaxElement() < 0)
             {
-                IdLabel.Text = DateLabel.Text = OraIncepereLabel.Text = OraFinalLabel.Text = TotalLabel.Text = "Not found!";
+                IdLabel.Text = DateLabel.Text = OraIncepereLabel.Text = OraFinalLabel.Text = ObservatiiLabel.Text = TotalLabel.Text = "Not found!";
                 PretTotal.Text = "0";
             }
             else
             {
-                (IdLabel.Text, DateLabel.Text, OraIncepereLabel.Text, OraFinalLabel.Text, TotalLabel.Text) =
+                (IdLabel.Text, DateLabel.Text, OraIncepereLabel.Text, OraFinalLabel.Text, TotalLabel.Text, ObservatiiLabel.Text) =
                     (HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Id),
                         HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Date),
                         HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].OraIncepere),
                         HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].OraFinal),
-                        HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Total));
+                        HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Total),
+                        HelperFunctions.ConversionWrapper(_officeElements.Entries[_officeElements.Index].Observatii));
 
                 SetPrice();
             }

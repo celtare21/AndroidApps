@@ -17,11 +17,11 @@ namespace CheckinLS
         {
             InitializeComponent();
 
+            CheckInternet();
+
             Distribute.UpdateTrack = UpdateTrack.Private;
             AppCenter.Start(Secrets.analytics,
                 typeof(Analytics), typeof(Crashes), typeof(Distribute));
-
-            CheckInternet();
 
             MainPage = new LoginPage();
         }
@@ -50,10 +50,15 @@ namespace CheckinLS
         private static void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e) =>
                 CheckInternet();
 
-        private static void CheckInternet()
+        public static bool CheckInternet()
         {
             if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+            {
                 HelperFunctions.ShowAlertKill("No internet connection!");
+                return false;
+            }
+
+            return true;
         }
 
         private static void AddEvents() =>

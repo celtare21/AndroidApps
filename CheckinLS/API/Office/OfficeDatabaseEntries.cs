@@ -11,9 +11,10 @@ namespace CheckinLS.API.Office
         public readonly TimeSpan OraIncepere;
         public readonly TimeSpan OraFinal;
         public readonly TimeSpan Total;
+        public readonly string Observatii;
 
-        public OfficeDatabaseEntries(DateTime date, TimeSpan oraIncepere, TimeSpan oraFinal, TimeSpan total) =>
-            (Id, Date, OraIncepere, OraFinal, Total) = (0, date, oraIncepere, oraFinal, total);
+        public OfficeDatabaseEntries(DateTime date, TimeSpan oraIncepere, TimeSpan oraFinal, TimeSpan total, string observatii) =>
+            (Id, Date, OraIncepere, OraFinal, Total, Observatii) = (0, date, oraIncepere, oraFinal, total, observatii);
 
         // ReSharper disable once UnusedMember.Global
         public OfficeDatabaseEntries()

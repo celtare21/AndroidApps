@@ -33,8 +33,11 @@ namespace CheckinLS.Pages
 
                     await MainSql.CreateAsync(new UserHelpers());
 
-                    await MainSql.CkeckConnectionAsync();
-
+                    if (!await MainSql.CkeckConnectionAsync())
+                    {
+                        HelperFunctions.ShowAlertKill("No internet connection!");
+                        return;
+                    }
                     var homeClass = new Home();
                     await Navigation.PushModalAsync(homeClass);
                     await homeClass.CreateElementsAsync();
@@ -95,7 +98,11 @@ namespace CheckinLS.Pages
             }
             catch (NoUserFound)
             {
-                await MainSql.CkeckConnectionAsync();
+                if (!await MainSql.CkeckConnectionAsync())
+                {
+                    HelperFunctions.ShowAlertKill("No internet connection!");
+                    return;
+                }
                 UserDialogs.Instance.HideLoading();
                 await DisplayAlert("Error", "No user found! Please create one.", "OK");
                 await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
@@ -107,7 +114,11 @@ namespace CheckinLS.Pages
                 App.Close();
             }
 
-            await MainSql.CkeckConnectionAsync();
+            if (!await MainSql.CkeckConnectionAsync())
+            {
+                HelperFunctions.ShowAlertKill("No internet connection!");
+                return;
+            }
 
             var homeClass = new Home();
             await Navigation.PushModalAsync(homeClass);

@@ -8,7 +8,11 @@ namespace CheckinLS.API.Sql
     {
         private static async Task<bool> IsUserAlreadyCreatedAsync(string username)
         {
-            await CkeckConnectionAsync();
+            if (!await CkeckConnectionAsync())
+            {
+                HelperFunctions.ShowAlertKill("No internet connection!");
+                return false;
+            }
 
             var result = await Conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
 
@@ -17,7 +21,11 @@ namespace CheckinLS.API.Sql
 
         private static async Task<bool> IsPasswordAlreadyUsedAsync(string password)
         {
-            await CkeckConnectionAsync();
+            if (!await CkeckConnectionAsync())
+            {
+                HelperFunctions.ShowAlertKill("No internet connection!");
+                return false;
+            }
 
             var result = await Conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
 
@@ -26,7 +34,11 @@ namespace CheckinLS.API.Sql
 
         private static async Task<bool> IsUserAsync(string username)
         {
-            await CkeckConnectionAsync();
+            if (!await CkeckConnectionAsync())
+            {
+                HelperFunctions.ShowAlertKill("No internet connection!");
+                return false;
+            }
 
             var result = await Conn.QuerySingleOrDefaultAsync<string>(
                 $@"SELECT TABLE_CATALOG FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
@@ -55,7 +67,11 @@ namespace CheckinLS.API.Sql
             const string query = @"INSERT INTO users (username,password)" +
                                  "VALUES (@Username,@Password)";
 
-            await CkeckConnectionAsync();
+            if (!await CkeckConnectionAsync())
+            {
+                HelperFunctions.ShowAlertKill("No internet connection!");
+                return;
+            }
 
             await Conn.ExecuteAsync(query, new { Username = username, Password = password }).ConfigureAwait(false);
         }
