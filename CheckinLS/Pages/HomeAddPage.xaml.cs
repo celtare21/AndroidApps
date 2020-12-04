@@ -1,6 +1,9 @@
-﻿using CheckinLS.API.Misc;
+﻿using System;
+using System.ComponentModel;
+using CheckinLS.API.Misc;
 using CheckinLS.API.Standard;
 using Microsoft.AppCenter.Analytics;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace CheckinLS.Pages
@@ -10,6 +13,7 @@ namespace CheckinLS.Pages
     {
         private readonly StandardElements _elements;
         private readonly Home _home;
+        private bool _timeSet, _dateSet;
 
         public HomeAddPage(StandardElements elements, in Home home)
         {
@@ -21,7 +25,7 @@ namespace CheckinLS.Pages
             AddButton.Clicked += Add_button_Clicked;
         }
 
-        private async void Add_button_Clicked(object sender, System.EventArgs e)
+        private async void Add_button_Clicked(object sender, EventArgs e)
         {
             if (_elements == null)
                 return;
@@ -31,7 +35,7 @@ namespace CheckinLS.Pages
             try
             {
                 await _elements.AddNewEntryAsync(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled,
-                    RecuperareToggle.IsToggled);
+                    RecuperareToggle.IsToggled, GetCustomTime(), GetCustomDate());
             }
             catch (AllParametersFalse)
             {
@@ -49,9 +53,47 @@ namespace CheckinLS.Pages
             Analytics.TrackEvent("Manual entry added");
             HelperFunctions.ShowToast("New entry added!");
             _home.RefreshPage();
-            ObsManualEntry.Text = string.Empty;
+
+            ResetElements();
 
             AddButton.IsEnabled = true;
+        }
+
+        private void OnTimePickerPropertyChanged(object sender, PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName.Equals("Time"))
+                _timeSet = true;
+        }
+
+        private void OnDateSelected(object sender, DateChangedEventArgs args)
+        {
+            if (args.NewDate != args.OldDate)
+                _dateSet = true;
+        }
+
+        private void ResetElements()
+        {
+            CursToggle.IsToggled = PregatireToggle.IsToggled = RecuperareToggle.IsToggled = false;
+            ObsManualEntry.Text = string.Empty;
+            OraIncepereTime.Time = TimeSpan.FromHours(8);
+            StartDatePicker.Date = DateTime.Today;
+            _timeSet = _dateSet = false;
+        }
+
+        private TimeSpan? GetCustomTime()
+        {
+            if (_timeSet)
+                return OraIncepereTime.Time;
+
+            return null;
+        }
+
+        private DateTime? GetCustomDate()
+        {
+            if (_dateSet)
+                return StartDatePicker.Date;
+
+            return null;
         }
     }
 }

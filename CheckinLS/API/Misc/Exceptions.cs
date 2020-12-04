@@ -74,4 +74,13 @@ namespace CheckinLS.API.Misc
             Console.WriteLine(@"An accounts with that pin already exists!");
         }
     }
+
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public class UserReadFailed : Exception
+    {
+        public UserReadFailed()
+        {
+            Console.WriteLine(@"Reading secure storage failed!");
+        }
+    }
 }

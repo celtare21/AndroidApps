@@ -6,6 +6,7 @@ using NUnit.Framework;
 using NSubstitute;
 using System;
 using System.Threading.Tasks;
+using CheckinLS.InterfacesAndClasses.Internet;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
 namespace CheckingLSTests
@@ -20,7 +21,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync(new TestUserHelpers(), "1111");
+            await MainSql.CreateAsync(new TestUserHelpers(), new TestInternetAccess(), "1111");
 
             return await OfficeElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -100,7 +101,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync(new TestUserHelpers(), "1111");
+            await MainSql.CreateAsync(new TestUserHelpers(), new TestInternetAccess(), "1111");
 
             await MainSql.DeleteFromDbAsync(true, "2020-01-01").ConfigureAwait(false);
 
@@ -111,6 +112,12 @@ namespace CheckingLSTests
         {
             public override Task CreateLoggedUserAsync(string user) =>
                     Task.CompletedTask;
+        }
+
+        private class TestInternetAccess : InternetAccess
+        {
+            public override bool CheckInternet() =>
+                true;
         }
     }
 }

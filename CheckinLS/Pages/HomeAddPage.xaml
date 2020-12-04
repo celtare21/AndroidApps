@@ -17,19 +17,18 @@
                 <RowDefinition Height="65"/>
                 <RowDefinition Height="65"/>
                 <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
+                <RowDefinition Height="65"/>
             </Grid.RowDefinitions>
 
             <Label Text="Pregatire:" Grid.Row="0" Grid.Column="0"/>
-            <Switch x:Name="PregatireToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="0" Grid.Column="1">
-            </Switch>
+            <Switch x:Name="PregatireToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="0" Grid.Column="1"/>
 
             <Label Text="Curs:" Grid.Row="1" Grid.Column="0"/>
-            <Switch x:Name="CursToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="1" Grid.Column="1">
-            </Switch>
+            <Switch x:Name="CursToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="1" Grid.Column="1"/>
 
             <Label Text="Recuperare:" Grid.Row="2" Grid.Column="0"/>
-            <Switch x:Name="RecuperareToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="2" Grid.Column="1">
-            </Switch>
+            <Switch x:Name="RecuperareToggle" IsToggled="False" OnColor="#CDD3DF" HorizontalOptions="Center" Grid.Row="2" Grid.Column="1"/>
 
             <Entry x:Name="ObsManualEntry" IsSpellCheckEnabled="False" PlaceholderColor="Gray" TextColor="AntiqueWhite" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-200,0" Grid.Row="3" Grid.Column="0">
                 <Entry.Keyboard>
@@ -41,7 +40,10 @@
                 </Entry.Keyboard>
             </Entry>
 
-            <Button x:Name="AddButton" Text="Add" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="4" Grid.Column="1"/>
+            <TimePicker x:Name="OraIncepereTime" Format="HH:mm" Time="8:00:00" PropertyChanged="OnTimePickerPropertyChanged" TextColor="AntiqueWhite" HorizontalOptions="Center" Grid.Row="4" Grid.Column="0"/>
+            <DatePicker x:Name="StartDatePicker" Format="dd/MM/yyyy" DateSelected="OnDateSelected" TextColor="AntiqueWhite" HorizontalOptions="Center" Grid.Row="4" Grid.Column="1"/>
+
+            <Button x:Name="AddButton" Text="Add" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="6" Grid.Column="1"/>
         </Grid>
 
     </ContentPage.Content>

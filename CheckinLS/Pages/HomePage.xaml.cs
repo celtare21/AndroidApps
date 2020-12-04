@@ -351,7 +351,7 @@ namespace CheckinLS.Pages
 
             await CountdownAsync();
 
-            await _elements.AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire, _ora.recuperare);
+            await _elements.AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire, _ora.recuperare, null, null);
             HelperFunctions.ShowToast("New entry added!");
             ObsEntry.Text = string.Empty;
             RefreshPage();

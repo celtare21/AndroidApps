@@ -1,5 +1,5 @@
-﻿using CheckinLS.API.Misc;
-using CheckinLS.API.Sql;
+﻿using CheckinLS.API.Sql;
+using CheckinLS.InterfacesAndClasses.Internet;
 using CheckinLS.Helpers;
 using CheckinLS.Pages;
 using Microsoft.AppCenter;
@@ -13,17 +13,19 @@ namespace CheckinLS
 {
     public partial class App
     {
+        public readonly InternetAccess InternetCheck = new InternetAccess();
+
         public App()
         {
             InitializeComponent();
 
-            CheckInternet();
+            InternetCheck.CheckInternet();
 
             Distribute.UpdateTrack = UpdateTrack.Private;
             AppCenter.Start(Secrets.analytics,
                 typeof(Analytics), typeof(Crashes), typeof(Distribute));
 
-            MainPage = new LoginPage();
+            MainPage = new LoginPage(InternetCheck);
         }
 
         protected override void OnStart()
@@ -47,24 +49,13 @@ namespace CheckinLS
         public static void Close() =>
                 System.Diagnostics.Process.GetCurrentProcess().Kill();
 
-        private static void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e) =>
-                CheckInternet();
+        private void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e) =>
+            InternetCheck.CheckInternet();
 
-        public static bool CheckInternet()
-        {
-            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-            {
-                HelperFunctions.ShowAlertKill("No internet connection!");
-                return false;
-            }
-
-            return true;
-        }
-
-        private static void AddEvents() =>
+        private void AddEvents() =>
                 Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
 
-        private static void RemoveEvents() =>
+        private void RemoveEvents() =>
                 Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
     }
 }

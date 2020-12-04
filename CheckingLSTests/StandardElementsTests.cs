@@ -6,6 +6,7 @@ using NUnit.Framework;
 using NSubstitute;
 using System;
 using System.Threading.Tasks;
+using CheckinLS.InterfacesAndClasses.Internet;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
 namespace CheckingLSTests
@@ -20,7 +21,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync(new TestUserHelpers(), "1111");
+            await MainSql.CreateAsync(new TestUserHelpers(), new TestInternetAccess(), "1111");
 
             return await StandardElements.CreateAsync(dateInterface).ConfigureAwait(false);
         }
@@ -34,7 +35,7 @@ namespace CheckingLSTests
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
 
-            Task AsyncTestDelegate() => MainSql.CreateAsync(new TestUserHelpers(), pin);
+            Task AsyncTestDelegate() => MainSql.CreateAsync(new TestUserHelpers(), new TestInternetAccess(), pin);
 
             Assert.DoesNotThrowAsync(AsyncTestDelegate);
         }
@@ -50,7 +51,7 @@ namespace CheckingLSTests
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
 
-            Task AsyncTestDelegate() => MainSql.CreateAsync(new TestUserHelpers(), pin);
+            Task AsyncTestDelegate() => MainSql.CreateAsync(new TestUserHelpers(), new TestInternetAccess(), pin);
 
             Assert.CatchAsync<NoUserFound>(AsyncTestDelegate);
         }
@@ -60,7 +61,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            Task AsyncTestDelegate() => elements.AddNewEntryAsync(null, false, false, false);
+            Task AsyncTestDelegate() => elements.AddNewEntryAsync(null, false, false, false, null, null);
 
             Assert.CatchAsync<AllParametersFalse>(AsyncTestDelegate);
         }
@@ -74,7 +75,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(obs, true, false, false);
+            await elements.AddNewEntryAsync(obs, true, false, false, null, null);
 
             var index = elements.MaxElement();
 
@@ -108,7 +109,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(obs, false, true, false);
+            await elements.AddNewEntryAsync(obs, false, true, false, null, null);
 
             var index = elements.MaxElement();
 
@@ -142,7 +143,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(obs, false, false, true);
+            await elements.AddNewEntryAsync(obs, false, false, true, null, null);
 
             var index = elements.MaxElement();
 
@@ -176,7 +177,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(obs, true, true, false);
+            await elements.AddNewEntryAsync(obs, true, true, false, null, null);
 
             var index = elements.MaxElement();
 
@@ -210,7 +211,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(obs, true, false, true);
+            await elements.AddNewEntryAsync(obs, true, false, true, null, null);
 
             var index = elements.MaxElement();
 
@@ -244,7 +245,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(obs, false, true, true);
+            await elements.AddNewEntryAsync(obs, false, true, true, null, null);
 
             var index = elements.MaxElement();
 
@@ -278,7 +279,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(obs, true, true, true);
+            await elements.AddNewEntryAsync(obs, true, true, true, null, null);
 
             var index = elements.MaxElement();
 
@@ -308,13 +309,13 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(null, true, true, true);
-            await elements.AddNewEntryAsync(null, true, true, true);
-            await elements.AddNewEntryAsync(null, true, true, true);
-            await elements.AddNewEntryAsync(null, true, true, true);
-            await elements.AddNewEntryAsync(null, true, true, true);
+            await elements.AddNewEntryAsync(null, true, true, true, null, null);
+            await elements.AddNewEntryAsync(null, true, true, true, null, null);
+            await elements.AddNewEntryAsync(null, true, true, true, null, null);
+            await elements.AddNewEntryAsync(null, true, true, true, null, null);
+            await elements.AddNewEntryAsync(null, true, true, true, null, null);
 
-            Task AsyncTestDelegate() => elements.AddNewEntryAsync(null, true, true, true);
+            Task AsyncTestDelegate() => elements.AddNewEntryAsync(null, true, true, true, null, null);
 
             Assert.CatchAsync<HoursOutOfBounds>(AsyncTestDelegate);
         }
@@ -324,7 +325,7 @@ namespace CheckingLSTests
         {
             var elements = await CreateTaskAsync();
 
-            await elements.AddNewEntryAsync(null, false, false, true);
+            await elements.AddNewEntryAsync(null, false, false, true, null, null);
 
             var max = elements.MaxElement();
 
@@ -343,7 +344,7 @@ namespace CheckingLSTests
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
-            await MainSql.CreateAsync(new TestUserHelpers(), "1111");
+            await MainSql.CreateAsync(new TestUserHelpers(), new TestInternetAccess(), "1111");
 
             await MainSql.DeleteFromDbAsync(false, "2020-01-01").ConfigureAwait(false);
 
@@ -354,6 +355,12 @@ namespace CheckingLSTests
         {
             public override Task CreateLoggedUserAsync(string user) =>
                 Task.CompletedTask;
+        }
+
+        private class TestInternetAccess : InternetAccess
+        {
+            public override bool CheckInternet() =>
+                true;
         }
     }
 }

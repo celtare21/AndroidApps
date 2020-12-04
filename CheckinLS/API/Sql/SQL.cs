@@ -3,7 +3,7 @@ using CheckinLS.API.Standard;
 using CheckinLS.API.Misc;
 using CheckinLS.Helpers;
 using CheckinLS.InterfacesAndClasses.Users;
-using CheckinLS.InterfacesAndClasses.Date;
+using CheckinLS.InterfacesAndClasses.Internet;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -20,10 +20,13 @@ namespace CheckinLS.API.Sql
     public static partial class MainSql
     {
         public static SqlConnection Conn { get; private set; }
+        private static InternetAccess _internetCheck;
         private static string _user;
 
-        public static async Task CreateAsync(UserHelpers usersInterface, string pin = null)
+        public static async Task CreateAsync(UserHelpers usersInterface, InternetAccess internetCheck, string pin = null)
         {
+            _internetCheck = internetCheck;
+
             if (!string.IsNullOrEmpty(pin))
             {
                 var result = await Users.TryGetUserAsync(Conn, pin);
@@ -37,7 +40,10 @@ namespace CheckinLS.API.Sql
             }
             else
             {
-                _user = await Users.ReadLoggedUserAsync();
+                var tempUser = await Users.ReadLoggedUserAsync();
+
+                _user = tempUser ?? throw new UserReadFailed();
+
                 return;
             }
 
@@ -66,7 +72,7 @@ namespace CheckinLS.API.Sql
             while (Conn?.State == ConnectionState.Connecting)
                 await Task.Delay(100);
 
-            return App.CheckInternet();
+            return _internetCheck.CheckInternet();
         }
 
         public static Task CloseConnectionAsync() =>
@@ -224,7 +230,7 @@ namespace CheckinLS.API.Sql
             }
         }
 
-        public static async Task<TimeSpan> MaxHourInDbAsync(IGetDate dateInterface)
+        public static async Task<TimeSpan> MaxHourInDbAsync(DateTime date)
         {
             if (!await CkeckConnectionAsync())
             {
@@ -237,7 +243,7 @@ namespace CheckinLS.API.Sql
             try
             {
                 result = await Conn.QueryAsync<TimeSpan?>(
-                    $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{dateInterface.GetCurrentDate():yyyy-MM-dd}%'");
+                    $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{date:yyyy-MM-dd}%'");
             }
             catch (SqlException e)
             {

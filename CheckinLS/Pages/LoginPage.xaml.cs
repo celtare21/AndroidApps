@@ -4,6 +4,8 @@ using CheckinLS.InterfacesAndClasses.Users;
 using System;
 using System.Data;
 using System.Threading.Tasks;
+using CheckinLS.InterfacesAndClasses.Internet;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using MainSql = CheckinLS.API.Sql.MainSql;
@@ -13,9 +15,13 @@ namespace CheckinLS.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class LoginPage
     {
-        public LoginPage()
+        private readonly InternetAccess _internetCheck;
+
+        public LoginPage(InternetAccess internetCheck)
         {
             InitializeComponent();
+
+            _internetCheck = internetCheck;
         }
 
         protected override async void OnAppearing()
@@ -31,13 +37,14 @@ namespace CheckinLS.Pages
                     Pin.Text = "0000";
                     Enter.IsEnabled = false;
 
-                    await MainSql.CreateAsync(new UserHelpers());
+                    await MainSql.CreateAsync(new UserHelpers(), _internetCheck);
 
                     if (!await MainSql.CkeckConnectionAsync())
                     {
                         HelperFunctions.ShowAlertKill("No internet connection!");
                         return;
                     }
+
                     var homeClass = new Home();
                     await Navigation.PushModalAsync(homeClass);
                     await homeClass.CreateElementsAsync();
@@ -45,6 +52,12 @@ namespace CheckinLS.Pages
                     await homeClass.CheckNfcStatusAsync();
 
                     UserDialogs.Instance.HideLoading();
+                }
+                catch (UserReadFailed)
+                {
+                    SecureStorage.RemoveAll();
+                    Preferences.Clear();
+                    HelperFunctions.ShowAlertKill("There's been an error, please restart the app!");
                 }
                 catch (Exception ex) when (ex is TaskCanceledException || ex is InvalidOperationException)
                 {
@@ -94,7 +107,7 @@ namespace CheckinLS.Pages
 
             try
             {
-                await MainSql.CreateAsync(new UserHelpers(), entryPin);
+                await MainSql.CreateAsync(new UserHelpers(), _internetCheck, entryPin);
             }
             catch (NoUserFound)
             {

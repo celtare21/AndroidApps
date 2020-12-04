@@ -29,29 +29,33 @@ namespace CheckinLS.API.Standard
         private StandardElements(IGetDate dateInterface) =>
                 _dateInterface = dateInterface;
 
-        public async Task AddNewEntryAsync(string observatii, bool curs, bool pregatire, bool recuperare)
+        public async Task AddNewEntryAsync(string observatii, bool curs, bool pregatire, bool recuperare,
+            TimeSpan? oraIncepereCustom, DateTime? dateCustom)
         {
             await MainSql.AddToDbAsync(await NewElementsTableAsync(string.IsNullOrEmpty(observatii) ? "None" : observatii,
-                curs, pregatire, recuperare));
+                curs, pregatire, recuperare, oraIncepereCustom, dateCustom));
             await RefreshElementsAsync();
             Index = MaxElement();
         }
 
-        private async Task<StandardDatabaseEntry> NewElementsTableAsync(string observatii, bool curs, bool pregatire, bool recuperare)
+        private async Task<StandardDatabaseEntry> NewElementsTableAsync(string observatii, bool curs, bool pregatire,
+            bool recuperare, TimeSpan? oraIncepereCustom, DateTime? dateCustom)
         {
             if (!curs && !pregatire && !recuperare)
                 throw new AllParametersFalse();
 
-            (TimeSpan oraIncepere, TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat) =
-                (await MainSql.MaxHourInDbAsync(_dateInterface), curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
+            var date = dateCustom ?? _dateInterface.GetCurrentDate();
+
+            (TimeSpan cursAlocat, TimeSpan pregatireAlocat, TimeSpan recuperareAlocat) =
+                (curs ? CursTime() : ZeroTime(), pregatire ? PregatireTime() : ZeroTime(), recuperare ? RecuperareTime() : ZeroTime());
+
+            TimeSpan oraIncepere = oraIncepereCustom ?? await MainSql.MaxHourInDbAsync(date);
 
             TimeSpan total = cursAlocat + pregatireAlocat + recuperareAlocat;
             TimeSpan oraFinal = oraIncepere + total;
 
             if (oraFinal.TotalDays > 1)
                 throw new HoursOutOfBounds();
-
-            var date = _dateInterface.GetCurrentDate();
 
             return new StandardDatabaseEntry(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
                 recuperareAlocat, total, observatii);
