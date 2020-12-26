@@ -71,6 +71,7 @@ namespace CheckingLSTests
                     Assert.AreEqual(officeElements.Entries[index].Observatii, observatii);
                     break;
             }
+
             Assert.AreEqual(officeElements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(officeElements.Entries[index].OraIncepere, TimeSpan.FromHours(8));
             Assert.AreEqual(officeElements.Entries[index].OraFinal, TimeSpan.FromHours(9));
@@ -116,8 +117,8 @@ namespace CheckingLSTests
 
         private class TestInternetAccess : InternetAccess
         {
-            public override bool CheckInternet() =>
-                true;
+            public override Task<bool> CheckInternetAsync() =>
+                Task.FromResult(true);
         }
     }
 }

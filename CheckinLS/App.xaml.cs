@@ -13,19 +13,19 @@ namespace CheckinLS
 {
     public partial class App
     {
-        public readonly InternetAccess InternetCheck = new InternetAccess();
+        private readonly InternetAccess _internetCheck = new InternetAccess();
 
         public App()
         {
             InitializeComponent();
 
-            InternetCheck.CheckInternet();
+            _ = _internetCheck.CheckInternetAsync();
 
             Distribute.UpdateTrack = UpdateTrack.Private;
             AppCenter.Start(Secrets.analytics,
                 typeof(Analytics), typeof(Crashes), typeof(Distribute));
 
-            MainPage = new LoginPage(InternetCheck);
+            MainPage = new LoginPage(_internetCheck);
         }
 
         protected override void OnStart()
@@ -49,8 +49,8 @@ namespace CheckinLS
         public static void Close() =>
                 System.Diagnostics.Process.GetCurrentProcess().Kill();
 
-        private void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e) =>
-            InternetCheck.CheckInternet();
+        private async void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e) =>
+            await _internetCheck.CheckInternetAsync().ConfigureAwait(false);
 
         private void AddEvents() =>
                 Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;

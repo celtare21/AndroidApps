@@ -35,24 +35,24 @@ namespace CheckinLS.Pages
             _elements = await StandardElements.CreateAsync(new GetDate());
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
 
-            AddEvents();
+            await AddEventsAsync().ConfigureAwait(false);
         }
 
-        protected override void OnDisappearing()
+        protected override async void OnDisappearing()
         {
             base.OnDisappearing();
 
-            RemoveEvents();
+            await RemoveEventsAsync();
             ButtonTimer.Stop();
         }
 
         protected override bool OnBackButtonPressed()
         {
-            Device.BeginInvokeOnMainThread(async () =>
+            Device.InvokeOnMainThreadAsync(async () =>
             {
                 var result = await DisplayAlert("Alert!", "Do you really want to exit the application?", "Yes", "No");
 
@@ -74,14 +74,13 @@ namespace CheckinLS.Pages
         {
             ButtonTimer.Stop();
 
-            if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
-            {
-                if (_elements == null || _elements.Index < 1)
-                    return;
+            if (DateTime.Now - StartTime >= TimeSpan.FromMilliseconds(TimerInternal))
+                return;
+            if (_elements == null || _elements.Index < 1)
+                return;
 
-                --_elements.Index;
-                RefreshPage();
-            }
+            --_elements.Index;
+            RefreshPage();
         }
 
         private static void RightButton_Pressed(object sender, EventArgs e)
@@ -95,25 +94,32 @@ namespace CheckinLS.Pages
         {
             ButtonTimer.Stop();
 
-            if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
-            {
-                if (_elements == null || _elements.Index > _elements.MaxElement() - 1)
-                    return;
+            if (DateTime.Now - StartTime >= TimeSpan.FromMilliseconds(TimerInternal))
+                return;
+            if (_elements == null || _elements.Index > _elements.MaxElement() - 1)
+                return;
 
-                ++_elements.Index;
-                RefreshPage();
-            }
+            ++_elements.Index;
+            RefreshPage();
         }
 
-        private void ButtonTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private async void ButtonTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             if (_elements == null)
                 return;
 
             _elements.Index = LeftRightButton ? _elements.MaxElement() : 0;
-            
-            Vibration.Vibrate(100);
-            Device.BeginInvokeOnMainThread(RefreshPage);
+
+            try
+            {
+                HapticFeedback.Perform(HapticFeedbackType.LongPress);
+            }
+            catch (FeatureNotSupportedException)
+            {
+                Vibration.Vibrate(100);
+            }
+
+            await Device.InvokeOnMainThreadAsync(RefreshPage).ConfigureAwait(false);
         }
 
         private async void DeleteButton_Clicked(object sender, EventArgs e)
@@ -139,7 +145,7 @@ namespace CheckinLS.Pages
                 --_elements.Index;
             RefreshPage();
 
-            HelperFunctions.ShowToast("Entry deleted!");
+            await HelperFunctions.ShowToastAsync("Entry deleted!");
 
             DeleteButton.IsEnabled = true;
         }
@@ -161,7 +167,7 @@ namespace CheckinLS.Pages
             {
                 IdLabel.Text = Observatii.Text = Date.Text = OraIncepere.Text = OraSfarsit.Text =
                         CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
-                        Total.Text = "Not found!";
+                            Total.Text = "Not found!";
                 PretTotal.Text = "0";
             }
             else
@@ -182,7 +188,7 @@ namespace CheckinLS.Pages
             }
         }
 
-        private void AddEvents()
+        private Task AddEventsAsync()
         {
             LeftButton.Pressed += LeftButton_Pressed;
             LeftButton.Released += LeftButton_Released;
@@ -199,10 +205,10 @@ namespace CheckinLS.Pages
 
             CrossNFC.Current.OnNfcStatusChanged += Current_OnNfcStatusChanged;
 
-            StartListening();
+            return StartListeningAsync();
         }
 
-        private void RemoveEvents()
+        private Task RemoveEventsAsync()
         {
             LeftButton.Pressed -= LeftButton_Pressed;
             LeftButton.Released -= LeftButton_Released;
@@ -219,7 +225,7 @@ namespace CheckinLS.Pages
 
             CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
 
-            StopListening();
+            return StopListeningAsync();
         }
 
         public async Task CheckNfcStatusAsync()
@@ -245,11 +251,10 @@ namespace CheckinLS.Pages
             if (!isEnabled)
             {
                 Indicator.Color = Color.Gray;
-                if (!_disableNfcError)
-                {
-                    await DisplayAlert("Error", "NFC is disabled", "OK");
-                    _disableNfcError = true;
-                }
+                if (_disableNfcError)
+                    return;
+                await DisplayAlert("Error", "NFC is disabled", "OK");
+                _disableNfcError = true;
             }
             else
             {
@@ -257,28 +262,27 @@ namespace CheckinLS.Pages
             }
         }
 
-        private void StartListening() =>
-                Device.BeginInvokeOnMainThread(() =>
+        private Task StartListeningAsync() =>
+                Device.InvokeOnMainThreadAsync(() =>
                 {
                     SubscribeEventsReal();
 
-                    if (_startup)
+                    if (!_startup)
+                        return;
+                    try
                     {
-                        try
-                        {
-                            CrossNFC.Current.StartListening();
-                        }
-                        catch
-                        {
-                            App.Close();
-                        }
-
-                        _startup = false;
+                        CrossNFC.Current.StartListening();
                     }
+                    catch
+                    {
+                        App.Close();
+                    }
+
+                    _startup = false;
                 });
 
-        private void StopListening() =>
-                Device.BeginInvokeOnMainThread(SubscribeFake);
+        private Task StopListeningAsync() =>
+                Device.InvokeOnMainThreadAsync(SubscribeFake);
 
         private void SubscribeEventsReal()
         {
@@ -300,7 +304,7 @@ namespace CheckinLS.Pages
             if (_elements == null)
                 return;
 
-            StopListening();
+            await StopListeningAsync();
 
             if (tagInfo == null)
             {
@@ -330,7 +334,7 @@ namespace CheckinLS.Pages
             if (!_busy)
                 _ = WaitAndAddAsync();
 
-            StartListening();
+            await StartListeningAsync().ConfigureAwait(false);
         }
 
         private void SetPrice()
@@ -352,7 +356,7 @@ namespace CheckinLS.Pages
             await CountdownAsync();
 
             await _elements.AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire, _ora.recuperare, null, null);
-            HelperFunctions.ShowToast("New entry added!");
+            await HelperFunctions.ShowToastAsync("New entry added!");
             ObsEntry.Text = string.Empty;
             RefreshPage();
 
@@ -364,7 +368,7 @@ namespace CheckinLS.Pages
         private async Task CountdownAsync()
         {
             UserDialogs.Instance.ShowLoading("Waiting...");
-            for (int i = 0; i < 12 && _ora != (true, true, true); i++)
+            for (var i = 0; i < 12 && _ora != (true, true, true); i++)
                 await Task.Delay(500);
             UserDialogs.Instance.HideLoading();
             await Task.Delay(100).ConfigureAwait(false);

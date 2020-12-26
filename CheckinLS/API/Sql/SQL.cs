@@ -30,24 +30,15 @@ namespace CheckinLS.API.Sql
             if (!string.IsNullOrEmpty(pin))
             {
                 var result = await Users.TryGetUserAsync(Conn, pin);
+                if (string.IsNullOrEmpty(result))
+                    throw new NoUserFound();
 
-                if (!string.IsNullOrEmpty(result))
-                {
-                    await usersInterface.CreateLoggedUserAsync(result);
-                    _user = result;
-                    return;
-                }
-            }
-            else
-            {
-                var tempUser = await Users.ReadLoggedUserAsync();
-
-                _user = tempUser ?? throw new UserReadFailed();
-
+                await usersInterface.CreateLoggedUserAsync(result);
+                _user = result;
                 return;
             }
 
-            throw new NoUserFound();
+            _user = await Users.ReadLoggedUserAsync() ?? throw new UserReadFailed();
         }
 
         public static void CreateConnection() =>
@@ -64,7 +55,7 @@ namespace CheckinLS.API.Sql
                 }
                 catch (SqlException)
                 {
-                    HelperFunctions.ShowAlertKill("Couldn't connect to the database!");
+                    await HelperFunctions.ShowAlertKillAsync("Couldn't connect to the database!");
                     return false;
                 }
             }
@@ -72,7 +63,7 @@ namespace CheckinLS.API.Sql
             while (Conn?.State == ConnectionState.Connecting)
                 await Task.Delay(100);
 
-            return _internetCheck.CheckInternet();
+            return await _internetCheck.CheckInternetAsync().ConfigureAwait(false);
         }
 
         public static Task CloseConnectionAsync() =>
@@ -85,11 +76,11 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return;
             }
 
-            string query =
+            var query =
                 $@"INSERT INTO ""prezenta.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
 
             try
@@ -109,7 +100,7 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                HelperFunctions.ShowAlertKill("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
             }
         }
@@ -118,11 +109,11 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return;
             }
 
-            string query =
+            var query =
                 $@"INSERT INTO ""prezenta.office.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @total, @observatii)";
 
             try
@@ -139,7 +130,7 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                HelperFunctions.ShowAlertKill("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
             }
         }
@@ -148,13 +139,13 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return;
             }
 
             var query = office
-                ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE id = {id}"
-                : $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id}";
+                ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE id = {id.ToString()}"
+                : $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id.ToString()}";
 
             try
             {
@@ -162,7 +153,7 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                HelperFunctions.ShowAlertKill("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
             }
         }
@@ -171,7 +162,7 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return;
             }
 
@@ -185,7 +176,7 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                HelperFunctions.ShowAlertKill("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
             }
         }
@@ -194,7 +185,7 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return null;
             }
 
@@ -204,7 +195,7 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                HelperFunctions.ShowAlertKill("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
                 return null;
             }
@@ -214,7 +205,7 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return null;
             }
 
@@ -224,7 +215,7 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                HelperFunctions.ShowAlertKill("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
                 return null;
             }
@@ -234,20 +225,20 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return TimeSpan.MinValue;
             }
 
             IEnumerable<TimeSpan?> result;
-
+            var dateStr = date.ToString("yyyy-MM-dd");
             try
             {
                 result = await Conn.QueryAsync<TimeSpan?>(
-                    $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{date:yyyy-MM-dd}%'");
+                    $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{dateStr}%'");
             }
             catch (SqlException e)
             {
-                HelperFunctions.ShowAlertKill("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
                 return TimeSpan.MinValue;
             }

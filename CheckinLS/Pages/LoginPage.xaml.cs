@@ -41,7 +41,7 @@ namespace CheckinLS.Pages
 
                     if (!await MainSql.CkeckConnectionAsync())
                     {
-                        HelperFunctions.ShowAlertKill("No internet connection!");
+                        await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                         return;
                     }
 
@@ -57,7 +57,7 @@ namespace CheckinLS.Pages
                 {
                     SecureStorage.RemoveAll();
                     Preferences.Clear();
-                    HelperFunctions.ShowAlertKill("There's been an error, please restart the app!");
+                    await HelperFunctions.ShowAlertKillAsync("There's been an error, please restart the app!");
                 }
                 catch (Exception ex) when (ex is TaskCanceledException || ex is InvalidOperationException)
                 {
@@ -80,7 +80,7 @@ namespace CheckinLS.Pages
 
         protected override bool OnBackButtonPressed()
         {
-            Device.BeginInvokeOnMainThread(async () =>
+            Device.InvokeOnMainThreadAsync(async () =>
             {
                 var result = await DisplayAlert("Alert!", "Do you really want to exit the application?", "Yes", "No");
 
@@ -96,7 +96,7 @@ namespace CheckinLS.Pages
             if (MainSql.Conn == null)
                 return;
 
-            string entryPin = Pin.Text;
+            var entryPin = Pin.Text;
 
             if (string.IsNullOrEmpty(entryPin))
                 return;
@@ -113,9 +113,10 @@ namespace CheckinLS.Pages
             {
                 if (!await MainSql.CkeckConnectionAsync())
                 {
-                    HelperFunctions.ShowAlertKill("No internet connection!");
+                    await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                     return;
                 }
+
                 UserDialogs.Instance.HideLoading();
                 await DisplayAlert("Error", "No user found! Please create one.", "OK");
                 await Navigation.PushModalAsync(new AddNewUserPage(entryPin));
@@ -129,7 +130,7 @@ namespace CheckinLS.Pages
 
             if (!await MainSql.CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return;
             }
 

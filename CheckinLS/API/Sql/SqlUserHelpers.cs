@@ -10,7 +10,7 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return false;
             }
 
@@ -23,7 +23,7 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return false;
             }
 
@@ -36,7 +36,7 @@ namespace CheckinLS.API.Sql
         {
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return false;
             }
 
@@ -69,11 +69,11 @@ namespace CheckinLS.API.Sql
 
             if (!await CkeckConnectionAsync())
             {
-                HelperFunctions.ShowAlertKill("No internet connection!");
+                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
                 return;
             }
 
-            await Conn.ExecuteAsync(query, new { Username = username, Password = password }).ConfigureAwait(false);
+            await Conn.ExecuteAsync(query, new {Username = username, Password = password}).ConfigureAwait(false);
         }
     }
 }

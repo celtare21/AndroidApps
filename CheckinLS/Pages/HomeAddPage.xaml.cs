@@ -39,19 +39,19 @@ namespace CheckinLS.Pages
             }
             catch (AllParametersFalse)
             {
-                HelperFunctions.ShowToast("Please select at least one item.");
+                await HelperFunctions.ShowToastAsync("Please select at least one item.");
                 AddButton.IsEnabled = true;
                 return;
             }
-            catch (HoursOutOfBounds)
+            catch (Exception ex) when (ex is HoursOutOfBounds || ex is OverflowException)
             {
-                HelperFunctions.ShowToast("Too many entries in a day!");
+                await HelperFunctions.ShowToastAsync("Too many entries in a day!");
                 AddButton.IsEnabled = true;
                 return;
             }
 
             Analytics.TrackEvent("Manual entry added");
-            HelperFunctions.ShowToast("New entry added!");
+            await HelperFunctions.ShowToastAsync("New entry added!");
             _home.RefreshPage();
 
             ResetElements();

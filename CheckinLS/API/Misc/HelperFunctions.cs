@@ -2,6 +2,7 @@
 using Microsoft.AppCenter.Analytics;
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -22,16 +23,16 @@ namespace CheckinLS.API.Misc
             };
         }
 
-        public static void ShowAlertKill(string message) =>
-            Device.BeginInvokeOnMainThread(async () =>
+        public static Task ShowAlertKillAsync(string message) =>
+            Device.InvokeOnMainThreadAsync(async () =>
             {
                 await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
                 Analytics.TrackEvent(message);
                 App.Close();
             });
 
-        public static void ShowToast(string message) =>
-            Device.BeginInvokeOnMainThread(() =>
+        public static Task ShowToastAsync(string message) =>
+            Device.InvokeOnMainThreadAsync(() =>
                 UserDialogs.Instance.Toast(message));
     }
 }

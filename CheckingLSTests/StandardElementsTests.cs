@@ -91,6 +91,7 @@ namespace CheckingLSTests
                     Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
+
             Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
             Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("11:30"));
@@ -125,6 +126,7 @@ namespace CheckingLSTests
                     Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
+
             Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
             Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("10:30"));
@@ -159,6 +161,7 @@ namespace CheckingLSTests
                     Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
+
             Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
             Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("10:30"));
@@ -193,6 +196,7 @@ namespace CheckingLSTests
                     Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
+
             Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
             Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("12:00"));
@@ -227,6 +231,7 @@ namespace CheckingLSTests
                     Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
+
             Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
             Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("12:00"));
@@ -261,6 +266,7 @@ namespace CheckingLSTests
                     Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
+
             Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
             Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("11:00"));
@@ -295,6 +301,7 @@ namespace CheckingLSTests
                     Assert.AreEqual(elements.Entries[index].Observatii, obs);
                     break;
             }
+
             Assert.AreEqual(elements.Entries[index].Date, DateTime.Parse("2020-01-01"));
             Assert.AreEqual(elements.Entries[index].OraIncepere, TimeSpan.Parse("10:00"));
             Assert.AreEqual(elements.Entries[index].OraFinal, TimeSpan.Parse("12:30"));
@@ -359,8 +366,8 @@ namespace CheckingLSTests
 
         private class TestInternetAccess : InternetAccess
         {
-            public override bool CheckInternet() =>
-                true;
+            public override Task<bool> CheckInternetAsync() =>
+                Task.FromResult(true);
         }
     }
 }

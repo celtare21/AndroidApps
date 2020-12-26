@@ -49,14 +49,13 @@ namespace CheckinLS.Pages
         {
             ButtonTimer.Stop();
 
-            if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
-            {
-                if (_officeElements == null || _officeElements.Index <= 0)
-                    return;
+            if (DateTime.Now - StartTime >= TimeSpan.FromMilliseconds(TimerInternal))
+                return;
+            if (_officeElements == null || _officeElements.Index <= 0)
+                return;
 
-                --_officeElements.Index;
-                RefreshPage();
-            }
+            --_officeElements.Index;
+            RefreshPage();
         }
 
         private static void RightButton_Pressed(object sender, EventArgs e)
@@ -70,25 +69,32 @@ namespace CheckinLS.Pages
         {
             ButtonTimer.Stop();
 
-            if (DateTime.Now - StartTime < TimeSpan.FromMilliseconds(TimerInternal))
-            {
-                if (_officeElements == null || _officeElements.Index > _officeElements.MaxElement() - 1)
-                    return;
+            if (DateTime.Now - StartTime >= TimeSpan.FromMilliseconds(TimerInternal))
+                return;
+            if (_officeElements == null || _officeElements.Index > _officeElements.MaxElement() - 1)
+                return;
 
-                ++_officeElements.Index;
-                RefreshPage();
-            }
+            ++_officeElements.Index;
+            RefreshPage();
         }
 
-        private void ButtonTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private async void ButtonTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             if (_officeElements == null)
                 return;
 
             _officeElements.Index = LeftRightButton ? _officeElements.MaxElement() : 0;
             
-            Vibration.Vibrate(100);
-            Device.BeginInvokeOnMainThread(RefreshPage);
+            try
+            {
+                HapticFeedback.Perform(HapticFeedbackType.LongPress);
+            }
+            catch (FeatureNotSupportedException)
+            {
+                Vibration.Vibrate(100);
+            }
+            
+            await Device.InvokeOnMainThreadAsync(RefreshPage).ConfigureAwait(false);
         }
 
         private async void DeleteButton_Clicked(object sender, EventArgs e)
@@ -108,7 +114,7 @@ namespace CheckinLS.Pages
                 --_officeElements.Index;
             RefreshPage();
 
-            HelperFunctions.ShowToast("Entry deleted!");
+            await HelperFunctions.ShowToastAsync("Entry deleted!");
 
             DeleteButton.IsEnabled = true;
         }
@@ -129,19 +135,19 @@ namespace CheckinLS.Pages
             }
             catch (HoursCantBeEqual)
             {
-                HelperFunctions.ShowToast("Can't have the start time equal to finish time!");
+                await HelperFunctions.ShowToastAsync("Can't have the start time equal to finish time!");
                 AddButton.IsEnabled = true;
                 return;
             }
             catch (StartCantBeBigger)
             {
-                HelperFunctions.ShowToast("Start time can't be bigger than finish time");
+                await HelperFunctions.ShowToastAsync("Start time can't be bigger than finish time");
                 AddButton.IsEnabled = true;
                 return;
             }
 
             RefreshPage();
-            HelperFunctions.ShowToast("New entry added!");
+            await HelperFunctions.ShowToastAsync("New entry added!");
 
             OraIncepereTime.Time = TimeSpan.FromHours(8);
             OraFinalTime.Time = TimeSpan.FromHours(8);

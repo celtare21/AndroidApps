@@ -1,19 +1,18 @@
-﻿using CheckinLS.API.Misc;
+﻿using System.Threading.Tasks;
+using CheckinLS.API.Misc;
 using Xamarin.Essentials;
 
 namespace CheckinLS.InterfacesAndClasses.Internet
 {
     public class InternetAccess
     {
-        public virtual bool CheckInternet()
+        public virtual async Task<bool> CheckInternetAsync()
         {
-            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-            {
-                HelperFunctions.ShowAlertKill("No internet connection!");
-                return false;
-            }
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+                return true;
 
-            return true;
+            await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            return false;
         }
     }
 }
