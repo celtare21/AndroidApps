@@ -17,7 +17,7 @@
                 </Grid.RowDefinitions>
 
                 <Entry x:Name="Pin" Keyboard="Numeric" IsPassword="True" Placeholder="Enter your pin" HorizontalTextAlignment="Center" PlaceholderColor="AntiqueWhite" TextColor="AntiqueWhite" Grid.Row="0" Grid.Column="0"/>
-                <Button x:Name="Enter" Text="Login" HeightRequest="55" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0" Grid.Column="1"/>
+                <Button x:Name="Enter" Clicked="Enter_Clicked" Text="Login" HeightRequest="55" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0" Grid.Column="1"/>
             </Grid>
         </StackLayout>
     </ContentPage.Content>

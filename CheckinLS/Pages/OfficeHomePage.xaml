@@ -52,11 +52,11 @@
             <TimePicker x:Name="OraIncepereTime" Format="HH:mm" TextColor="AntiqueWhite" HorizontalOptions="Center" Time="8:00:00" Grid.Row="9" Grid.Column="0"/>
             <TimePicker x:Name="OraFinalTime" Format="HH:mm" TextColor="AntiqueWhite" HorizontalOptions="Center" Time="8:00:00" Grid.Row="9" Grid.Column="1"/>
 
-            <Button x:Name="LeftButton" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="10" Grid.Column="0"/>
-            <Button x:Name="RightButton" Text="Right" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="10" Grid.Column="1"/>
+            <Button Pressed="LeftButton_Pressed" Released="LeftButton_Released" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="10" Grid.Column="0"/>
+            <Button Pressed="RightButton_Pressed" Released="RightButton_Released" Text="Right" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="10" Grid.Column="1"/>
 
-            <Button x:Name="AddButton" Text="Add" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="11" Grid.Column="0"/>
-            <Button x:Name="DeleteButton" Text="Delete" Margin="10,0,0,0" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="11" Grid.Column="1"/>
+            <Button x:Name="AddButton" Clicked="AddButton_Clicked" Text="Add" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="11" Grid.Column="0"/>
+            <Button x:Name="DeleteButton" Clicked="DeleteButton_Clicked" Text="Delete" Margin="10,0,0,0" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="11" Grid.Column="1"/>
 
             <Label Text="Pret Total:" Padding="0,0,-40,0" Grid.Row="12" Grid.Column="0"/>
             <Label x:Name="PretTotal" Text="0" Padding="0,0,40,0" Grid.Row="12" Grid.Column="1"/>

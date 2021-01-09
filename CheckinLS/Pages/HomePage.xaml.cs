@@ -7,7 +7,6 @@ using Microsoft.AppCenter.Analytics;
 using Plugin.NFC;
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Xamarin.Essentials;
@@ -25,7 +24,7 @@ namespace CheckinLS.Pages
         private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
 
         public Home() =>
-                InitializeComponent();
+            InitializeComponent();
 
         public async Task CreateElementsAsync()
         {
@@ -63,7 +62,7 @@ namespace CheckinLS.Pages
             return true;
         }
 
-        private static void LeftButton_Pressed(object sender, EventArgs e)
+        private void LeftButton_Pressed(object sender, EventArgs e)
         {
             ButtonTimer.Start();
             StartTime = DateTime.Now;
@@ -80,10 +79,10 @@ namespace CheckinLS.Pages
                 return;
 
             --_elements.Index;
-            RefreshPage();
+            RefreshPage(false);
         }
 
-        private static void RightButton_Pressed(object sender, EventArgs e)
+        private void RightButton_Pressed(object sender, EventArgs e)
         {
             ButtonTimer.Start();
             StartTime = DateTime.Now;
@@ -100,7 +99,7 @@ namespace CheckinLS.Pages
                 return;
 
             ++_elements.Index;
-            RefreshPage();
+            RefreshPage(false);
         }
 
         private async void ButtonTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -119,7 +118,7 @@ namespace CheckinLS.Pages
                 Vibration.Vibrate(100);
             }
 
-            await Device.InvokeOnMainThreadAsync(RefreshPage).ConfigureAwait(false);
+            await Device.InvokeOnMainThreadAsync(() => RefreshPage(false)).ConfigureAwait(false);
         }
 
         private async void DeleteButton_Clicked(object sender, EventArgs e)
@@ -130,7 +129,7 @@ namespace CheckinLS.Pages
             var result = await DisplayAlert("Alert!", "Are you sure you want to delete the entry?", "Yes", "No");
 
             if (!result)
-            { 
+            {
                 Analytics.TrackEvent("Delete entry cancelled");
                 return;
             }
@@ -143,7 +142,7 @@ namespace CheckinLS.Pages
 
             if (_elements.Index > _elements.MaxElement())
                 --_elements.Index;
-            RefreshPage();
+            RefreshPage(true);
 
             await HelperFunctions.ShowToastAsync("Entry deleted!");
 
@@ -151,7 +150,7 @@ namespace CheckinLS.Pages
         }
 
         private void ManualAddButton_Clicked(object sender, EventArgs e) =>
-                Navigation.PushModalAsync(new HomeAddPage(_elements, this));
+            Navigation.PushModalAsync(new HomeAddPage(_elements, this));
 
         private async void OreOfficeButton_Clicked(object sender, EventArgs e)
         {
@@ -161,13 +160,13 @@ namespace CheckinLS.Pages
             officeClass.RefreshPage();
         }
 
-        public void RefreshPage()
+        public void RefreshPage(bool price)
         {
             if (_elements == null || _elements.MaxElement() < 0)
             {
                 IdLabel.Text = Observatii.Text = Date.Text = OraIncepere.Text = OraSfarsit.Text =
-                        CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
-                            Total.Text = "Not found!";
+                    CursAlocat.Text = PregatireAlocat.Text = RecuperareAlocat.Text =
+                        Total.Text = "Not found!";
                 PretTotal.Text = "0";
             }
             else
@@ -184,47 +183,22 @@ namespace CheckinLS.Pages
                         HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].RecuperareAlocat),
                         HelperFunctions.ConversionWrapper(_elements.Entries[_elements.Index].Total));
 
-                SetPrice();
+                if (price)
+                    SetPrice();
             }
         }
 
         private Task AddEventsAsync()
         {
-            LeftButton.Pressed += LeftButton_Pressed;
-            LeftButton.Released += LeftButton_Released;
-
-            RightButton.Pressed += RightButton_Pressed;
-            RightButton.Released += RightButton_Released;
-
-            DeleteButton.Clicked += DeleteButton_Clicked;
-            ManualAddButton.Clicked += ManualAddButton_Clicked;
-
-            OreOfficeButton.Clicked += OreOfficeButton_Clicked;
-
             ButtonTimer.Elapsed += ButtonTimer_Elapsed;
-
             CrossNFC.Current.OnNfcStatusChanged += Current_OnNfcStatusChanged;
-
             return StartListeningAsync();
         }
 
         private Task RemoveEventsAsync()
         {
-            LeftButton.Pressed -= LeftButton_Pressed;
-            LeftButton.Released -= LeftButton_Released;
-
-            RightButton.Pressed -= RightButton_Pressed;
-            RightButton.Released -= RightButton_Released;
-
-            DeleteButton.Clicked -= DeleteButton_Clicked;
-            ManualAddButton.Clicked -= ManualAddButton_Clicked;
-
-            OreOfficeButton.Clicked -= OreOfficeButton_Clicked;
-
             ButtonTimer.Elapsed -= ButtonTimer_Elapsed;
-
             CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
-
             return StopListeningAsync();
         }
 
@@ -253,6 +227,7 @@ namespace CheckinLS.Pages
                 Indicator.Color = Color.Gray;
                 if (_disableNfcError)
                     return;
+
                 await DisplayAlert("Error", "NFC is disabled", "OK");
                 _disableNfcError = true;
             }
@@ -263,26 +238,27 @@ namespace CheckinLS.Pages
         }
 
         private Task StartListeningAsync() =>
-                Device.InvokeOnMainThreadAsync(() =>
+            Device.InvokeOnMainThreadAsync(() =>
+            {
+                SubscribeEventsReal();
+
+                if (!_startup)
+                    return;
+
+                try
                 {
-                    SubscribeEventsReal();
+                    CrossNFC.Current.StartListening();
+                }
+                catch
+                {
+                    App.Close();
+                }
 
-                    if (!_startup)
-                        return;
-                    try
-                    {
-                        CrossNFC.Current.StartListening();
-                    }
-                    catch
-                    {
-                        App.Close();
-                    }
-
-                    _startup = false;
-                });
+                _startup = false;
+            });
 
         private Task StopListeningAsync() =>
-                Device.InvokeOnMainThreadAsync(SubscribeFake);
+            Device.InvokeOnMainThreadAsync(SubscribeFake);
 
         private void SubscribeEventsReal()
         {
@@ -342,11 +318,19 @@ namespace CheckinLS.Pages
             if (_elements == null)
                 return;
 
-            var valoare = _elements.Entries.Sum(hours => hours.CursAlocat.TotalHours) * Constants.PretCurs +
-                          _elements.Entries.Sum(hours => hours.PregatireAlocat.TotalHours) * Constants.PretPregatire +
-                          _elements.Entries.Sum(hours => hours.RecuperareAlocat.TotalHours) * Constants.PretRecuperare;
+            var valoare = new double[2];
+            foreach (var entry in _elements.Entries)
+            {
+                valoare[entry.Date.Month == DateTime.Today.SubstractMonths(1).Month ? 0 : 1] += entry.CursAlocat.TotalHours * Constants.PretCurs;
+                valoare[entry.Date.Month == DateTime.Today.SubstractMonths(1).Month ? 0 : 1] += entry.PregatireAlocat.TotalHours * Constants.PretPregatire;
+                valoare[entry.Date.Month == DateTime.Today.SubstractMonths(1).Month ? 0 : 1] += entry.RecuperareAlocat.TotalHours * Constants.PretRecuperare;
+            }
 
-            PretTotal.Text = valoare.ToString(CultureInfo.InvariantCulture);
+            if (!Preferences.ContainsKey("totalVechi") || valoare[0] != 0.0)
+                Preferences.Set("totalVechi", valoare[0]);
+
+            PretTotal.Text = valoare[1].ToString(CultureInfo.InvariantCulture);
+            PretTotalVechi.Text = (valoare[0] == 0.0 ? Preferences.Get("totalVechi", 0.0) : valoare[0]).ToString(CultureInfo.InvariantCulture);
         }
 
         private async Task WaitAndAddAsync()
@@ -358,7 +342,7 @@ namespace CheckinLS.Pages
             await _elements.AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire, _ora.recuperare, null, null);
             await HelperFunctions.ShowToastAsync("New entry added!");
             ObsEntry.Text = string.Empty;
-            RefreshPage();
+            RefreshPage(true);
 
             _ora = (false, false, false);
 

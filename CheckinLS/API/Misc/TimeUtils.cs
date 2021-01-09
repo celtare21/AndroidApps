@@ -7,18 +7,18 @@ namespace CheckinLS.API.Misc
     public static class TimeUtils
     {
         public static TimeSpan StartTime() =>
-                        TimeSpan.FromHours(10);
+            TimeSpan.FromHours(10);
 
         public static TimeSpan CursTime() =>
-                        TimeSpan.FromHours(1.50);
+            TimeSpan.FromHours(1.50);
 
         public static TimeSpan PregatireTime() =>
-                        TimeSpan.FromMinutes(30);
+            TimeSpan.FromMinutes(30);
 
         public static TimeSpan RecuperareTime() =>
-                        TimeSpan.FromMinutes(30);
+            TimeSpan.FromMinutes(30);
 
         public static TimeSpan ZeroTime() =>
-                        TimeSpan.Zero;
+            TimeSpan.Zero;
     }
 }

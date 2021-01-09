@@ -109,13 +109,13 @@ namespace CheckingLSTests
             MainSql.SetNullConnection();
         }
 
-        private class TestUserHelpers : UserHelpers
+        private sealed class TestUserHelpers : UserHelpers
         {
             public override Task CreateLoggedUserAsync(string user) =>
-                    Task.CompletedTask;
+                Task.CompletedTask;
         }
 
-        private class TestInternetAccess : InternetAccess
+        private sealed class TestInternetAccess : InternetAccess
         {
             public override Task<bool> CheckInternetAsync() =>
                 Task.FromResult(true);

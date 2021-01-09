@@ -34,5 +34,11 @@ namespace CheckinLS.API.Misc
         public static Task ShowToastAsync(string message) =>
             Device.InvokeOnMainThreadAsync(() =>
                 UserDialogs.Instance.Toast(message));
+
+        public static string RemoveWhitespace(this string str) =>
+            string.Join(string.Empty, str.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
+
+        public static DateTime SubstractMonths(this DateTime date, int value) =>
+            date.AddMonths(-value);
     }
 }

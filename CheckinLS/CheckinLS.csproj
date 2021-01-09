@@ -30,17 +30,16 @@
   <ItemGroup>
     <PackageReference Include="Acr.UserDialogs" Version="7.1.0.470" />
     <PackageReference Include="Dapper" Version="2.0.78" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.0.0" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.0.0" />
-    <PackageReference Include="Microsoft.AppCenter.Distribute" Version="4.0.0" />
+    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.1.0" />
+    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.1.0" />
+    <PackageReference Include="Microsoft.AppCenter.Distribute" Version="4.1.0" />
     <PackageReference Include="Mobile.BuildTools" Version="1.4.0.638">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Plugin.NFC" Version="0.1.19" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.1874" />
     <PackageReference Include="Xamarin.Essentials" Version="1.6.0" />
   </ItemGroup>
 

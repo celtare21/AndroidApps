@@ -26,7 +26,7 @@ namespace CheckinLS.API.Office
         }
 
         private OfficeElements(IGetDate dateInterface) =>
-                _dateInterface = dateInterface;
+            _dateInterface = dateInterface;
 
         public async Task AddNewEntryAsync(TimeSpan start, TimeSpan finish, string observatii)
         {
@@ -47,7 +47,7 @@ namespace CheckinLS.API.Office
 
             if (total.TotalDays > 1)
                 throw new HoursOutOfBounds();
-            
+
             var date = _dateInterface.GetCurrentDate();
 
             return new OfficeDatabaseEntries(date, start, finish, total, observatii);
@@ -60,9 +60,9 @@ namespace CheckinLS.API.Office
         }
 
         private async Task RefreshElementsAsync() =>
-                Entries = (await MainSql.GetAllElementsOfficeAsync()).ToList();
+            Entries = (await MainSql.GetAllElementsOfficeAsync()).ToList();
 
         public int MaxElement() =>
-                Entries.Count - 1;
+            Entries.Count - 1;
     }
 }

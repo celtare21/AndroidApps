@@ -42,7 +42,7 @@ namespace CheckinLS.API.Sql
         }
 
         public static void CreateConnection() =>
-                    Conn = new SqlConnection(Secrets.ConnStr);
+            Conn = new SqlConnection(Secrets.ConnStr);
 
         public static async Task<bool> CkeckConnectionAsync()
         {
@@ -67,10 +67,10 @@ namespace CheckinLS.API.Sql
         }
 
         public static Task CloseConnectionAsync() =>
-                    Conn?.CloseAsync();
+            Conn?.CloseAsync();
 
         public static void SetNullConnection() =>
-                    Conn = null;
+            Conn = null;
 
         public static async Task AddToDbAsync(StandardDatabaseEntry entries)
         {

@@ -28,54 +28,42 @@ namespace CheckinLS.Pages
         {
             base.OnAppearing();
 
-            if (Users.LoggedAccountExists())
-            {
-                try
-                {
-                    UserDialogs.Instance.ShowLoading();
-
-                    Pin.Text = "0000";
-                    Enter.IsEnabled = false;
-
-                    await MainSql.CreateAsync(new UserHelpers(), _internetCheck);
-
-                    if (!await MainSql.CkeckConnectionAsync())
-                    {
-                        await HelperFunctions.ShowAlertKillAsync("No internet connection!");
-                        return;
-                    }
-
-                    var homeClass = new Home();
-                    await Navigation.PushModalAsync(homeClass);
-                    await homeClass.CreateElementsAsync();
-                    homeClass.RefreshPage();
-                    await homeClass.CheckNfcStatusAsync();
-
-                    UserDialogs.Instance.HideLoading();
-                }
-                catch (UserReadFailed)
-                {
-                    SecureStorage.RemoveAll();
-                    Preferences.Clear();
-                    await HelperFunctions.ShowAlertKillAsync("There's been an error, please restart the app!");
-                }
-                catch (Exception ex) when (ex is TaskCanceledException || ex is InvalidOperationException)
-                {
-                    App.Close();
-                }
-            }
-            else
-            {
-                AddEvents();
-            }
-        }
-
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-
             if (!Users.LoggedAccountExists())
-                RemoveEvents();
+                return;
+
+            try
+            {
+                UserDialogs.Instance.ShowLoading();
+
+                Pin.Text = "0000";
+                Enter.IsEnabled = false;
+
+                await MainSql.CreateAsync(new UserHelpers(), _internetCheck);
+
+                if (!await MainSql.CkeckConnectionAsync())
+                {
+                    await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+                    return;
+                }
+
+                var homeClass = new Home();
+                await Navigation.PushModalAsync(homeClass);
+                await homeClass.CreateElementsAsync();
+                homeClass.RefreshPage(true);
+                await homeClass.CheckNfcStatusAsync();
+
+                UserDialogs.Instance.HideLoading();
+            }
+            catch (UserReadFailed)
+            {
+                SecureStorage.RemoveAll();
+                Preferences.Clear();
+                await HelperFunctions.ShowAlertKillAsync("There's been an error, please restart the app!");
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is InvalidOperationException)
+            {
+                App.Close();
+            }
         }
 
         protected override bool OnBackButtonPressed()
@@ -137,16 +125,10 @@ namespace CheckinLS.Pages
             var homeClass = new Home();
             await Navigation.PushModalAsync(homeClass);
             await homeClass.CreateElementsAsync();
-            homeClass.RefreshPage();
+            homeClass.RefreshPage(true);
             await homeClass.CheckNfcStatusAsync();
 
             UserDialogs.Instance.HideLoading();
         }
-
-        private void AddEvents() =>
-                Enter.Clicked += Enter_Clicked;
-
-        private void RemoveEvents() =>
-                Enter.Clicked -= Enter_Clicked;
     }
 }

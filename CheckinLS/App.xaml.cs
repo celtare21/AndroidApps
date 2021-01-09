@@ -47,15 +47,15 @@ namespace CheckinLS
         }
 
         public static void Close() =>
-                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
 
         private async void Connectivity_ConnectivityChanged(object sender, ConnectivityChangedEventArgs e) =>
             await _internetCheck.CheckInternetAsync().ConfigureAwait(false);
 
         private void AddEvents() =>
-                Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
+            Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
 
         private void RemoveEvents() =>
-                Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
+            Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
     }
 }

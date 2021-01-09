@@ -27,7 +27,7 @@ namespace CheckinLS.API.Standard
         }
 
         private StandardElements(IGetDate dateInterface) =>
-                _dateInterface = dateInterface;
+            _dateInterface = dateInterface;
 
         public async Task AddNewEntryAsync(string observatii, bool curs, bool pregatire, bool recuperare,
             TimeSpan? oraIncepereCustom, DateTime? dateCustom)
@@ -68,9 +68,9 @@ namespace CheckinLS.API.Standard
         }
 
         private async Task RefreshElementsAsync() =>
-                Entries = (await MainSql.GetAllElementsStandardAsync()).ToList();
+            Entries = (await MainSql.GetAllElementsStandardAsync()).ToList();
 
         public int MaxElement() =>
-                Entries.Count - 1;
+            Entries.Count - 1;
     }
 }

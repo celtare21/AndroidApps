@@ -19,20 +19,6 @@ namespace CheckinLS.Pages
             _password = password;
         }
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-
-            AddEvents();
-        }
-
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-
-            RemoveEvents();
-        }
-
         private async void Enter_Clicked(object sender, EventArgs e)
         {
             if (MainSql.Conn == null)
@@ -41,7 +27,7 @@ namespace CheckinLS.Pages
             if (string.IsNullOrEmpty(Username.Text))
                 return;
 
-            var username = RemoveWhitespace(Username.Text.ToLowerInvariant());
+            var username = Username.Text.ToLowerInvariant().RemoveWhitespace();
 
             try
             {
@@ -67,14 +53,5 @@ namespace CheckinLS.Pages
 
             await Navigation.PopModalAsync();
         }
-
-        private static string RemoveWhitespace(string str) =>
-                    string.Join(string.Empty, str.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
-
-        private void AddEvents() =>
-                    Enter.Clicked += Enter_Clicked;
-
-        private void RemoveEvents() =>
-                    Enter.Clicked -= Enter_Clicked;
     }
 }

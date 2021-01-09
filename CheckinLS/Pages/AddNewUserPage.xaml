@@ -25,7 +25,7 @@
                         </Keyboard>
                     </Entry.Keyboard>
                 </Entry>
-                <Button x:Name="Enter" Text="Login" HeightRequest="55" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0" Grid.Column="1"/>
+                <Button Clicked="Enter_Clicked" Text="Login" HeightRequest="55" WidthRequest="100" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0" Grid.Column="1"/>
             </Grid>
         </StackLayout>
     </ContentPage.Content>

@@ -18,10 +18,10 @@ namespace CheckinLS.Pages
         private OfficeElements _officeElements;
 
         public async Task CreateElementsAsync() =>
-                _officeElements = await OfficeElements.CreateAsync(new GetDate());
+            _officeElements = await OfficeElements.CreateAsync(new GetDate());
 
         public OfficeHomePage() =>
-                InitializeComponent();
+            InitializeComponent();
 
         protected override void OnAppearing()
         {
@@ -38,7 +38,7 @@ namespace CheckinLS.Pages
             ButtonTimer.Stop();
         }
 
-        private static void LeftButton_Pressed(object sender, EventArgs e)
+        private void LeftButton_Pressed(object sender, EventArgs e)
         {
             ButtonTimer.Start();
             StartTime = DateTime.Now;
@@ -58,7 +58,7 @@ namespace CheckinLS.Pages
             RefreshPage();
         }
 
-        private static void RightButton_Pressed(object sender, EventArgs e)
+        private void RightButton_Pressed(object sender, EventArgs e)
         {
             ButtonTimer.Start();
             StartTime = DateTime.Now;
@@ -84,7 +84,7 @@ namespace CheckinLS.Pages
                 return;
 
             _officeElements.Index = LeftRightButton ? _officeElements.MaxElement() : 0;
-            
+
             try
             {
                 HapticFeedback.Perform(HapticFeedbackType.LongPress);
@@ -93,7 +93,7 @@ namespace CheckinLS.Pages
             {
                 Vibration.Vibrate(100);
             }
-            
+
             await Device.InvokeOnMainThreadAsync(RefreshPage).ConfigureAwait(false);
         }
 
@@ -187,32 +187,10 @@ namespace CheckinLS.Pages
             PretTotal.Text = valoare.ToString("0.##");
         }
 
-        private void AddEvents()
-        {
-            LeftButton.Pressed += LeftButton_Pressed;
-            LeftButton.Released += LeftButton_Released;
-
-            RightButton.Pressed += RightButton_Pressed;
-            RightButton.Released += RightButton_Released;
-
-            DeleteButton.Clicked += DeleteButton_Clicked;
-            AddButton.Clicked += AddButton_Clicked;
-
+        private void AddEvents() =>
             ButtonTimer.Elapsed += ButtonTimer_Elapsed;
-        }
 
-        private void RemoveEvents()
-        {
-            LeftButton.Pressed -= LeftButton_Pressed;
-            LeftButton.Released -= LeftButton_Released;
-
-            RightButton.Pressed -= RightButton_Pressed;
-            RightButton.Released -= RightButton_Released;
-
-            DeleteButton.Clicked -= DeleteButton_Clicked;
-            AddButton.Clicked -= AddButton_Clicked;
-
+        private void RemoveEvents() =>
             ButtonTimer.Elapsed -= ButtonTimer_Elapsed;
-        }
     }
 }

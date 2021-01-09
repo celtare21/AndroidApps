@@ -21,11 +21,9 @@ namespace CheckinLS.Pages
 
             _elements = elements;
             _home = home;
-
-            AddButton.Clicked += Add_button_Clicked;
         }
 
-        private async void Add_button_Clicked(object sender, EventArgs e)
+        private async void AddButton_Clicked(object sender, EventArgs e)
         {
             if (_elements == null)
                 return;
@@ -52,7 +50,7 @@ namespace CheckinLS.Pages
 
             Analytics.TrackEvent("Manual entry added");
             await HelperFunctions.ShowToastAsync("New entry added!");
-            _home.RefreshPage();
+            _home.RefreshPage(true);
 
             ResetElements();
 
