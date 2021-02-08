@@ -2,9 +2,7 @@
 using Android.Content.PM;
 using Android.Runtime;
 using Android.OS;
-using Android.Content;
 using Acr.UserDialogs;
-using Plugin.NFC;
 
 namespace CheckinLS.Droid
 {
@@ -19,7 +17,6 @@ namespace CheckinLS.Droid
 
             base.OnCreate(savedInstanceState);
 
-            CrossNFC.Init(this);
             UserDialogs.Init(this);
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
@@ -32,20 +29,6 @@ namespace CheckinLS.Droid
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
-        protected override void OnResume()
-        {
-            base.OnResume();
-
-            CrossNFC.OnResume();
-        }
-
-        protected override void OnNewIntent(Intent intent)
-        {
-            base.OnNewIntent(intent);
-
-            CrossNFC.OnNewIntent(intent);
         }
     }
 }

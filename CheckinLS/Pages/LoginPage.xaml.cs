@@ -40,17 +40,10 @@ namespace CheckinLS.Pages
 
                 await MainSql.CreateAsync(new UserHelpers(), _internetCheck);
 
-                if (!await MainSql.CkeckConnectionAsync())
-                {
-                    await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+                if (!await HelperFunctions.InternetCheck())
                     return;
-                }
 
-                var homeClass = new Home();
-                await Navigation.PushModalAsync(homeClass);
-                await homeClass.CreateElementsAsync();
-                homeClass.RefreshPage(true);
-                await homeClass.CheckNfcStatusAsync();
+                await CreateHomeClass();
 
                 UserDialogs.Instance.HideLoading();
             }
@@ -99,11 +92,8 @@ namespace CheckinLS.Pages
             }
             catch (NoUserFound)
             {
-                if (!await MainSql.CkeckConnectionAsync())
-                {
-                    await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+                if (!await HelperFunctions.InternetCheck())
                     return;
-                }
 
                 UserDialogs.Instance.HideLoading();
                 await DisplayAlert("Error", "No user found! Please create one.", "OK");
@@ -116,19 +106,20 @@ namespace CheckinLS.Pages
                 App.Close();
             }
 
-            if (!await MainSql.CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            if (!await HelperFunctions.InternetCheck())
                 return;
-            }
 
+            await CreateHomeClass();
+
+            UserDialogs.Instance.HideLoading();
+        }
+
+        private async Task CreateHomeClass()
+        {
             var homeClass = new Home();
             await Navigation.PushModalAsync(homeClass);
             await homeClass.CreateElementsAsync();
             homeClass.RefreshPage(true);
-            await homeClass.CheckNfcStatusAsync();
-
-            UserDialogs.Instance.HideLoading();
         }
     }
 }

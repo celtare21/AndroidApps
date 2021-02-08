@@ -37,7 +37,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Plugin.NFC" Version="0.1.19" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.1874" />
     <PackageReference Include="Xamarin.Essentials" Version="1.6.0" />

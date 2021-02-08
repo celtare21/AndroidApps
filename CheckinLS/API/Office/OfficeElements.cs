@@ -50,17 +50,24 @@ namespace CheckinLS.API.Office
 
             var date = _dateInterface.GetCurrentDate();
 
-            return new OfficeDatabaseEntries(date, start, finish, total, observatii);
+            return new OfficeDatabaseEntries
+            {
+                Date = date,
+                OraIncepere = start,
+                OraFinal = finish,
+                Total = total,
+                Observatii = observatii
+            };
         }
 
         public async Task DeleteEntryAsync(int id)
         {
-            await MainSql.DeleteFromDbAsync(true, id);
+            await MainSql.DeleteFromDbAsync(true, id, null);
             await RefreshElementsAsync().ConfigureAwait(false);
         }
 
         private async Task RefreshElementsAsync() =>
-            Entries = (await MainSql.GetAllElementsOfficeAsync()).ToList();
+            Entries = (await MainSql.GetAllElementsAsync<OfficeDatabaseEntries>()).ToList();
 
         public int MaxElement() =>
             Entries.Count - 1;

@@ -3,6 +3,7 @@ using Microsoft.AppCenter.Analytics;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using CheckinLS.API.Sql;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -40,5 +41,14 @@ namespace CheckinLS.API.Misc
 
         public static DateTime SubstractMonths(this DateTime date, int value) =>
             date.AddMonths(-value);
+
+        public static async Task<bool> InternetCheck()
+        {
+            if (await MainSql.CkeckConnectionAsync())
+                return true;
+
+            await ShowAlertKillAsync("No internet connection!");
+            return false;
+        }
     }
 }

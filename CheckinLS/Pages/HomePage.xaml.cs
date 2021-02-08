@@ -1,10 +1,8 @@
-﻿using Acr.UserDialogs;
-using CheckinLS.API.Misc;
+﻿using CheckinLS.API.Misc;
 using CheckinLS.API.Sql;
 using CheckinLS.API.Standard;
 using CheckinLS.InterfacesAndClasses.Date;
 using Microsoft.AppCenter.Analytics;
-using Plugin.NFC;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -20,8 +18,6 @@ namespace CheckinLS.Pages
     public partial class Home
     {
         private StandardElements _elements;
-        private bool _fakeListener, _busy, _disableNfcError, _startup = true;
-        private (bool curs, bool pregatire, bool recuperare) _ora = (false, false, false);
 
         public Home() =>
             InitializeComponent();
@@ -34,18 +30,20 @@ namespace CheckinLS.Pages
             _elements = await StandardElements.CreateAsync(new GetDate());
         }
 
-        protected override async void OnAppearing()
+        protected override void OnAppearing()
         {
             base.OnAppearing();
 
-            await AddEventsAsync().ConfigureAwait(false);
+            ButtonTimer.Elapsed += ButtonTimer_Elapsed;
+
+            PretTotalVechi.Text = Preferences.Get("totalVechi", 0.0).ToString(CultureInfo.InvariantCulture);
         }
 
-        protected override async void OnDisappearing()
+        protected override void OnDisappearing()
         {
             base.OnDisappearing();
 
-            await RemoveEventsAsync();
+            ButtonTimer.Elapsed -= ButtonTimer_Elapsed;
             ButtonTimer.Stop();
         }
 
@@ -188,131 +186,6 @@ namespace CheckinLS.Pages
             }
         }
 
-        private Task AddEventsAsync()
-        {
-            ButtonTimer.Elapsed += ButtonTimer_Elapsed;
-            CrossNFC.Current.OnNfcStatusChanged += Current_OnNfcStatusChanged;
-            return StartListeningAsync();
-        }
-
-        private Task RemoveEventsAsync()
-        {
-            ButtonTimer.Elapsed -= ButtonTimer_Elapsed;
-            CrossNFC.Current.OnNfcStatusChanged -= Current_OnNfcStatusChanged;
-            return StopListeningAsync();
-        }
-
-        public async Task CheckNfcStatusAsync()
-        {
-            if (!CrossNFC.Current.IsEnabled)
-            {
-                Indicator.Color = Color.Gray;
-
-                if (!_disableNfcError)
-                {
-                    await DisplayAlert("Error", "NFC is disabled", "OK");
-                    _disableNfcError = true;
-                }
-            }
-            else
-            {
-                Indicator.Color = Color.Green;
-            }
-        }
-
-        private async void Current_OnNfcStatusChanged(bool isEnabled)
-        {
-            if (!isEnabled)
-            {
-                Indicator.Color = Color.Gray;
-                if (_disableNfcError)
-                    return;
-
-                await DisplayAlert("Error", "NFC is disabled", "OK");
-                _disableNfcError = true;
-            }
-            else
-            {
-                Indicator.Color = Color.Green;
-            }
-        }
-
-        private Task StartListeningAsync() =>
-            Device.InvokeOnMainThreadAsync(() =>
-            {
-                SubscribeEventsReal();
-
-                if (!_startup)
-                    return;
-
-                try
-                {
-                    CrossNFC.Current.StartListening();
-                }
-                catch
-                {
-                    App.Close();
-                }
-
-                _startup = false;
-            });
-
-        private Task StopListeningAsync() =>
-            Device.InvokeOnMainThreadAsync(SubscribeFake);
-
-        private void SubscribeEventsReal()
-        {
-            if (_fakeListener)
-                CrossNFC.Current.OnMessageReceived -= Current_OnMessageReceivedFake;
-            CrossNFC.Current.OnMessageReceived += Current_OnMessageReceived;
-            _fakeListener = false;
-        }
-
-        private void SubscribeFake()
-        {
-            CrossNFC.Current.OnMessageReceived -= Current_OnMessageReceived;
-            CrossNFC.Current.OnMessageReceived += Current_OnMessageReceivedFake;
-            _fakeListener = true;
-        }
-
-        private async void Current_OnMessageReceived(ITagInfo tagInfo)
-        {
-            if (_elements == null)
-                return;
-
-            await StopListeningAsync();
-
-            if (tagInfo == null)
-            {
-                await DisplayAlert("Error", "No tag found", "OK");
-                return;
-            }
-
-            if (!tagInfo.IsSupported || tagInfo.IsEmpty)
-            {
-                await DisplayAlert("Error", "Unsupported/Empty tag", "OK");
-                return;
-            }
-
-            _ = FlashColorAsync();
-
-            var message = GetMessage(tagInfo.Records[0]);
-
-            if (message.Contains("adauga_ora_curs"))
-                _ora.curs = true;
-            else if (message.Contains("adauga_ora_pregatire"))
-                _ora.pregatire = true;
-            else if (message.Contains("adauga_ora_recuperare"))
-                _ora.recuperare = true;
-
-            Analytics.TrackEvent("NFC tag read");
-
-            if (!_busy)
-                _ = WaitAndAddAsync();
-
-            await StartListeningAsync().ConfigureAwait(false);
-        }
-
         private void SetPrice()
         {
             if (_elements == null)
@@ -327,56 +200,12 @@ namespace CheckinLS.Pages
             }
 
             if (!Preferences.ContainsKey("totalVechi") || valoare[0] != 0.0)
+            {
                 Preferences.Set("totalVechi", valoare[0]);
+                PretTotalVechi.Text = valoare[0].ToString(CultureInfo.InvariantCulture);
+            }
 
             PretTotal.Text = valoare[1].ToString(CultureInfo.InvariantCulture);
-            PretTotalVechi.Text = (valoare[0] == 0.0 ? Preferences.Get("totalVechi", 0.0) : valoare[0]).ToString(CultureInfo.InvariantCulture);
-        }
-
-        private async Task WaitAndAddAsync()
-        {
-            _busy = true;
-
-            await CountdownAsync();
-
-            await _elements.AddNewEntryAsync(ObsEntry.Text, _ora.curs, _ora.pregatire, _ora.recuperare, null, null);
-            await HelperFunctions.ShowToastAsync("New entry added!");
-            ObsEntry.Text = string.Empty;
-            RefreshPage(true);
-
-            _ora = (false, false, false);
-
-            _busy = false;
-        }
-
-        private async Task CountdownAsync()
-        {
-            UserDialogs.Instance.ShowLoading("Waiting...");
-            for (var i = 0; i < 12 && _ora != (true, true, true); i++)
-                await Task.Delay(500);
-            UserDialogs.Instance.HideLoading();
-            await Task.Delay(100).ConfigureAwait(false);
-        }
-
-        private async Task FlashColorAsync()
-        {
-            Indicator.Color = Color.Red;
-            await Task.Delay(500);
-            Indicator.Color = Color.Green;
-        }
-
-        private static void Current_OnMessageReceivedFake(ITagInfo tagInfo)
-        {
-            // Do nothing;
-        }
-
-        private static string GetMessage(NFCNdefRecord record)
-        {
-            if (record.TypeFormat != NFCNdefTypeFormat.WellKnown ||
-                string.IsNullOrWhiteSpace(record.MimeType) && string.CompareOrdinal(record.MimeType, "text/plain") != 0)
-                return null;
-
-            return record.Message;
         }
     }
 }

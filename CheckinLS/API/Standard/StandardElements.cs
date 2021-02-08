@@ -57,18 +57,27 @@ namespace CheckinLS.API.Standard
             if (oraFinal.TotalDays > 1)
                 throw new HoursOutOfBounds();
 
-            return new StandardDatabaseEntry(date, oraIncepere, oraFinal, cursAlocat, pregatireAlocat,
-                recuperareAlocat, total, observatii);
+            return new StandardDatabaseEntry
+            {
+                Date = date,
+                OraIncepere = oraIncepere,
+                OraFinal = oraFinal,
+                CursAlocat = cursAlocat,
+                PregatireAlocat = pregatireAlocat,
+                RecuperareAlocat = recuperareAlocat,
+                Total = total,
+                Observatii = observatii
+            };
         }
 
         public async Task DeleteEntryAsync(int id)
         {
-            await MainSql.DeleteFromDbAsync(false, id);
+            await MainSql.DeleteFromDbAsync(false, id, null);
             await RefreshElementsAsync().ConfigureAwait(false);
         }
 
         private async Task RefreshElementsAsync() =>
-            Entries = (await MainSql.GetAllElementsStandardAsync()).ToList();
+            Entries = (await MainSql.GetAllElementsAsync<StandardDatabaseEntry>()).ToList();
 
         public int MaxElement() =>
             Entries.Count - 1;

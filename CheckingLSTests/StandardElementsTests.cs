@@ -353,7 +353,7 @@ namespace CheckingLSTests
             await MainSql.CkeckConnectionAsync();
             await MainSql.CreateAsync(new TestUserHelpers(), new TestInternetAccess(), "1111");
 
-            await MainSql.DeleteFromDbAsync(false, "2020-01-01").ConfigureAwait(false);
+            await MainSql.DeleteFromDbAsync(false, null, "2020-01-01").ConfigureAwait(false);
 
             MainSql.SetNullConnection();
         }

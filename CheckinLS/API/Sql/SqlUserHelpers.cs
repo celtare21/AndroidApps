@@ -8,11 +8,8 @@ namespace CheckinLS.API.Sql
     {
         private static async Task<bool> IsUserAlreadyCreatedAsync(string username)
         {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            if (!await HelperFunctions.InternetCheck())
                 return false;
-            }
 
             var result = await Conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
 
@@ -21,11 +18,8 @@ namespace CheckinLS.API.Sql
 
         private static async Task<bool> IsPasswordAlreadyUsedAsync(string password)
         {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            if (!await HelperFunctions.InternetCheck())
                 return false;
-            }
 
             var result = await Conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
 
@@ -34,11 +28,8 @@ namespace CheckinLS.API.Sql
 
         private static async Task<bool> IsUserAsync(string username)
         {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            if (!await HelperFunctions.InternetCheck())
                 return false;
-            }
 
             var result = await Conn.QuerySingleOrDefaultAsync<string>(
                 $@"SELECT TABLE_CATALOG FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
@@ -67,11 +58,8 @@ namespace CheckinLS.API.Sql
             const string query = @"INSERT INTO users (username,password)" +
                                  "VALUES (@Username,@Password)";
 
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            if (!await HelperFunctions.InternetCheck())
                 return;
-            }
 
             await Conn.ExecuteAsync(query, new {Username = username, Password = password}).ConfigureAwait(false);
         }

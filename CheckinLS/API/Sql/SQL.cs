@@ -72,31 +72,18 @@ namespace CheckinLS.API.Sql
         public static void SetNullConnection() =>
             Conn = null;
 
-        public static async Task AddToDbAsync(StandardDatabaseEntry entries)
+        public static async Task AddToDbAsync<T>(T entry) where T : class
         {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            if (!await HelperFunctions.InternetCheck())
                 return;
-            }
 
-            var query =
-                $@"INSERT INTO ""prezenta.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)";
+            var query = entry is StandardDatabaseEntry
+                ? $@"INSERT INTO ""prezenta.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @cursAlocat, @pregatireAlocat, @recuperareAlocat, @total, @observatii)"
+                : $@"INSERT INTO ""prezenta.office.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @total, @observatii)";
 
             try
             {
-                await Conn.ExecuteAsync(query,
-                    new
-                    {
-                        date = entries.Date,
-                        oraIncepere = entries.OraIncepere,
-                        oraFinal = entries.OraFinal,
-                        cursAlocat = entries.CursAlocat,
-                        pregatireAlocat = entries.PregatireAlocat,
-                        recuperareAlocat = entries.RecuperareAlocat,
-                        total = entries.Total,
-                        observatii = entries.Observatii
-                    }).ConfigureAwait(false);
+                await Conn.ExecuteAsync(query, entry).ConfigureAwait(false);
             }
             catch (SqlException e)
             {
@@ -105,47 +92,20 @@ namespace CheckinLS.API.Sql
             }
         }
 
-        public static async Task AddToDbAsync(OfficeDatabaseEntries entries)
+        public static async Task DeleteFromDbAsync(bool office, int? id, string date)
         {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            if (!await HelperFunctions.InternetCheck())
                 return;
-            }
 
-            var query =
-                $@"INSERT INTO ""prezenta.office.{_user}"" VALUES (@date, @oraIncepere, @oraFinal, @total, @observatii)";
-
-            try
-            {
-                await Conn.ExecuteAsync(query,
-                    new
-                    {
-                        date = entries.Date,
-                        oraIncepere = entries.OraIncepere,
-                        oraFinal = entries.OraFinal,
-                        total = entries.Total,
-                        observatii = entries.Observatii
-                    }).ConfigureAwait(false);
-            }
-            catch (SqlException e)
-            {
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
-                Analytics.TrackEvent(e.Message);
-            }
-        }
-
-        public static async Task DeleteFromDbAsync(bool office, int id)
-        {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
-                return;
-            }
-
-            var query = office
-                ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE id = {id.ToString()}"
-                : $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id.ToString()}";
+            string query;
+            if (id.HasValue)
+                query = office
+                    ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE id = {id.Value.ToString()}"
+                    : $@"DELETE FROM ""prezenta.{_user}"" WHERE id = {id.Value.ToString()}";
+            else
+                query = office
+                    ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE date = '{date}'"
+                    : $@"DELETE FROM ""prezenta.{_user}"" WHERE date = '{date}'";
 
             try
             {
@@ -158,60 +118,16 @@ namespace CheckinLS.API.Sql
             }
         }
 
-        public static async Task DeleteFromDbAsync(bool office, string date)
+        public static async Task<IEnumerable<T>> GetAllElementsAsync<T>() where T : class
         {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
-                return;
-            }
-
-            var query = office
-                ? $@"DELETE FROM ""prezenta.office.{_user}"" WHERE date = '{date}'"
-                : $@"DELETE FROM ""prezenta.{_user}"" WHERE date = '{date}'";
+            if (!await HelperFunctions.InternetCheck())
+                return null;
 
             try
             {
-                await Conn.ExecuteAsync(query).ConfigureAwait(false);
-            }
-            catch (SqlException e)
-            {
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
-                Analytics.TrackEvent(e.Message);
-            }
-        }
-
-        public static async Task<IEnumerable<StandardDatabaseEntry>> GetAllElementsStandardAsync()
-        {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
-                return null;
-            }
-
-            try
-            {
-                return await Conn.QueryAsync<StandardDatabaseEntry>($@"SELECT * FROM ""prezenta.{_user}""");
-            }
-            catch (SqlException e)
-            {
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
-                Analytics.TrackEvent(e.Message);
-                return null;
-            }
-        }
-
-        public static async Task<IEnumerable<OfficeDatabaseEntries>> GetAllElementsOfficeAsync()
-        {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
-                return null;
-            }
-
-            try
-            {
-                return await Conn.QueryAsync<OfficeDatabaseEntries>($@"SELECT * FROM ""prezenta.office.{_user}""");
+                return await Conn.QueryAsync<T>(typeof(T) == typeof(OfficeDatabaseEntries)
+                    ? $@"SELECT * FROM ""prezenta.office.{_user}"""
+                    : $@"SELECT * FROM ""prezenta.{_user}""");
             }
             catch (SqlException e)
             {
@@ -223,11 +139,8 @@ namespace CheckinLS.API.Sql
 
         public static async Task<TimeSpan> MaxHourInDbAsync(DateTime date)
         {
-            if (!await CkeckConnectionAsync())
-            {
-                await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            if (!await HelperFunctions.InternetCheck())
                 return TimeSpan.MinValue;
-            }
 
             IEnumerable<TimeSpan?> result;
             var dateStr = date.ToString("yyyy-MM-dd");

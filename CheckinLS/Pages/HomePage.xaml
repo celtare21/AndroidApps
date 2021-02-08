@@ -24,10 +24,10 @@
                 <RowDefinition Height="10"/>
                 <RowDefinition Height="45"/>
                 <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
                 <RowDefinition Height="35"/>
                 <RowDefinition Height="35"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="45"/>
+                <RowDefinition Height="35"/>
             </Grid.RowDefinitions>
 
             <Label Text="ID:" Grid.Row="0" Grid.Column="0"/>
@@ -62,23 +62,12 @@
 
             <Button Clicked="ManualAddButton_Clicked" Text="Manual Add" FontAttributes="Bold" FontSize="11" HorizontalOptions="StartAndExpand" VerticalOptions="Center" Grid.Row="11" Grid.Column="0"/>
             <Button x:Name="DeleteButton" Clicked="DeleteButton_Clicked" Text="Delete" HorizontalOptions="EndAndExpand" VerticalOptions="Center" Grid.Row="11" Grid.Column="1"/>
-            <BoxView x:Name="Indicator" BackgroundColor="Gray" WidthRequest="45" HeightRequest="45" CornerRadius="32" Margin="0,0,-30,0" VerticalOptions="Center" HorizontalOptions="End" Grid.Row="11" Grid.Column="0" />
 
-            <Label Text="Total Trecut:" Padding="0,0,-40,0" Grid.Row="12" Grid.Column="0"/>
-            <Label x:Name="PretTotalVechi" Text="0" Padding="0,0,40,0" Grid.Row="12" Grid.Column="1"/>
+            <Label Text="Total Trecut:" Padding="0,0,-40,0" Grid.Row="13" Grid.Column="0"/>
+            <Label x:Name="PretTotalVechi" Text="0" Padding="0,0,40,0" Grid.Row="13" Grid.Column="1"/>
 
-            <Label Text="Total Curent:" Padding="0,0,-40,0" Grid.Row="13" Grid.Column="0"/>
-            <Label x:Name="PretTotal" Text="0" Padding="0,0,40,0" Grid.Row="13" Grid.Column="1"/>
-
-            <Entry x:Name="ObsEntry" IsSpellCheckEnabled="False" PlaceholderColor="Gray" TextColor="AntiqueWhite" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-200,0" Grid.Row="14" Grid.Column="0">
-                <Entry.Keyboard>
-                    <Keyboard x:FactoryMethod="Create">
-                        <x:Arguments>
-                            <KeyboardFlags>CapitalizeCharacter</KeyboardFlags>
-                        </x:Arguments>
-                    </Keyboard>
-                </Entry.Keyboard>
-            </Entry>
+            <Label Text="Total Curent:" Padding="0,0,-40,0" Grid.Row="14" Grid.Column="0"/>
+            <Label x:Name="PretTotal" Text="0" Padding="0,0,40,0" Grid.Row="14" Grid.Column="1"/>
 
             <Button x:Name="OreOfficeButton" Pressed="OreOfficeButton_Clicked" Text="Office Hours" Margin="140,0,-80,0" HorizontalOptions="StartAndExpand" VerticalOptions="Center" IsVisible="False" Grid.Row="15" Grid.Column="0"/>
         </Grid>
