@@ -194,18 +194,20 @@ namespace CheckinLS.Pages
             var valoare = new double[2];
             foreach (var entry in _elements.Entries)
             {
-                valoare[entry.Date.Month == DateTime.Today.SubstractMonths(1).Month ? 0 : 1] += entry.CursAlocat.TotalHours * Constants.PretCurs;
-                valoare[entry.Date.Month == DateTime.Today.SubstractMonths(1).Month ? 0 : 1] += entry.PregatireAlocat.TotalHours * Constants.PretPregatire;
-                valoare[entry.Date.Month == DateTime.Today.SubstractMonths(1).Month ? 0 : 1] += entry.RecuperareAlocat.TotalHours * Constants.PretRecuperare;
+                var currentMonth = entry.Date.Month == DateTime.Today.SubstractMonths(1).Month ? 0 : 1;
+
+                valoare[currentMonth] += entry.CursAlocat.TotalHours * Constants.PretCurs;
+                valoare[currentMonth] += entry.PregatireAlocat.TotalHours * Constants.PretPregatire;
+                valoare[currentMonth] += entry.RecuperareAlocat.TotalHours * Constants.PretRecuperare;
             }
 
-            if (!Preferences.ContainsKey("totalVechi") || valoare[0] != 0.0)
+            if (!Preferences.ContainsKey("totalVechi") || valoare[(int) Month.Last] != 0.0)
             {
-                Preferences.Set("totalVechi", valoare[0]);
-                PretTotalVechi.Text = valoare[0].ToString(CultureInfo.InvariantCulture);
+                Preferences.Set("totalVechi", valoare[(int) Month.Last]);
+                PretTotalVechi.Text = valoare[(int) Month.Last].ToString(CultureInfo.InvariantCulture);
             }
 
-            PretTotal.Text = valoare[1].ToString(CultureInfo.InvariantCulture);
+            PretTotal.Text = valoare[(int) Month.Current].ToString(CultureInfo.InvariantCulture);
         }
     }
 }
