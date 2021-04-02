@@ -27,8 +27,8 @@ namespace CheckinLS.API.Misc
         public static Task ShowAlertKillAsync(string message) =>
             Device.InvokeOnMainThreadAsync(async () =>
             {
-                await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
                 Analytics.TrackEvent(message);
+                await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
                 App.Close();
             });
 

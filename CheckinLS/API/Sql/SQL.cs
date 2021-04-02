@@ -87,8 +87,8 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
             }
         }
 
@@ -113,8 +113,8 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
             }
         }
 
@@ -131,8 +131,8 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 return null;
             }
         }
@@ -151,8 +151,8 @@ namespace CheckinLS.API.Sql
             }
             catch (SqlException e)
             {
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 Analytics.TrackEvent(e.Message);
+                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
                 return TimeSpan.MinValue;
             }
 

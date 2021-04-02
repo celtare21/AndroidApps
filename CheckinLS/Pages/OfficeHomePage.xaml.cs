@@ -16,6 +16,7 @@ namespace CheckinLS.Pages
     public partial class OfficeHomePage
     {
         private OfficeElements _officeElements;
+        private bool _dateSet;
 
         public async Task CreateElementsAsync() =>
             _officeElements = await OfficeElements.CreateAsync(new GetDate());
@@ -131,7 +132,7 @@ namespace CheckinLS.Pages
 
             try
             {
-                await _officeElements.AddNewEntryAsync(start, finish, ObservatiiEntry.Text);
+                await _officeElements.AddNewEntryAsync(GetCustomDate(), start, finish, ObservatiiEntry.Text);
             }
             catch (HoursCantBeEqual)
             {
@@ -149,11 +150,32 @@ namespace CheckinLS.Pages
             RefreshPage();
             await HelperFunctions.ShowToastAsync("New entry added!");
 
+            ResetElements();
+
+            AddButton.IsEnabled = true;
+        }
+
+        private void ResetElements()
+        {
             OraIncepereTime.Time = TimeSpan.FromHours(8);
             OraFinalTime.Time = TimeSpan.FromHours(8);
             ObservatiiEntry.Text = string.Empty;
+            StartDatePicker.Date = DateTime.Today;
+            _dateSet = false;
+        }
 
-            AddButton.IsEnabled = true;
+        private void StartDatePicker_OnDateSelected(object sender, DateChangedEventArgs e)
+        {
+            if (e.NewDate != e.OldDate)
+                _dateSet = true;
+        }
+
+        private DateTime? GetCustomDate()
+        {
+            if (_dateSet)
+                return StartDatePicker.Date;
+
+            return null;
         }
 
         public void RefreshPage()

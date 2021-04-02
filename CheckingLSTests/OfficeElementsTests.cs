@@ -14,16 +14,18 @@ namespace CheckingLSTests
     [TestFixture]
     public class OfficeElementsTests
     {
+        private static IGetDate _dateInterface;
+
         private static async Task<OfficeElements> CreateTaskAsync()
         {
-            var dateInterface = Substitute.For<IGetDate>();
-            dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
+            _dateInterface = Substitute.For<IGetDate>();
+            _dateInterface.GetCurrentDate().Returns(DateTime.Parse("2020-01-01"));
 
             MainSql.CreateConnection();
             await MainSql.CkeckConnectionAsync();
             await MainSql.CreateAsync(new TestUserHelpers(), new TestInternetAccess(), "1111");
 
-            return await OfficeElements.CreateAsync(dateInterface).ConfigureAwait(false);
+            return await OfficeElements.CreateAsync(_dateInterface).ConfigureAwait(false);
         }
 
         [Test]
@@ -31,7 +33,7 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(8), null);
+            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(_dateInterface.GetCurrentDate(), TimeSpan.FromHours(8), TimeSpan.FromHours(8), null);
 
             Assert.CatchAsync<HoursCantBeEqual>(AsyncTestDelegate);
         }
@@ -41,7 +43,7 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(TimeSpan.FromHours(9), TimeSpan.FromHours(8), null);
+            Task AsyncTestDelegate() => officeElements.AddNewEntryAsync(_dateInterface.GetCurrentDate(), TimeSpan.FromHours(9), TimeSpan.FromHours(8), null);
 
             Assert.CatchAsync<StartCantBeBigger>(AsyncTestDelegate);
         }
@@ -55,7 +57,7 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            await officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(9), observatii);
+            await officeElements.AddNewEntryAsync(_dateInterface.GetCurrentDate(), TimeSpan.FromHours(8), TimeSpan.FromHours(9), observatii);
 
             var index = officeElements.MaxElement();
 
@@ -83,7 +85,7 @@ namespace CheckingLSTests
         {
             var officeElements = await CreateTaskAsync();
 
-            await officeElements.AddNewEntryAsync(TimeSpan.FromHours(8), TimeSpan.FromHours(9), null);
+            await officeElements.AddNewEntryAsync(_dateInterface.GetCurrentDate(), TimeSpan.FromHours(8), TimeSpan.FromHours(9), null);
 
             var max = officeElements.MaxElement();
 

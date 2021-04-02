@@ -28,14 +28,14 @@ namespace CheckinLS.API.Office
         private OfficeElements(IGetDate dateInterface) =>
             _dateInterface = dateInterface;
 
-        public async Task AddNewEntryAsync(TimeSpan start, TimeSpan finish, string observatii)
+        public async Task AddNewEntryAsync(DateTime? date, TimeSpan start, TimeSpan finish, string observatii)
         {
-            await MainSql.AddToDbAsync(NewElementsTable(start, finish, string.IsNullOrEmpty(observatii) ? "None" : observatii));
+            await MainSql.AddToDbAsync(NewElementsTable(date, start, finish, string.IsNullOrEmpty(observatii) ? "None" : observatii));
             await RefreshElementsAsync();
             Index = MaxElement();
         }
 
-        private OfficeDatabaseEntries NewElementsTable(TimeSpan start, TimeSpan finish, string observatii)
+        private OfficeDatabaseEntries NewElementsTable(DateTime? date, TimeSpan start, TimeSpan finish, string observatii)
         {
             if (start == finish)
                 throw new HoursCantBeEqual();
@@ -48,11 +48,10 @@ namespace CheckinLS.API.Office
             if (total.TotalDays > 1)
                 throw new HoursOutOfBounds();
 
-            var date = _dateInterface.GetCurrentDate();
 
             return new OfficeDatabaseEntries
             {
-                Date = date,
+                Date = date ?? _dateInterface.GetCurrentDate(),
                 OraIncepere = start,
                 OraFinal = finish,
                 Total = total,
