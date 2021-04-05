@@ -39,7 +39,7 @@ namespace CheckinLS.API.Sql
 
         public static bool UserHasOffice()
         {
-            const string office = "alin, vasile, cristi, test";
+            const string office = "alin, vasile, cristi, elena, test";
 
             return office.Contains(_user);
         }
