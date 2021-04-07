@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using CheckinLS.API.Misc;
 using CheckinLS.API.Standard;
 using Microsoft.AppCenter.Analytics;
@@ -25,15 +26,30 @@ namespace CheckinLS.Pages
 
         private async void AddButton_Clicked(object sender, EventArgs e)
         {
+            await AddNewEntry(AddButton, new EntryInfo(ObsManualEntry.Text, CursToggle.IsToggled,
+                PregatireToggle.IsToggled,
+                RecuperareToggle.IsToggled));
+            ResetElements();
+        }
+
+        private async void TabaraButton_OnClickedButton_Clicked(object sender, EventArgs e)
+        {
+            await AddNewEntry(TabaraButton, new EntryInfo("TABARA", true, true, true));
+            await AddNewEntry(TabaraButton, new EntryInfo("TABARA", true, false, false));
+            ResetElements();
+        }
+
+        private async Task AddNewEntry(VisualElement button, EntryInfo info)
+        {
             if (_elements == null)
                 return;
 
-            AddButton.IsEnabled = false;
+            button.IsEnabled = false;
 
             try
             {
-                await _elements.AddNewEntryAsync(ObsManualEntry.Text, CursToggle.IsToggled, PregatireToggle.IsToggled,
-                    RecuperareToggle.IsToggled, GetCustomTime(), GetCustomDate());
+                await _elements.AddNewEntryAsync(info.Obs, info.Curs, info.Pregatire,
+                    info.Recuperare, GetCustomTime(), GetCustomDate());
             }
             catch (AllParametersFalse)
             {
@@ -48,13 +64,11 @@ namespace CheckinLS.Pages
                 return;
             }
 
-            Analytics.TrackEvent("Manual entry added");
+            Analytics.TrackEvent("Entry added");
             await HelperFunctions.ShowToastAsync("New entry added!");
             _home.RefreshPage(true);
 
-            ResetElements();
-
-            AddButton.IsEnabled = true;
+            button.IsEnabled = true;
         }
 
         private void OnTimePickerPropertyChanged(object sender, PropertyChangedEventArgs args)

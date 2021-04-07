@@ -11,7 +11,7 @@ namespace CheckinLS.API.Sql
             if (!await HelperFunctions.InternetCheck())
                 return false;
 
-            var result = await Conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
+            var result = await _conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE username = '{username}'");
 
             return string.IsNullOrEmpty(result);
         }
@@ -21,7 +21,7 @@ namespace CheckinLS.API.Sql
             if (!await HelperFunctions.InternetCheck())
                 return false;
 
-            var result = await Conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
+            var result = await _conn.QuerySingleOrDefaultAsync<string>($@"SELECT username FROM users WHERE password = '{password}'");
 
             return string.IsNullOrEmpty(result);
         }
@@ -31,7 +31,7 @@ namespace CheckinLS.API.Sql
             if (!await HelperFunctions.InternetCheck())
                 return false;
 
-            var result = await Conn.QuerySingleOrDefaultAsync<string>(
+            var result = await _conn.QuerySingleOrDefaultAsync<string>(
                 $@"SELECT TABLE_CATALOG FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'prezenta.{username}'");
 
             return string.IsNullOrEmpty(result);
@@ -61,7 +61,7 @@ namespace CheckinLS.API.Sql
             if (!await HelperFunctions.InternetCheck())
                 return;
 
-            await Conn.ExecuteAsync(query, new {Username = username, Password = password}).ConfigureAwait(false);
+            await _conn.ExecuteAsync(query, new {Username = username, Password = password}).ConfigureAwait(false);
         }
     }
 }

@@ -3,8 +3,6 @@ using CheckinLS.API.Misc;
 using Xamarin.Forms.Xaml;
 using MainSql = CheckinLS.API.Sql.MainSql;
 
-// ReSharper disable RedundantCapturedContext
-
 namespace CheckinLS.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
@@ -21,7 +19,7 @@ namespace CheckinLS.Pages
 
         private async void Enter_Clicked(object sender, EventArgs e)
         {
-            if (MainSql.Conn == null)
+            if (MainSql.IsConnNull())
                 return;
 
             if (string.IsNullOrEmpty(Username.Text))
@@ -51,6 +49,7 @@ namespace CheckinLS.Pages
 
             await DisplayAlert("New user", "User created! Please re-enter pin", "OK");
 
+            // ReSharper disable once RedundantCapturedContext
             await Navigation.PopModalAsync();
         }
     }

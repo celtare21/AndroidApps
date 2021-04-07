@@ -19,7 +19,7 @@ namespace CheckinLS.API.Sql
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public static partial class MainSql
     {
-        public static SqlConnection Conn { get; private set; }
+        private static SqlConnection _conn;
         private static InternetAccess _internetCheck;
         private static string _user;
 
@@ -29,48 +29,30 @@ namespace CheckinLS.API.Sql
 
             if (!string.IsNullOrEmpty(pin))
             {
-                var result = await Users.TryGetUserAsync(Conn, pin);
+                var result = await Users.TryGetUserAsync(_conn, pin);
                 if (string.IsNullOrEmpty(result))
                     throw new NoUserFound();
 
                 await usersInterface.CreateLoggedUserAsync(result);
                 _user = result;
-                return;
             }
-
-            _user = await Users.ReadLoggedUserAsync() ?? throw new UserReadFailed();
+            else
+            {
+                _user = await Users.ReadLoggedUserAsync() ?? throw new UserReadFailed();
+            }
         }
 
         public static void CreateConnection() =>
-            Conn = new SqlConnection(Secrets.ConnStr);
+            _conn = new SqlConnection(Secrets.ConnStr);
 
-        public static async Task<bool> CkeckConnectionAsync()
-        {
-            if (Conn?.State == ConnectionState.Closed)
-            {
-                try
-                {
-                    await Conn.OpenAsync();
-                    return true;
-                }
-                catch (SqlException)
-                {
-                    await HelperFunctions.ShowAlertKillAsync("Couldn't connect to the database!");
-                    return false;
-                }
-            }
-
-            while (Conn?.State == ConnectionState.Connecting)
-                await Task.Delay(100);
-
-            return await _internetCheck.CheckInternetAsync().ConfigureAwait(false);
-        }
+        public static bool IsConnNull() =>
+            _conn == null;
 
         public static Task CloseConnectionAsync() =>
-            Conn?.CloseAsync();
+            _conn?.CloseAsync();
 
         public static void SetNullConnection() =>
-            Conn = null;
+            _conn = null;
 
         public static async Task AddToDbAsync<T>(T entry) where T : class
         {
@@ -83,7 +65,7 @@ namespace CheckinLS.API.Sql
 
             try
             {
-                await Conn.ExecuteAsync(query, entry).ConfigureAwait(false);
+                await _conn.ExecuteAsync(query, entry).ConfigureAwait(false);
             }
             catch (SqlException e)
             {
@@ -109,7 +91,7 @@ namespace CheckinLS.API.Sql
 
             try
             {
-                await Conn.ExecuteAsync(query).ConfigureAwait(false);
+                await _conn.ExecuteAsync(query).ConfigureAwait(false);
             }
             catch (SqlException e)
             {
@@ -125,14 +107,14 @@ namespace CheckinLS.API.Sql
 
             try
             {
-                return await Conn.QueryAsync<T>(typeof(T) == typeof(OfficeDatabaseEntries)
+                return await _conn.QueryAsync<T>(typeof(T) == typeof(OfficeDatabaseEntries)
                     ? $@"SELECT * FROM ""prezenta.office.{_user}"""
                     : $@"SELECT * FROM ""prezenta.{_user}""");
             }
             catch (SqlException e)
             {
                 Analytics.TrackEvent(e.Message);
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertKillAsync("Current user isn't registered for office!");
                 return null;
             }
         }
@@ -146,7 +128,7 @@ namespace CheckinLS.API.Sql
             var dateStr = date.ToString("yyyy-MM-dd");
             try
             {
-                result = await Conn.QueryAsync<TimeSpan?>(
+                result = await _conn.QueryAsync<TimeSpan?>(
                     $@"SELECT oraFinal FROM ""prezenta.{_user}"" WHERE date LIKE '%{dateStr}%'");
             }
             catch (SqlException e)
@@ -157,6 +139,29 @@ namespace CheckinLS.API.Sql
             }
 
             return result.Max() ?? TimeUtils.StartTime();
+        }
+
+        public static async Task<bool> CkeckConnectionAsync()
+        {
+            if (_conn?.State == ConnectionState.Closed)
+            {
+                try
+                {
+                    await _conn.OpenAsync();
+                }
+                catch (SqlException)
+                {
+                    await HelperFunctions.ShowAlertKillAsync("Couldn't connect to the database!");
+                    return false;
+                }
+
+                return true;
+            }
+
+            while (_conn?.State == ConnectionState.Connecting)
+                await Task.Delay(100);
+
+            return await _internetCheck.CheckInternetAsync().ConfigureAwait(false);
         }
     }
 }

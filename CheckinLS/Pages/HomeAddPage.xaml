@@ -43,6 +43,7 @@
             <TimePicker x:Name="OraIncepereTime" Format="HH:mm" Time="8:00:00" PropertyChanged="OnTimePickerPropertyChanged" TextColor="AntiqueWhite" HorizontalOptions="Center" Grid.Row="4" Grid.Column="0"/>
             <DatePicker x:Name="StartDatePicker" Format="dd/MM/yyyy" DateSelected="OnDateSelected" TextColor="AntiqueWhite" HorizontalOptions="Center" Grid.Row="4" Grid.Column="1"/>
 
+            <Button x:Name="TabaraButton" Clicked="TabaraButton_OnClickedButton_Clicked" Text="Tabara" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="6" Grid.Column="0"/>
             <Button x:Name="AddButton" Clicked="AddButton_Clicked" Text="Add" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="6" Grid.Column="1"/>
         </Grid>
 
