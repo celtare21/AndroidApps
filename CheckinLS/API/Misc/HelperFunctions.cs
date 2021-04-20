@@ -24,12 +24,13 @@ namespace CheckinLS.API.Misc
             };
         }
 
-        public static Task ShowAlertKillAsync(string message) =>
+        public static Task ShowAlertAsync(string message, bool kill) =>
             Device.InvokeOnMainThreadAsync(async () =>
             {
                 Analytics.TrackEvent(message);
                 await Application.Current.MainPage.DisplayAlert("Error", message, "OK");
-                App.Close();
+                if (kill)
+                    App.Close();
             });
 
         public static Task ShowToastAsync(string message) =>
@@ -47,7 +48,7 @@ namespace CheckinLS.API.Misc
             if (await MainSql.CkeckConnectionAsync())
                 return true;
 
-            await ShowAlertKillAsync("No internet connection!");
+            await ShowAlertAsync("No internet connection!", true);
             return false;
         }
     }

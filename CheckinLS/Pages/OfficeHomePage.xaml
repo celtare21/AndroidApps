@@ -12,53 +12,52 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="25"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="75"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="70"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="70"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
 
-            <Label Text="ID:" Grid.Row="1" Grid.Column="0"/>
-            <Label x:Name="IdLabel" Text="Not found!" Grid.Row="1" Grid.Column="1"/>
+            <Label Text="ID:" Grid.Row="0" Grid.Column="0"/>
+            <Label x:Name="IdLabel" Text="Not found!" Grid.Row="0" Grid.Column="1"/>
 
-            <Label Text="Observatii:" Grid.Row="2" Grid.Column="0"/>
-            <Label x:Name="ObservatiiLabel" Text="Not found!" Grid.Row="2" Grid.Column="1"/>
+            <Label Text="Observatii:" Grid.Row="1" Grid.Column="0"/>
+            <Label x:Name="ObservatiiLabel" Text="Not found!" Grid.Row="1" Grid.Column="1"/>
 
-            <Label Text="Data:" Grid.Row="3" Grid.Column="0"/>
-            <Label x:Name="DateLabel" Text="Not found!" Grid.Row="3" Grid.Column="1"/>
+            <Label Text="Data:" Grid.Row="2" Grid.Column="0"/>
+            <Label x:Name="DateLabel" Text="Not found!" Grid.Row="2" Grid.Column="1"/>
 
-            <Label Text="Ora Incepere:" Grid.Row="4" Grid.Column="0"/>
-            <Label x:Name="OraIncepereLabel" Text="Not found!" Grid.Row="4" Grid.Column="1"/>
+            <Label Text="Ora Incepere:" Grid.Row="3" Grid.Column="0"/>
+            <Label x:Name="OraIncepereLabel" Text="Not found!" Grid.Row="3" Grid.Column="1"/>
 
-            <Label Text="Ora Final:" Grid.Row="5" Grid.Column="0"/>
-            <Label x:Name="OraFinalLabel" Text="Not found!" Grid.Row="5" Grid.Column="1"/>
+            <Label Text="Ora Final:" Grid.Row="4" Grid.Column="0"/>
+            <Label x:Name="OraFinalLabel" Text="Not found!" Grid.Row="4" Grid.Column="1"/>
 
-            <Label Text="Total:" Grid.Row="6" Grid.Column="0"/>
-            <Label x:Name="TotalLabel" Text="Not found!" Grid.Row="6" Grid.Column="1"/>
+            <Label Text="Total:" Grid.Row="5" Grid.Column="0"/>
+            <Label x:Name="TotalLabel" Text="Not found!" Grid.Row="5" Grid.Column="1"/>
 
-            <Label Text="Start:" HorizontalOptions="Center" Grid.Row="8" Grid.Column="0"/>
-            <Label Text="Final:" HorizontalOptions="Center" Grid.Row="8" Grid.Column="1"/>
+            <Label Text="Start:" HorizontalOptions="Center" Grid.Row="7" Grid.Column="0"/>
+            <Label Text="Final:" HorizontalOptions="Center" Grid.Row="7" Grid.Column="1"/>
 
-            <TimePicker x:Name="OraIncepereTime" Format="HH:mm" TextColor="AntiqueWhite" HorizontalOptions="Center" Time="8:00:00" Grid.Row="9" Grid.Column="0"/>
-            <TimePicker x:Name="OraFinalTime" Format="HH:mm" TextColor="AntiqueWhite" HorizontalOptions="Center" Time="8:00:00" Grid.Row="9" Grid.Column="1"/>
+            <TimePicker x:Name="OraIncepereTime" Format="HH:mm" TextColor="AntiqueWhite" HorizontalOptions="Center" Time="8:00:00" Grid.Row="8" Grid.Column="0"/>
+            <TimePicker x:Name="OraFinalTime" Format="HH:mm" TextColor="AntiqueWhite" HorizontalOptions="Center" Time="8:00:00" Grid.Row="8" Grid.Column="1"/>
 
-            <Button Pressed="LeftButton_Pressed" Released="LeftButton_Released" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="10" Grid.Column="0"/>
-            <Button Pressed="RightButton_Pressed" Released="RightButton_Released" Text="Right" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="10" Grid.Column="1"/>
+            <Button Pressed="LeftButton_Pressed" Released="LeftButton_Released" Text="Left" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="9" Grid.Column="0"/>
+            <Button Pressed="RightButton_Pressed" Released="RightButton_Released" Text="Right" Margin="10,0,0,0" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="9" Grid.Column="1"/>
 
-            <Button x:Name="AddButton" Clicked="AddButton_Clicked" Text="Add" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="11" Grid.Column="0"/>
-            <Button x:Name="DeleteButton" Clicked="DeleteButton_Clicked" Text="Delete" Margin="10,0,0,0" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="11" Grid.Column="1"/>
+            <Button x:Name="AddButton" Clicked="AddButton_Clicked" Text="Add" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="10" Grid.Column="0"/>
+            <Button x:Name="DeleteButton" Clicked="DeleteButton_Clicked" Text="Delete" Margin="10,0,0,0" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="10" Grid.Column="1"/>
 
-            <Entry x:Name="ObservatiiEntry" IsSpellCheckEnabled="False" PlaceholderColor="Gray" TextColor="AntiqueWhite" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-40,0" Grid.Row="12" Grid.Column="0">
+            <Entry x:Name="ObservatiiEntry" IsSpellCheckEnabled="False" PlaceholderColor="Gray" TextColor="AntiqueWhite" Placeholder="Notes" TextTransform="Uppercase" HorizontalTextAlignment="Center" Margin="0,0,-40,0" Grid.Row="11" Grid.Column="0">
                 <Entry.Keyboard>
                     <Keyboard x:FactoryMethod="Create">
                         <x:Arguments>
@@ -67,10 +66,10 @@
                     </Keyboard>
                 </Entry.Keyboard>
             </Entry>
-            <DatePicker x:Name="StartDatePicker" Margin="0,0,40,0" Format="dd/MM/yyyy" DateSelected="StartDatePicker_OnDateSelected" TextColor="AntiqueWhite" HorizontalOptions="Center" Grid.Row="12" Grid.Column="1"/>
+            <DatePicker x:Name="StartDatePicker" Margin="0,0,40,0" Format="dd/MM/yyyy" DateSelected="StartDatePicker_OnDateSelected" TextColor="AntiqueWhite" HorizontalOptions="Center" Grid.Row="11" Grid.Column="1"/>
 
-            <Label Text="Pret Total:" Padding="0,0,-40,0" Grid.Row="13" Grid.Column="0"/>
-            <Label x:Name="PretTotal" Text="0" Padding="0,0,40,0" Grid.Row="13" Grid.Column="1"/>
+            <Label Text="Pret Total:" Padding="0,0,-40,0" Grid.Row="12" Grid.Column="0"/>
+            <Label x:Name="PretTotal" Text="0" Padding="0,0,40,0" Grid.Row="12" Grid.Column="1"/>
 
         </Grid>
     </ContentPage.Content>

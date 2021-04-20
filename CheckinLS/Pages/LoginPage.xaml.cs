@@ -51,7 +51,7 @@ namespace CheckinLS.Pages
             {
                 SecureStorage.RemoveAll();
                 Preferences.Clear();
-                await HelperFunctions.ShowAlertKillAsync("There's been an error, please restart the app!");
+                await HelperFunctions.ShowAlertAsync("There's been an error, please restart the app!", true);
             }
             catch (Exception ex) when (ex is TaskCanceledException || ex is InvalidOperationException)
             {

@@ -70,7 +70,7 @@ namespace CheckinLS.API.Sql
             catch (SqlException e)
             {
                 Analytics.TrackEvent(e.Message);
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertAsync("There's been an error processing the data!", true);
             }
         }
 
@@ -96,7 +96,7 @@ namespace CheckinLS.API.Sql
             catch (SqlException e)
             {
                 Analytics.TrackEvent(e.Message);
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertAsync("There's been an error processing the data!", true);
             }
         }
 
@@ -114,8 +114,8 @@ namespace CheckinLS.API.Sql
             catch (SqlException e)
             {
                 Analytics.TrackEvent(e.Message);
-                await HelperFunctions.ShowAlertKillAsync("Current user isn't registered for office!");
-                return null;
+                await HelperFunctions.ShowAlertAsync("Current user isn't registered for office!", false);
+                throw;
             }
         }
 
@@ -134,7 +134,7 @@ namespace CheckinLS.API.Sql
             catch (SqlException e)
             {
                 Analytics.TrackEvent(e.Message);
-                await HelperFunctions.ShowAlertKillAsync("There's been an error processing the data!");
+                await HelperFunctions.ShowAlertAsync("There's been an error processing the data!", true);
                 return TimeSpan.MinValue;
             }
 
@@ -151,7 +151,7 @@ namespace CheckinLS.API.Sql
                 }
                 catch (SqlException)
                 {
-                    await HelperFunctions.ShowAlertKillAsync("Couldn't connect to the database!");
+                    await HelperFunctions.ShowAlertAsync("Couldn't connect to the database!", true);
                     return false;
                 }
 

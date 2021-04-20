@@ -34,8 +34,8 @@ namespace CheckinLS.Pages
 
         private async void TabaraButton_OnClickedButton_Clicked(object sender, EventArgs e)
         {
-            await AddNewEntry(TabaraButton, new EntryInfo("TABARA", true, true, true));
-            await AddNewEntry(TabaraButton, new EntryInfo("TABARA", true, false, false));
+            await AddNewEntry(TabaraButton, new EntryInfo("TABARA P1", true, true, true));
+            await AddNewEntry(TabaraButton, new EntryInfo("TABARA P2", true, false, false));
             ResetElements();
         }
 

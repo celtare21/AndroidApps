@@ -11,7 +11,7 @@ namespace CheckinLS.InterfacesAndClasses.Internet
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
                 return true;
 
-            await HelperFunctions.ShowAlertKillAsync("No internet connection!");
+            await HelperFunctions.ShowAlertAsync("No internet connection!", true);
             return false;
         }
     }

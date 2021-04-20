@@ -4,6 +4,7 @@ using CheckinLS.API.Standard;
 using CheckinLS.InterfacesAndClasses.Date;
 using Microsoft.AppCenter.Analytics;
 using System;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Timers;
@@ -153,8 +154,17 @@ namespace CheckinLS.Pages
         private async void OreOfficeButton_Clicked(object sender, EventArgs e)
         {
             var officeClass = new OfficeHomePage();
+
+            try
+            {
+                await officeClass.CreateElementsAsync();
+            }
+            catch (SqlException)
+            {
+                return;
+            }
+
             await Navigation.PushModalAsync(officeClass);
-            await officeClass.CreateElementsAsync();
             officeClass.RefreshPage();
         }
 
